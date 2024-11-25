@@ -20,14 +20,18 @@ export default function Demo() {
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
 
-  const { address, addresses, isConnected } = useAccount();
-
+  const { address, isConnected } = useAccount();
   const {
     sendTransaction,
     error: sendTxError,
     isError: isSendTxError,
     isPending: isSendTxPending,
   } = useSendTransaction();
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: txHash as `0x${string}`,
+    });
 
   const {
     signMessage,
@@ -43,13 +47,7 @@ export default function Demo() {
     isPending: isSignTypedPending,
   } = useSignTypedData();
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash: txHash as `0x${string}`,
-    });
-
   const { disconnect } = useDisconnect();
-
   const { connect } = useConnect();
 
   useEffect(() => {
@@ -176,12 +174,6 @@ export default function Demo() {
         {address && (
           <div className="my-2 text-xs">
             Address: <pre className="inline">{truncateAddress(address)}</pre>
-          </div>
-        )}
-
-        {addresses && (
-          <div className="my-2 text-xs">
-            Addresses: <pre className="inline">{JSON.stringify(addresses.length)}</pre>
           </div>
         )}
 
