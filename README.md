@@ -288,7 +288,7 @@ $ yarn dev
 Next, start ngrok:
 
 ```bash
-ngrok http http://localhost:3000
+$ ngrok http http://localhost:3000
 ```
 
 Now open the Frame Playground on Warpcast mobile, by visiting [https://warpcast.com/~/developers/frame-playground](https://warpcast.com/~/developers/frame-playground).
@@ -688,7 +688,7 @@ export default function Demo() {
 
 Now let's request a transaction. We'll use the Wagmi `useSendTransaction` hook to call the Yoink contract and `useWaitForTransactionReceipt` to watch its status.
 
-> [!INFO]
+> [!NOTE]
 > In a more complex app, you'll probably want to use Wagmi's [useWriteContract](https://wagmi.sh/react/api/hooks/useWriteContract) hook instead. This provides better type safety and automatic encoding/decoding of calldata based on the contract ABI.
 
 ```tsx
