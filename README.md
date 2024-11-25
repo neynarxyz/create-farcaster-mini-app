@@ -295,11 +295,11 @@ Now open the Frame Playground on Warpcast mobile, by visiting [https://warpcast.
 
 Enter your ngrok URL:
 
-![Frames Playground](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/1_playground.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/1_playground.png" width="200" alt="Frames Playground" />
 
 ..and tap "Launch" to open your app.
 
-![Launch](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/2_blank.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/2_blank.png" width="200" alt="Launch" />
 
 If you watch your dev server and ngrok logs, you'll see a request to your server. But nothing will load until we signal to Warpcast that our app is `ready()`.
 
@@ -307,11 +307,11 @@ If you watch your dev server and ngrok logs, you'll see a request to your server
 
 To give frames a consistent loading experience, clients display a splash screen and image until the app calls `sdk.actions.ready()`. In order to make it more visible here, let's add a splash image and loading color:
 
-![Config](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/3_config.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/3_config.png" width="200" alt="Config" />
 
 Now we get a nice background color and splash image:
 
-![Splash](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/4_splash.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/4_splash.png" width="200" alt="Splash" />
 
 Let's call `ready()` to load our app. We'll call `sdk.actions.ready()` in an effect on render, which tells the parent Farcaster app that our frame is ready to render and hides the splash screen:
 
@@ -342,7 +342,7 @@ export default function Demo() {
 
 Try again in the playground and we'll see our app:
 
-![Hello](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/5_hello.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/5_hello.png" width="200" alt="Hello" />
 
 ### Viewing context
 
@@ -379,11 +379,27 @@ export default function Demo() {
 
       <div className="mb-4">
         <h2 className="font-2xl font-bold">Context</h2>
-        <div className="p-4 mt-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
-            {JSON.stringify(context, null, 2)}
-          </pre>
-        </div>
+        <button
+          onClick={toggleContext}
+          className="flex items-center gap-2 transition-colors"
+        >
+          <span
+            className={`transform transition-transform ${
+              isContextOpen ? "rotate-90" : ""
+            }`}
+          >
+            ➤
+          </span>
+          Tap to expand
+        </button>
+
+        {isContextOpen && (
+          <div className="p-4 mt-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+              {JSON.stringify(context, null, 2)}
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -395,7 +411,7 @@ When you load this in the Warpcast frames playground, you should see your own Fa
 > [!WARNING]
 > For the Framesgiving developer preview, context data is unauthenticated. Assume this data is spoofable and don't use it to grant privileged access to the user! Future frame SDK releases will include a mechanism fo verify context data.
 
-![Context](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/6_context.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/6_context.png" width="200" alt="Context" />
 
 This is a lot of data, so let's hide it behind a simple toggle:
 
@@ -457,7 +473,7 @@ export default function Demo() {
 }
 ```
 
-![Toggle](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/7_toggle.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/7_toggle.png" width="200" alt="Toggle" />
 
 ### Invoking actions
 
@@ -516,11 +532,11 @@ export default function Demo() {
 }
 ```
 
-![Actions](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/8_actions.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/8_actions.png" width="200" alt="Actions" />
 
 Tap the button and you'll be directed to an external URL.
 
-![URL](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/9_url.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/9_url.png" width="200" alt="URL" />
 
 Let's add another button to call `close()`:
 
@@ -585,7 +601,7 @@ export default function Demo() {
 }
 ```
 
-![URL](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/10_close.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/10_close.png" width="200" alt="URL" />
 
 When you tap this, the frame should close.
 
@@ -641,7 +657,7 @@ export default function Demo() {
 }
 ```
 
-![Wallet](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/10_wallet.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/10_wallet.png" width="200" alt="Wallet" />
 
 If your wallet is connected to Warpcast, you should see its address. In case it's not, let's add a connect/disconnect button. Note that we'll need to import our Wagmi config to `connect`:
 
@@ -845,11 +861,11 @@ export default function Demo() {
 }
 ```
 
-![Tx](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/10_tx.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/10_tx.png" width="200" alt="Tx" />
 
 Tap "Send Transaction" and you'll be directed to your wallet.
 
-![Yoink](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/12_yoink.png)
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/12_yoink.png" width="200" alt="Yoink" />
 
 ### Signatures
 
