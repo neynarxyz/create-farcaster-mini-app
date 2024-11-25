@@ -6,8 +6,11 @@ import {
   useSignMessage,
   useSignTypedData,
   useWaitForTransactionReceipt,
+  useDisconnect,
+  useConnect,
 } from "wagmi";
 
+import { config } from "~/components/WagmiProvider";
 import { Button } from "~/components/ui/Button";
 import { truncateAddress } from "~/lib/truncateAddress";
 
@@ -17,7 +20,8 @@ export default function Demo() {
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
 
-  const { address, isConnected } = useAccount();
+  const { address, addresses, isConnected } = useAccount();
+
   const {
     sendTransaction,
     error: sendTxError,
@@ -43,6 +47,10 @@ export default function Demo() {
     useWaitForTransactionReceipt({
       hash: txHash as `0x${string}`,
     });
+
+  const { disconnect } = useDisconnect();
+
+  const { connect } = useConnect();
 
   useEffect(() => {
     const load = async () => {
@@ -170,6 +178,24 @@ export default function Demo() {
             Address: <pre className="inline">{truncateAddress(address)}</pre>
           </div>
         )}
+
+        {addresses && (
+          <div className="my-2 text-xs">
+            Addresses: <pre className="inline">{JSON.stringify(addresses.length)}</pre>
+          </div>
+        )}
+
+        <div className="mb-4">
+          <Button
+            onClick={() =>
+              isConnected
+                ? disconnect()
+                : connect({ connector: config.connectors[0] })
+            }
+          >
+            {isConnected ? "Disconnect" : "Connect"}
+          </Button>
+        </div>
 
         {isConnected && (
           <>

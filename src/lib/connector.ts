@@ -41,7 +41,9 @@ export function frameConnector() {
     async getAccounts() {
       if (!connected) throw new Error("Not connected");
       const provider = await this.getProvider();
-      const accounts = await provider.request({ method: "eth_accounts" });
+      const accounts = await provider.request({
+        method: "eth_requestAccounts",
+      });
       return accounts.map((x) => getAddress(x));
     },
     async getChainId() {
