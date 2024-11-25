@@ -411,7 +411,7 @@ When you load this in the Warpcast frames playground, you should see your own Fa
 > [!WARNING]
 > For the Framesgiving developer preview, context data is unauthenticated. Assume this data is spoofable and don't use it to grant privileged access to the user! Future frame SDK releases will include a mechanism fo verify context data.
 
-<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/6_context.png" width="200" alt="Context" />
+<img src="https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/6_context.PNG" width="200" alt="Context" />
 
 This is a lot of data, so let's hide it behind a simple toggle:
 
