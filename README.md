@@ -295,7 +295,11 @@ Now open the Frame Playground on Warpcast mobile, by visiting [https://warpcast.
 
 Enter your ngrok URL:
 
+![Frames Playground](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/1_playground.png)
+
 ..and tap "Launch" to open your app.
+
+![Launch](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/2_blank.png)
 
 If you watch your dev server and ngrok logs, you'll see a request to your server. But nothing will load until we signal to Warpcast that our app is `ready()`.
 
@@ -303,9 +307,13 @@ If you watch your dev server and ngrok logs, you'll see a request to your server
 
 To give frames a consistent loading experience, clients display a splash screen and image until the app calls `sdk.actions.ready()`. In order to make it more visible here, let's add a splash image and loading color:
 
-Now we get a nice background color and splash image. Let's call `ready()` to load our app.
+![Config](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/3_config.png)
 
-We'll call `sdk.actions.ready()` in an effect on render, which tells the parent Farcaster app that our frame is ready to render and hides the splash screen:
+Now we get a nice background color and splash image:
+
+![Splash](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/4_splash.png)
+
+Let's call `ready()` to load our app. We'll call `sdk.actions.ready()` in an effect on render, which tells the parent Farcaster app that our frame is ready to render and hides the splash screen:
 
 ```tsx
 import { useEffect, useState } from "react";
@@ -333,6 +341,8 @@ export default function Demo() {
 ```
 
 Try again in the playground and we'll see our app:
+
+![Hello](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/5_hello.png)
 
 ### Viewing context
 
@@ -384,6 +394,8 @@ When you load this in the Warpcast frames playground, you should see your own Fa
 
 > [!WARNING]
 > For the Framesgiving developer preview, context data is unauthenticated. Assume this data is spoofable and don't use it to grant privileged access to the user! Future frame SDK releases will include a mechanism fo verify context data.
+
+![Context](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/6_context.png)
 
 This is a lot of data, so let's hide it behind a simple toggle:
 
@@ -445,6 +457,8 @@ export default function Demo() {
 }
 ```
 
+![Toggle](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/7_toggle.png)
+
 ### Invoking actions
 
 Now let's make our frame do something. We can invoke actions by calling the functions on `sdk.actions`. We've already used `sdk.actions.ready`. We can also call functions like `sdk.actions.openUrl` and `sdk.actions.close` to send commands back to the Farcaster client app.
@@ -502,7 +516,11 @@ export default function Demo() {
 }
 ```
 
+![Actions](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/8_actions.png)
+
 Tap the button and you'll be directed to an external URL.
+
+![URL](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/9_url.png)
 
 Let's add another button to call `close()`:
 
@@ -567,6 +585,8 @@ export default function Demo() {
 }
 ```
 
+![URL](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/10_close.png)
+
 When you tap this, the frame should close.
 
 ### Wallet interactions
@@ -620,6 +640,8 @@ export default function Demo() {
   );
 }
 ```
+
+![Wallet](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/10_wallet.png)
 
 If your wallet is connected to Warpcast, you should see its address. In case it's not, let's add a connect/disconnect button. Note that we'll need to import our Wagmi config to `connect`:
 
@@ -685,6 +707,7 @@ export default function Demo() {
   );
 }
 ```
+
 
 Now let's request a transaction. We'll use the Wagmi `useSendTransaction` hook to call the Yoink contract and `useWaitForTransactionReceipt` to watch its status.
 
@@ -822,7 +845,11 @@ export default function Demo() {
 }
 ```
 
+![Tx](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/10_tx.png)
+
 Tap "Send Transaction" and you'll be directed to your wallet.
+
+![Yoink](https://raw.githubusercontent.com/farcasterxyz/frames-v2-demo/refs/heads/main/docs/img/12_yoink.png)
 
 ### Signatures
 
