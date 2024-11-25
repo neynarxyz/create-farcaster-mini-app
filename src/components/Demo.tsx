@@ -10,7 +10,7 @@ import {
   useConnect,
 } from "wagmi";
 
-import { config } from "~/components/WagmiProvider";
+import { config } from "~/components/providers/WagmiProvider";
 import { Button } from "~/components/ui/Button";
 import { truncateAddress } from "~/lib/truncateAddress";
 
