@@ -30,6 +30,8 @@ Here's a full walkthrough of creating a frames v2 app:
 
 [![Frames v2 Tutorial](https://img.youtube.com/vi/5wAbo_YsuC4/0.jpg)](https://www.youtube.com/watch?v=5wAbo_YsuC4)
 
+[📺 View video](https://www.youtube.com/watch?v=5wAbo_YsuC4)
+
 ### Setup and dependencies
 
 We'll start with a fresh NextJS app:
