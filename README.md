@@ -2,7 +2,6 @@
 
 A Farcaster Frames v2 demo app.
 
-
 [🛠️ Frame Playground](https://warpcast.com/~/developers/frame-playground) (Mobile only)
 
 ## Getting Started
@@ -26,6 +25,8 @@ To try your app in the Warpcast playground, you'll want to use a tunneling tool 
 ## Tutorial
 
 Here's a full walkthrough of creating a frames v2 app.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/5wAbo_YsuC4?si=Y3Ms8yeugRObayZe" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ### Setup and dependencies
 
