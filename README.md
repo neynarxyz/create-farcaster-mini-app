@@ -2,8 +2,9 @@
 
 A Farcaster Frames v2 demo app.
 
-[🛠️ Frame Playground](https://warpcast.com/~/developers/frame-playground) (Mobile only)
-[👀 Dev preview docs](https://github.com/farcasterxyz/frames/wiki/frames-v2-developer-playground-preview)
+[🛠️ Frame Playground](https://warpcast.com/~/developers/frame-playground) (Mobile only)<br/>
+[📦 Frame SDK](https://github.com/farcasterxyz/frames/)<br/>
+[👀 Dev preview docs](https://github.com/farcasterxyz/frames/wiki/frames-v2-developer-playground-preview)<br/>
 
 ## Getting Started
 
