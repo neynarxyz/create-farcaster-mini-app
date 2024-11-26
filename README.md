@@ -2,6 +2,9 @@
 
 A Farcaster Frames v2 demo app.
 
+
+[🛠️ Frame Playground](https://warpcast.com/~/developers/frame-playground).
+
 ## Getting Started
 
 This is a [NextJS](https://nextjs.org/) + TypeScript + React app.
