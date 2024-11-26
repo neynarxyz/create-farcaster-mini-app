@@ -65,6 +65,10 @@ export default function Demo() {
     sdk.actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
   }, []);
 
+  const openWarpcastUrl = useCallback(() => {
+    sdk.actions.openUrl("https://warpcast.com/~/compose");
+  }, []);
+
   const close = useCallback(() => {
     sdk.actions.close();
   }, []);
@@ -156,6 +160,15 @@ export default function Demo() {
             </pre>
           </div>
           <Button onClick={openUrl}>Open Link</Button>
+        </div>
+
+        <div className="mb-4">
+          <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
+            <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+              sdk.actions.openUrl
+            </pre>
+          </div>
+          <Button onClick={openWarpcastUrl}>Open Warpcast Link</Button>
         </div>
 
         <div className="mb-4">
