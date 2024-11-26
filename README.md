@@ -3,7 +3,7 @@
 A Farcaster Frames v2 demo app.
 
 
-[🛠️ Frame Playground](https://warpcast.com/~/developers/frame-playground).
+[🛠️ Frame Playground](https://warpcast.com/~/developers/frame-playground) (Mobile only)
 
 ## Getting Started
 
