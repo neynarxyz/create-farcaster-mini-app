@@ -14,7 +14,9 @@ import { config } from "~/components/providers/WagmiProvider";
 import { Button } from "~/components/ui/Button";
 import { truncateAddress } from "~/lib/truncateAddress";
 
-export default function Demo() {
+export default function Demo(
+  { title }: { title?: string } = { title: "Frames v2 Demo" }
+) {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<FrameContext>();
   const [isContextOpen, setIsContextOpen] = useState(false);
@@ -123,7 +125,7 @@ export default function Demo() {
 
   return (
     <div className="w-[300px] mx-auto py-4 px-2">
-      <h1 className="text-2xl font-bold text-center mb-4">Frames v2 Demo</h1>
+      <h1 className="text-2xl font-bold text-center mb-4">{title}</h1>
 
       <div className="mb-4">
         <h2 className="font-2xl font-bold">Context</h2>

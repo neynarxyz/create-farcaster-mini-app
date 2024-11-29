@@ -1,6 +1,8 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Farcaster Frames V2 Demo";
+export const runtime = "edge";
+
+export const alt = "Hello Frame";
 export const size = {
   width: 600,
   height: 400,
@@ -8,11 +10,19 @@ export const size = {
 
 export const contentType = "image/png";
 
-export default async function Image() {
+interface Props {
+  params: Promise<{
+    name: string;
+  }>;
+}
+
+export default async function Image({ params }: Props) {
+  const { name } = await params;
+
   return new ImageResponse(
     (
       <div tw="h-full w-full flex flex-col justify-center items-center relative">
-        <h1 tw="text-6xl">Frames v2 Demo</h1>
+        <h1 tw="text-6xl">Hello, {name}</h1>
       </div>
     ),
     {
