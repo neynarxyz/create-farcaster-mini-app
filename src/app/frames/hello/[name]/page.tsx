@@ -14,13 +14,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const frame = {
     version: "next",
-    imageUrl: `${appUrl}/opengraph-image`,
+    imageUrl: `${appUrl}/frames/hello/${name}/opengraph-image`,
     button: {
       title: "Launch Frame",
       action: {
         type: "launch_frame",
         name: "Farcaster Frames v2 Demo",
-        url: `${appUrl}/hello/${name}/`,
+        url: `${appUrl}/frames/hello/${name}/`,
         splashImageUrl: `${appUrl}/splash.png`,
         splashBackgroundColor: "#f7f7f7",
       },
