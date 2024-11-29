@@ -21,7 +21,7 @@ export default async function Image({ params }: Props) {
 
   return new ImageResponse(
     (
-      <div tw="h-full w-full flex flex-col justify-center items-center relative">
+      <div tw="h-full w-full flex flex-col justify-center items-center relative bg-white">
         <h1 tw="text-6xl">Hello, {name}</h1>
       </div>
     ),
