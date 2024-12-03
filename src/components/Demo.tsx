@@ -1,5 +1,8 @@
 import { useEffect, useCallback, useState } from "react";
-import sdk, { type FrameContext } from "@farcaster/frame-sdk";
+import sdk, {
+  FrameNotificationDetails,
+  type FrameContext,
+} from "@farcaster/frame-sdk";
 import {
   useAccount,
   useSendTransaction,
@@ -21,6 +24,10 @@ export default function Demo(
   const [context, setContext] = useState<FrameContext>();
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [addFrameResult, setAddFrameResult] = useState("");
+  const [notificationDetails, setNotificationDetails] =
+    useState<FrameNotificationDetails | null>(null);
+  const [sendNotificationResult, setSendNotificationResult] = useState("");
 
   const { address, isConnected } = useAccount();
   const {
@@ -74,6 +81,60 @@ export default function Demo(
   const close = useCallback(() => {
     sdk.actions.close();
   }, []);
+
+  const addFrame = useCallback(async () => {
+    try {
+      // setAddFrameResult("");
+      setNotificationDetails(null);
+
+      const result = await sdk.actions.addFrame();
+
+      if (result.added) {
+        if (result.notificationDetails) {
+          setNotificationDetails(result.notificationDetails);
+        }
+        setAddFrameResult(
+          result.notificationDetails
+            ? `Added, got notificaton token ${result.notificationDetails.token} and url ${result.notificationDetails.url}`
+            : "Added, got no notification details"
+        );
+      } else {
+        setAddFrameResult(`Not added: ${result.reason}`);
+      }
+    } catch (error) {
+      setAddFrameResult(`Error: ${error}`);
+    }
+  }, []);
+
+  const sendNotification = useCallback(async () => {
+    setSendNotificationResult("");
+    if (!notificationDetails) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/send-notification", {
+        method: "POST",
+        mode: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: notificationDetails.token,
+          url: notificationDetails.url,
+          targetUrl: window.location.href,
+        }),
+      });
+
+      if (response.status === 200) {
+        setSendNotificationResult("Success");
+        return;
+      }
+
+      const data = await response.text();
+      setSendNotificationResult(`Error: ${data}`);
+    } catch (error) {
+      setSendNotificationResult(`Error: ${error}`);
+    }
+  }, [notificationDetails]);
 
   const sendTx = useCallback(() => {
     sendTransaction(
@@ -181,7 +242,34 @@ export default function Demo(
           </div>
           <Button onClick={close}>Close Frame</Button>
         </div>
+
+        <div className="mb-4">
+          <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
+            <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+              sdk.actions.addFrame
+            </pre>
+          </div>
+          {addFrameResult && (
+            <div className="mb-2">Add frame result: {addFrameResult}</div>
+          )}
+          <Button onClick={addFrame}>Add frame to client</Button>
+        </div>
       </div>
+
+      {notificationDetails && (
+        <div>
+          <h2 className="font-2xl font-bold">Notify</h2>
+
+          {sendNotificationResult && (
+            <div className="mb-2">
+              Send notification result: {sendNotificationResult}
+            </div>
+          )}
+          <div className="mb-4">
+            <Button onClick={sendNotification}>Send notification</Button>
+          </div>
+        </div>
+      )}
 
       <div>
         <h2 className="font-2xl font-bold">Wallet</h2>
