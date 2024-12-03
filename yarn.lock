@@ -105,21 +105,23 @@
     ethereum-cryptography "^2.0.0"
     micro-ftch "^0.3.1"
 
-"@farcaster/frame-core@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.0.4.tgz#651398056526abd361d342aa5c22f28403ec791f"
-  integrity sha512-5g2aGjpS2D2amNppRD01nWlxvV0PwN0zV8fJuwJT0vcD0c72W6c8zWOMidXAhzJ/BXf9hNekLxxMpWrZoqDNsw==
+"@farcaster/frame-core@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.0.5.tgz#e3d8afc6d6acf3596221b0207e39da8e5a111aac"
+  integrity sha512-xQFKzQjSS7gF6EjozCBBeFBp8Ndq4QWKXh0HUQ66gjGYUfg6GmFY0x7HjlZ7jR/tngmW7W7CXKOCuz6u7hMCqQ==
   dependencies:
     ox "^0.1.6"
+    zod "^3.23.8"
 
-"@farcaster/frame-sdk@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.0.2.tgz#a052898d058cb3410bdbf02491727cca59dc6449"
-  integrity sha512-d+7w662rfBvbTFpaRHtP8U3zjc7GNVEqsu1/2jrci/JGwWCSFwFUmH0V/kINzsYBcrn1hT57c5is8cshrYy83A==
+"@farcaster/frame-sdk@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.0.6.tgz#559788838cb5e3d17482521baa05094b494926a1"
+  integrity sha512-SqEnrbzVLDIKkAEv+K++0X/R8FxqLR7V4QGx6njHnD9pFZrxaP0VHfRxBBEDd3n4CVIKz+3A0rugI/CUF9p0zQ==
   dependencies:
-    "@farcaster/frame-core" "^0.0.4"
+    "@farcaster/frame-core" "^0.0.5"
     comlink "^4.4.2"
     eventemitter3 "^5.0.1"
+    ox "^0.2.2"
 
 "@humanwhocodes/config-array@^0.13.0":
   version "0.13.0"
@@ -3848,6 +3850,19 @@ ox@^0.1.6:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/ox/-/ox-0.1.8.tgz#0ba58eb6f2471c607959c40fa39b2fa5c4f4f7e5"
   integrity sha512-GJl6uKXxhPq/XgyvAnIokGuGU/pt9CU8reRJjzi4a02HOpLc2CEXXD4bRCITFFAzdRqHj3DQ6GDS7PlCytPM/A==
+  dependencies:
+    "@adraffy/ens-normalize" "^1.10.1"
+    "@noble/curves" "^1.6.0"
+    "@noble/hashes" "^1.5.0"
+    "@scure/bip32" "^1.5.0"
+    "@scure/bip39" "^1.4.0"
+    abitype "^1.0.6"
+    eventemitter3 "5.0.1"
+
+ox@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/ox/-/ox-0.2.2.tgz#b177912d2fd9853e52c2db8570ac29c09330cec1"
+  integrity sha512-QWCyFfVk5hFOhg13SGqRKih5B7EBucrf+Z1dfmN9jJQ8MZdrRx9mbD78JQL5ogSzDT7fcHgyMCaXd/3AWn6xHQ==
   dependencies:
     "@adraffy/ens-normalize" "^1.10.1"
     "@noble/curves" "^1.6.0"
