@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useCallback, useState } from "react";
 import sdk, {
   FrameNotificationDetails,
@@ -11,11 +13,14 @@ import {
   useWaitForTransactionReceipt,
   useDisconnect,
   useConnect,
+  useSwitchChain,
+  useChainId,
 } from "wagmi";
 
 import { config } from "~/components/providers/WagmiProvider";
 import { Button } from "~/components/ui/Button";
 import { truncateAddress } from "~/lib/truncateAddress";
+import { base } from "wagmi/chains";
 
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
@@ -30,6 +35,8 @@ export default function Demo(
   const [sendNotificationResult, setSendNotificationResult] = useState("");
 
   const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+
   const {
     sendTransaction,
     error: sendTxError,
@@ -41,13 +48,6 @@ export default function Demo(
     useWaitForTransactionReceipt({
       hash: txHash as `0x${string}`,
     });
-
-  const {
-    signMessage,
-    error: signError,
-    isError: isSignError,
-    isPending: isSignPending,
-  } = useSignMessage();
 
   const {
     signTypedData,
@@ -149,10 +149,6 @@ export default function Demo(
       }
     );
   }, [sendTransaction]);
-
-  const sign = useCallback(() => {
-    signMessage({ message: "Hello from Frames v2!" });
-  }, [signMessage]);
 
   const signTyped = useCallback(() => {
     signTypedData({
@@ -280,6 +276,12 @@ export default function Demo(
           </div>
         )}
 
+        {chainId && (
+          <div className="my-2 text-xs">
+           Chain ID: <pre className="inline">{chainId}</pre>
+          </div>
+        )}
+
         <div className="mb-4">
           <Button
             onClick={() =>
@@ -291,16 +293,23 @@ export default function Demo(
             {isConnected ? "Disconnect" : "Connect"}
           </Button>
         </div>
+        
+        <div className="mb-4">
+          <SignMessage />
+        </div>
 
         {isConnected && (
           <>
+            <div className="mb-4">
+              <SendEth />
+            </div>
             <div className="mb-4">
               <Button
                 onClick={sendTx}
                 disabled={!isConnected || isSendTxPending}
                 isLoading={isSendTxPending}
               >
-                Send Transaction
+                Send Transaction (contract)
               </Button>
               {isSendTxError && renderError(sendTxError)}
               {txHash && (
@@ -319,16 +328,6 @@ export default function Demo(
             </div>
             <div className="mb-4">
               <Button
-                onClick={sign}
-                disabled={!isConnected || isSignPending}
-                isLoading={isSignPending}
-              >
-                Sign Message
-              </Button>
-              {isSignError && renderError(signError)}
-            </div>
-            <div className="mb-4">
-              <Button
                 onClick={signTyped}
                 disabled={!isConnected || isSignTypedPending}
                 isLoading={isSignTypedPending}
@@ -337,9 +336,141 @@ export default function Demo(
               </Button>
               {isSignTypedError && renderError(signTypedError)}
             </div>
+            <div className="mb-4">
+              <SwitchChain />
+            </div>
           </>
         )}
       </div>
     </div>
   );
 }
+
+function SwitchChain() {
+  const chainId = useChainId();
+
+  const {
+    switchChain,
+    error: switchChainError,
+    isError: isSwitchChainError,
+    isPending: isSwitchChainPending,
+  } = useSwitchChain();
+
+  const handleSwitchChain = useCallback(() => {
+    switchChain({ chainId: chainId === 1 ? 8453 : 1  });
+  }, [switchChain, chainId]);
+
+  return (
+    <>
+      <Button
+        onClick={handleSwitchChain}
+        disabled={isSwitchChainPending}
+        isLoading={isSwitchChainPending}
+      >
+        Switch chain
+      </Button>
+      {isSwitchChainError && renderError(switchChainError)}
+    </>
+  );
+}
+
+function SignMessage() {
+  const { isConnected } = useAccount();
+  const { connectAsync } = useConnect();
+  const {
+    signMessage,
+    data: signature,
+    error: signError,
+    isError: isSignError,
+    isPending: isSignPending,
+  } = useSignMessage();
+
+  const handleSignMessage = useCallback(async () => {
+    if (!isConnected) {
+      await connectAsync({ 
+        chainId: base.id, 
+        connector: config.connectors[0] 
+      })
+    }
+
+    signMessage({ message: "Hello from Frames v2!" });
+  }, [connectAsync, isConnected, signMessage]);
+
+
+  return (
+    <>
+      <Button
+        onClick={handleSignMessage}
+        disabled={isSignPending}
+        isLoading={isSignPending}
+      >
+        Sign Message
+      </Button>
+      {isSignError && renderError(signError)}
+      {signature && (
+        <div className="mt-2 text-xs">
+          <div>Signature: {signature}</div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function SendEth() {
+  const { isConnected } = useAccount();
+  const {
+    sendTransaction,
+    data,
+    error: sendTxError,
+    isError: isSendTxError,
+    isPending: isSendTxPending,
+  } = useSendTransaction();
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: data
+    });
+
+  const handleSend = useCallback(() => {
+    sendTransaction(
+      {
+        to: "0x4bBFD120d9f352A0BEd7a014bd67913a2007a878",
+        value: 1n,
+      }
+    );
+  }, [sendTransaction]);
+
+  return (
+    <>
+      <Button
+        onClick={handleSend}
+        disabled={!isConnected || isSendTxPending}
+        isLoading={isSendTxPending}
+      >
+        Send Transaction (eth)
+      </Button>
+      {isSendTxError && renderError(sendTxError)}
+      {data && (
+        <div className="mt-2 text-xs">
+          <div>Hash: {truncateAddress(data)}</div>
+          <div>
+            Status:{" "}
+            {isConfirming
+              ? "Confirming..."
+              : isConfirmed
+              ? "Confirmed!"
+              : "Pending"}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+
+  const renderError = (error: Error | null) => {
+    if (!error) return null;
+    return <div className="text-red-500 text-xs mt-1">{error.message}</div>;
+  };
+
+

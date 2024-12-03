@@ -67,6 +67,11 @@ export function frameConnector() {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: numberToHex(chainId) }],
       });
+
+      // explicitly emit this event as a workaround for ethereum provider not
+      // emitting events, can remove once events are flowing
+      config.emitter.emit("change", { chainId });
+
       return chain;
     },
     onAccountsChanged(accounts) {
