@@ -21,6 +21,7 @@ import { config } from "~/components/providers/WagmiProvider";
 import { Button } from "~/components/ui/Button";
 import { truncateAddress } from "~/lib/truncateAddress";
 import { base, optimism } from "wagmi/chains";
+import { BaseError, UserRejectedRequestError } from "viem";
 
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
@@ -182,11 +183,6 @@ export default function Demo(
   const toggleContext = useCallback(() => {
     setIsContextOpen((prev) => !prev);
   }, []);
-
-  const renderError = (error: Error | null) => {
-    if (!error) return null;
-    return <div className="text-red-500 text-xs mt-1">{error.message}</div>;
-  };
 
   if (!isSDKLoaded) {
     return <div>Loading...</div>;
@@ -464,5 +460,14 @@ function SendEth() {
 
 const renderError = (error: Error | null) => {
   if (!error) return null;
+  if (error instanceof BaseError) {
+  const isUserRejection = error.walk((e) => e instanceof UserRejectedRequestError)
+  
+    if (isUserRejection) {
+      return <div className="text-red-500 text-xs mt-1">Rejected by user.</div>;
+    }
+  }
+
   return <div className="text-red-500 text-xs mt-1">{error.message}</div>;
 };
+
