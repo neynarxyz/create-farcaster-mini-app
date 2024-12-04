@@ -1,14 +1,13 @@
 import { createConfig, http, WagmiProvider } from "wagmi";
-import { base, mainnet } from "wagmi/chains";
+import { base, optimism } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { frameConnector } from "~/lib/connector";
 
 export const config = createConfig({
-  chains: [base, mainnet],
+  chains: [base, optimism],
   transports: {
-    // Configure dedicated RPC providers when using in production
     [base.id]: http(),
-    [mainnet.id]: http(),
+    [optimism.id]: http(),
   },
   connectors: [frameConnector()],
 });

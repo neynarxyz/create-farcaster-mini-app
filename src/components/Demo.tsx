@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import sdk, {
   FrameNotificationDetails,
   type FrameContext,
@@ -20,7 +20,7 @@ import {
 import { config } from "~/components/providers/WagmiProvider";
 import { Button } from "~/components/ui/Button";
 import { truncateAddress } from "~/lib/truncateAddress";
-import { base } from "wagmi/chains";
+import { base, optimism } from "wagmi/chains";
 
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
@@ -58,6 +58,17 @@ export default function Demo(
 
   const { disconnect } = useDisconnect();
   const { connect } = useConnect();
+
+  const {
+    switchChain,
+    error: switchChainError,
+    isError: isSwitchChainError,
+    isPending: isSwitchChainPending,
+  } = useSwitchChain();
+
+  const handleSwitchChain = useCallback(() => {
+    switchChain({ chainId: chainId === base.id ? optimism.id : base.id });
+  }, [switchChain, chainId]);
 
   useEffect(() => {
     const load = async () => {
@@ -139,6 +150,7 @@ export default function Demo(
   const sendTx = useCallback(() => {
     sendTransaction(
       {
+        // call yoink() on Yoink contract
         to: "0x4bBFD120d9f352A0BEd7a014bd67913a2007a878",
         data: "0x9846cd9efc000023c0",
       },
@@ -155,7 +167,7 @@ export default function Demo(
       domain: {
         name: "Frames v2 Demo",
         version: "1",
-        chainId: 8453,
+        chainId,
       },
       types: {
         Message: [{ name: "content", type: "string" }],
@@ -165,7 +177,7 @@ export default function Demo(
       },
       primaryType: "Message",
     });
-  }, [signTypedData]);
+  }, [chainId, signTypedData]);
 
   const toggleContext = useCallback(() => {
     setIsContextOpen((prev) => !prev);
@@ -278,7 +290,7 @@ export default function Demo(
 
         {chainId && (
           <div className="my-2 text-xs">
-           Chain ID: <pre className="inline">{chainId}</pre>
+            Chain ID: <pre className="inline">{chainId}</pre>
           </div>
         )}
 
@@ -293,7 +305,7 @@ export default function Demo(
             {isConnected ? "Disconnect" : "Connect"}
           </Button>
         </div>
-        
+
         <div className="mb-4">
           <SignMessage />
         </div>
@@ -337,40 +349,19 @@ export default function Demo(
               {isSignTypedError && renderError(signTypedError)}
             </div>
             <div className="mb-4">
-              <SwitchChain />
+              <Button
+                onClick={handleSwitchChain}
+                disabled={isSwitchChainPending}
+                isLoading={isSwitchChainPending}
+              >
+                Switch to {chainId === base.id ? "Optimism" : "Base"}
+              </Button>
+              {isSwitchChainError && renderError(switchChainError)}
             </div>
           </>
         )}
       </div>
     </div>
-  );
-}
-
-function SwitchChain() {
-  const chainId = useChainId();
-
-  const {
-    switchChain,
-    error: switchChainError,
-    isError: isSwitchChainError,
-    isPending: isSwitchChainPending,
-  } = useSwitchChain();
-
-  const handleSwitchChain = useCallback(() => {
-    switchChain({ chainId: chainId === 1 ? 8453 : 1  });
-  }, [switchChain, chainId]);
-
-  return (
-    <>
-      <Button
-        onClick={handleSwitchChain}
-        disabled={isSwitchChainPending}
-        isLoading={isSwitchChainPending}
-      >
-        Switch chain
-      </Button>
-      {isSwitchChainError && renderError(switchChainError)}
-    </>
   );
 }
 
@@ -387,15 +378,14 @@ function SignMessage() {
 
   const handleSignMessage = useCallback(async () => {
     if (!isConnected) {
-      await connectAsync({ 
-        chainId: base.id, 
-        connector: config.connectors[0] 
-      })
+      await connectAsync({
+        chainId: base.id,
+        connector: config.connectors[0],
+      });
     }
 
     signMessage({ message: "Hello from Frames v2!" });
   }, [connectAsync, isConnected, signMessage]);
-
 
   return (
     <>
@@ -417,7 +407,7 @@ function SignMessage() {
 }
 
 function SendEth() {
-  const { isConnected } = useAccount();
+  const { isConnected, chainId } = useAccount();
   const {
     sendTransaction,
     data,
@@ -428,17 +418,22 @@ function SendEth() {
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
-      hash: data
+      hash: data,
     });
 
+  const toAddr = useMemo(() => {
+    // Protocol guild address
+    return chainId === base.id
+      ? "0x32e3C7fD24e175701A35c224f2238d18439C7dBC"
+      : "0xB3d8d7887693a9852734b4D25e9C0Bb35Ba8a830";
+  }, [chainId]);
+
   const handleSend = useCallback(() => {
-    sendTransaction(
-      {
-        to: "0x4bBFD120d9f352A0BEd7a014bd67913a2007a878",
-        value: 1n,
-      }
-    );
-  }, [sendTransaction]);
+    sendTransaction({
+      to: toAddr,
+      value: 1n,
+    });
+  }, [toAddr, sendTransaction]);
 
   return (
     <>
@@ -467,10 +462,7 @@ function SendEth() {
   );
 }
 
-
-  const renderError = (error: Error | null) => {
-    if (!error) return null;
-    return <div className="text-red-500 text-xs mt-1">{error.message}</div>;
-  };
-
-
+const renderError = (error: Error | null) => {
+  if (!error) return null;
+  return <div className="text-red-500 text-xs mt-1">{error.message}</div>;
+};
