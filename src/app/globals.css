@@ -19,3 +19,12 @@ body {
   background: var(--background);
   font-family: 'Inter', Helvetica, Arial, sans-serif;
 }
+
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
