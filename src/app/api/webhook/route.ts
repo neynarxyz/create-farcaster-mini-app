@@ -1,14 +1,15 @@
 import {
-  eventHeaderSchema,
+  encodedJsonFarcasterSignatureSchema,
   eventPayloadSchema,
-  eventSchema,
+  jsonFarcasterSignatureHeaderSchema,
 } from "@farcaster/frame-sdk";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   const requestJson = await request.json();
 
-  const requestBody = eventSchema.safeParse(requestJson);
+  const requestBody =
+    encodedJsonFarcasterSignatureSchema.safeParse(requestJson);
 
   if (requestBody.success === false) {
     return Response.json(
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
   const headerData = JSON.parse(
     Buffer.from(requestBody.data.header, "base64url").toString("utf-8")
   );
-  const header = eventHeaderSchema.safeParse(headerData);
+  const header = jsonFarcasterSignatureHeaderSchema.safeParse(headerData);
   if (header.success === false) {
     return Response.json(
       { success: false, errors: header.error.errors },
@@ -44,17 +45,17 @@ export async function POST(request: NextRequest) {
   }
 
   switch (payload.data.event) {
-    case "frame-added":
+    case "frame_added":
       console.log(
         payload.data.notificationDetails
           ? `Got frame-added event for fid ${fid} with notification token ${payload.data.notificationDetails.token} and url ${payload.data.notificationDetails.url}`
           : `Got frame-added event for fid ${fid} with no notification details`
       );
       break;
-    case "frame-removed":
+    case "frame_removed":
       console.log(`Got frame-removed event for fid ${fid}`);
       break;
-    case "notifications-enabled":
+    case "notifications_enabled":
       console.log(
         `Got notifications-enabled event for fid ${fid} with token ${
           payload.data.notificationDetails.token
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
         )}`
       );
       break;
-    case "notifications-disabled":
+    case "notifications_disabled":
       console.log(`Got notifications-disabled event for fid ${fid}`);
       break;
   }
