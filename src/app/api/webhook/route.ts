@@ -1,6 +1,9 @@
-import { eventPayloadSchema } from "@farcaster/frame-sdk";
+import {
+  ParseWebhookEvent,
+  parseWebhookEvent,
+  verifyAppKeyWithNeynar,
+} from "@farcaster/frame-node";
 import { NextRequest } from "next/server";
-import { verifyJsonFarcasterSignature } from "~/lib/jfs";
 import {
   deleteUserNotificationDetails,
   setUserNotificationDetails,
@@ -12,38 +15,40 @@ export async function POST(request: NextRequest) {
 
   let data;
   try {
-    const verifySignatureResult = await verifyJsonFarcasterSignature(
-      requestJson
-    );
-    if (verifySignatureResult.success === false) {
-      return Response.json(
-        { success: false, error: verifySignatureResult.error },
-        { status: 401 }
-      );
-    }
+    data = await parseWebhookEvent(requestJson, verifyAppKeyWithNeynar);
+  } catch (e: unknown) {
+    const error = e as ParseWebhookEvent.ErrorType;
 
-    data = verifySignatureResult;
-  } catch {
-    return Response.json({ success: false }, { status: 500 });
+    switch (error.name) {
+      case "VerifyJsonFarcasterSignature.InvalidDataError":
+      case "VerifyJsonFarcasterSignature.InvalidEventDataError":
+        // The request data is invalid
+        return Response.json(
+          { success: false, error: error.message },
+          { status: 400 }
+        );
+      case "VerifyJsonFarcasterSignature.InvalidAppKeyError":
+        // The app key is invalid
+        return Response.json(
+          { success: false, error: error.message },
+          { status: 401 }
+        );
+      case "VerifyJsonFarcasterSignature.VerifyAppKeyError":
+        // Internal error verifying the app key (caller may want to try again)
+        return Response.json(
+          { success: false, error: error.message },
+          { status: 500 }
+        );
+    }
   }
 
   const fid = data.fid;
-  const payloadData = JSON.parse(
-    Buffer.from(data.payload, "base64url").toString("utf-8")
-  );
-  const payload = eventPayloadSchema.safeParse(payloadData);
+  const event = data.event;
 
-  if (payload.success === false) {
-    return Response.json(
-      { success: false, errors: payload.error.errors },
-      { status: 400 }
-    );
-  }
-
-  switch (payload.data.event) {
+  switch (event.event) {
     case "frame_added":
-      if (payload.data.notificationDetails) {
-        await setUserNotificationDetails(fid, payload.data.notificationDetails);
+      if (event.notificationDetails) {
+        await setUserNotificationDetails(fid, event.notificationDetails);
         await sendFrameNotification({
           fid,
           title: "Welcome to Frames v2",
@@ -59,7 +64,7 @@ export async function POST(request: NextRequest) {
 
       break;
     case "notifications_enabled":
-      await setUserNotificationDetails(fid, payload.data.notificationDetails);
+      await setUserNotificationDetails(fid, event.notificationDetails);
       await sendFrameNotification({
         fid,
         title: "Ding ding ding",
