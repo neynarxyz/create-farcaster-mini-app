@@ -49,7 +49,7 @@ export const authOptions: AuthOptions = {
         const verifyResponse = await appClient.verifySignInMessage({
           message: credentials?.message as string,
           signature: credentials?.signature as `0x${string}`,
-          domain: process.env.NEXTAUTH_URL ?? '',
+          domain: new URL(process.env.NEXTAUTH_URL ?? '').hostname,
           nonce: csrfToken,
         });
         const { success, fid } = verifyResponse;
