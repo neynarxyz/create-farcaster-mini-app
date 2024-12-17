@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback, useState, useMemo } from "react";
+import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, {
   FrameNotificationDetails,
   type FrameContext,
@@ -22,6 +23,8 @@ import { Button } from "~/components/ui/Button";
 import { truncateAddress } from "~/lib/truncateAddress";
 import { base, optimism } from "wagmi/chains";
 import { BaseError, UserRejectedRequestError } from "viem";
+import { useSession } from "next-auth/react"
+import { SignInResult } from "@farcaster/frame-core/dist/actions/signIn";
 
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
@@ -224,6 +227,15 @@ export default function Demo(
 
       <div>
         <h2 className="font-2xl font-bold">Actions</h2>
+
+        <div className="mb-4">
+          <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
+            <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+              sdk.actions.signIn
+            </pre>
+          </div>
+          <SignIn />
+        </div>
 
         <div className="mb-4">
           <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
@@ -476,6 +488,80 @@ function SendEth() {
     </>
   );
 }
+
+function SignIn() {
+  const [signingIn, setSigningIn] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signInResult, setSignInResult] = useState<SignInResult>();
+  const { data: session, status } = useSession()
+
+  const getNonce = useCallback(async () => {
+    const nonce = await getCsrfToken();
+    if (!nonce) throw new Error("Unable to generate nonce");
+    return nonce;
+  }, []);
+
+  const handleSignIn = useCallback(async () => {
+    try {
+      setSigningIn(true);
+      const nonce = await getNonce();
+      const result = await sdk.actions.signIn({ nonce });
+      setSignInResult(result);
+
+      await signIn("credentials", {
+        message: result.message,
+        signature: result.signature,
+        redirect: false,
+      });
+    } finally {
+      setSigningIn(false);
+    }
+  }, [getNonce]);
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      setSigningOut(true);
+      await signOut({ redirect: false }) 
+      setSignInResult(undefined);
+    } finally {
+      setSigningOut(false);
+    }
+  }, []);
+
+  return (
+    <>
+      {status !== "authenticated" &&
+        <Button
+          onClick={handleSignIn}
+          disabled={signingIn}
+        >
+          Sign In with Farcaster
+        </Button>
+      }
+      {status === "authenticated" &&
+        <Button
+          onClick={handleSignOut}
+          disabled={signingOut}
+        >
+          Sign out
+        </Button>
+      }
+      {session &&
+        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
+          <div className="font-semibold text-gray-500 mb-1">Session</div>
+          <div className="whitespace-pre">{JSON.stringify(session, null, 2)}</div>
+        </div>
+      }
+      {signInResult && !signingIn && (
+        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
+          <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
+          <div className="whitespace-pre">{JSON.stringify(signInResult, null, 2)}</div>
+        </div>
+      )}
+    </>
+  );
+}
+
 
 const renderError = (error: Error | null) => {
   if (!error) return null;
