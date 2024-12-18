@@ -33,9 +33,14 @@ export default function Demo(
   const [context, setContext] = useState<FrameContext>();
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
-  const [addFrameResult, setAddFrameResult] = useState("");
+
+  const [added, setAdded] = useState(false);
   const [notificationDetails, setNotificationDetails] =
     useState<FrameNotificationDetails | null>(null);
+
+  const [lastEvent, setLastEvent] = useState("");
+
+  const [addFrameResult, setAddFrameResult] = useState("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
 
   useEffect(() => {
@@ -80,12 +85,52 @@ export default function Demo(
 
   useEffect(() => {
     const load = async () => {
-      setContext(await sdk.context);
+      const context = await sdk.context;
+      setContext(context);
+      setAdded(context.client.added);
+
+      sdk.on("frameAdded", ({ notificationDetails }) => {
+        setLastEvent(
+          `frameAdded${!!notificationDetails ? ", notifications enabled" : ""}`
+        );
+
+        setAdded(true);
+        if (notificationDetails) {
+          setNotificationDetails(notificationDetails);
+        }
+      });
+
+      sdk.on("frameAddRejected", ({ reason }) => {
+        setLastEvent(`frameAddRejected, reason ${reason}`);
+      });
+
+      sdk.on("frameRemoved", () => {
+        setLastEvent("frameRemoved");
+        setAdded(false);
+        setNotificationDetails(null);
+      });
+
+      sdk.on("notificationsEnabled", ({ notificationDetails }) => {
+        setLastEvent("notificationsEnabled");
+        setNotificationDetails(notificationDetails);
+      });
+      sdk.on("notificationsDisabled", () => {
+        setLastEvent("notificationsDisabled");
+        setNotificationDetails(null);
+      });
+
+      sdk.on("primaryButtonClicked", () => {
+        console.log("primaryButtonClicked");
+      });
+
       sdk.actions.ready({});
     };
     if (sdk && !isSDKLoaded) {
       setIsSDKLoaded(true);
       load();
+      return () => {
+        sdk.removeAllListeners();
+      };
     }
   }, [isSDKLoaded]);
 
@@ -265,14 +310,22 @@ export default function Demo(
         </div>
       </div>
 
+      <div className="mb-4">
+        <h2 className="font-2xl font-bold">Last event</h2>
+
+        <div className="p-4 mt-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+            {lastEvent || "none"}
+          </pre>
+        </div>
+      </div>
+
       <div>
         <h2 className="font-2xl font-bold">Add to client & notifications</h2>
 
         <div className="mt-2 mb-4 text-sm">
           Client fid {context?.client.clientFid},
-          {context?.client.added
-            ? " frame added to client,"
-            : " frame not added to client,"}
+          {added ? " frame added to client," : " frame not added to client,"}
           {notificationDetails
             ? " notifications enabled"
             : " notifications disabled"}
@@ -289,7 +342,7 @@ export default function Demo(
               Add frame result: {addFrameResult}
             </div>
           )}
-          <Button onClick={addFrame} disabled={context?.client.added}>
+          <Button onClick={addFrame} disabled={added}>
             Add frame to client
           </Button>
         </div>

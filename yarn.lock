@@ -134,44 +134,36 @@
     qrcode "^1.5.3"
     react-remove-scroll "^2.5.7"
 
-"@farcaster/frame-core@^0.0.15":
-  version "0.0.15"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.0.15.tgz#05a4ed6f7c0d43d2f41d13714fb8b13419068a11"
-  integrity sha512-WQfAEqyQAz3EzEdfqAMV7s2VMIYBGWz0Qt5CUUkmSelvv0a+8A61YmBnpemCi3NEwWzEJBTc/IxzQ29w2axPBg==
-  dependencies:
-    ox "^0.4.0"
-    zod "^3.23.8"
-
-"@farcaster/frame-core@^0.0.18":
-  version "0.0.18"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.0.18.tgz#c6e5e13d63350ef9ec728b37d13c6fcefd19bc44"
-  integrity sha512-up01bcs5cLxgCiL7keqHVROVX5WS0waTrvSyrEXv92jSh0KosvU6OsxI1gS+6wtwqGP4KdPB0+7VmYydQaVzKQ==
-  dependencies:
-    ox "^0.4.0"
-    zod "^3.23.8"
-
-"@farcaster/frame-node@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-node/-/frame-node-0.0.3.tgz#4502694fef336cefd56b1aa5642128844ac62668"
-  integrity sha512-ReZvQozIXn1pwAn56/5ms54Gw+jwWP6TW+rmlvaX4hDi7pJATnHJvwZ/nZw8yj2GsWPNr2DxUJlC0Zt0UORN/Q==
-  dependencies:
-    "@farcaster/frame-core" "^0.0.15"
-    ox "^0.4.0"
-
-"@farcaster/frame-sdk@^0.0.19":
+"@farcaster/frame-core@^0.0.19":
   version "0.0.19"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.0.19.tgz#46a8e7e4184eec3052b804a949b6228b4cf5181c"
-  integrity sha512-JnUUtZNOH73essJGrNXeUKGHdKTP3z/7ykHWxGFwVy3KzXMucVTjwHMsgk5mWj92QFuxVd3wIlCppW8z+Nohxg==
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.0.19.tgz#76621fe6e207c3a5c78a22aa679bbbd7beafdd11"
+  integrity sha512-/0XjVZa/rUuUR16GVhhKnAQI33SXI61bB24jNA1DD0L0ytcKsM14wBptW9CF4RDiYIXxtt4mXmnQ+rMhO38RcA==
   dependencies:
-    "@farcaster/frame-core" "^0.0.18"
+    ox "^0.4.0"
+    zod "^3.23.8"
+
+"@farcaster/frame-node@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-node/-/frame-node-0.0.7.tgz#cebbafa2f7def65c0800bdcca47ce86096e4bb4c"
+  integrity sha512-jhQI3p6gJGKm+3LknShQmC/oVRw8DHq/y2RI6PttFTTBK3OJhxbldLsqUAdIPicjUYUOnoW6tvT/3ToYPyyysA==
+  dependencies:
+    "@farcaster/frame-core" "^0.0.19"
+    ox "^0.4.0"
+
+"@farcaster/frame-sdk@^0.0.20":
+  version "0.0.20"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.0.20.tgz#253dba9a1aba23c63e01617720835fe6b2b0880b"
+  integrity sha512-9EbB3A9V1ZSH4NvhHVbylcDVNevJqpuGkwz4I+0bKF2936qxvMlcWclDZVEmfO/woYH0ZQgy47YYRIiS3YpIQw==
+  dependencies:
+    "@farcaster/frame-core" "^0.0.19"
     comlink "^4.4.2"
     eventemitter3 "^5.0.1"
     ox "^0.4.0"
 
-"@farcaster/frame-wagmi-connector@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-wagmi-connector/-/frame-wagmi-connector-0.0.1.tgz#415324d2d8c233aa56befe4e2c5ec71714f5aa5b"
-  integrity sha512-baFIrhHKrd0PEm/j6BY3vSXazkd95nzuY5e6+5mmZoGRU3LEc4PZHZ2b2tAnxW7tS5A6jEK8NsS/QkrYi4/BLQ==
+"@farcaster/frame-wagmi-connector@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-wagmi-connector/-/frame-wagmi-connector-0.0.6.tgz#a67cec6cfcbaa8e15de70ce3d0f2a5c01cc07638"
+  integrity sha512-5Ta8vDs6cJygvg9cs20E29bJZcLWPQRSaUyHuLt+biA1YHbRkzRNr/tDmBd1DV/Y59OXIaNdyBxXb6NNX7wung==
 
 "@humanwhocodes/config-array@^0.13.0":
   version "0.13.0"
@@ -4846,16 +4838,7 @@ strict-uri-encode@^2.0.0:
   resolved "https://registry.yarnpkg.com/strict-uri-encode/-/strict-uri-encode-2.0.0.tgz#b9c7330c7042862f6b142dc274bbcc5866ce3546"
   integrity sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==
 
-"string-width-cjs@npm:string-width@^4.2.0":
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
-  integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
-  dependencies:
-    emoji-regex "^8.0.0"
-    is-fullwidth-code-point "^3.0.0"
-    strip-ansi "^6.0.1"
-
-string-width@^4.1.0, string-width@^4.2.0:
+"string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0, string-width@^4.2.0:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -4950,14 +4933,7 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
-  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
-  dependencies:
-    ansi-regex "^5.0.1"
-
-strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@^6.0.0, strip-ansi@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
