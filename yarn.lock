@@ -134,6 +134,14 @@
     qrcode "^1.5.3"
     react-remove-scroll "^2.5.7"
 
+"@farcaster/frame-core@0.0.20":
+  version "0.0.20"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.0.20.tgz#2e872db2d17b20d12d602510b5dc6dfb39e942b6"
+  integrity sha512-MMHMy/wSFpCThJKaX+MKGZTZeAPDEMD2uXMsfRlQ/DrLtfWR7R8NuOjoPLGaipmPVNTzIBJm4BJ0+71zitdSGQ==
+  dependencies:
+    ox "^0.4.0"
+    zod "^3.23.8"
+
 "@farcaster/frame-core@^0.0.19":
   version "0.0.19"
   resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.0.19.tgz#76621fe6e207c3a5c78a22aa679bbbd7beafdd11"
@@ -150,12 +158,12 @@
     "@farcaster/frame-core" "^0.0.19"
     ox "^0.4.0"
 
-"@farcaster/frame-sdk@^0.0.20":
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.0.20.tgz#253dba9a1aba23c63e01617720835fe6b2b0880b"
-  integrity sha512-9EbB3A9V1ZSH4NvhHVbylcDVNevJqpuGkwz4I+0bKF2936qxvMlcWclDZVEmfO/woYH0ZQgy47YYRIiS3YpIQw==
+"@farcaster/frame-sdk@^0.0.21":
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.0.21.tgz#f5d595003c5e88233cdf63e3793a35c4d6617413"
+  integrity sha512-FaeHdaIRQP6VqBtnwcrgggWcE+a/0hWzuIpp5NcnfYvo8a1JMpkOXspWFAa3fYfCyl9Dm9QF6jXt+T5tiALsPQ==
   dependencies:
-    "@farcaster/frame-core" "^0.0.19"
+    "@farcaster/frame-core" "0.0.20"
     comlink "^4.4.2"
     eventemitter3 "^5.0.1"
     ox "^0.4.0"
@@ -4838,7 +4846,16 @@ strict-uri-encode@^2.0.0:
   resolved "https://registry.yarnpkg.com/strict-uri-encode/-/strict-uri-encode-2.0.0.tgz#b9c7330c7042862f6b142dc274bbcc5866ce3546"
   integrity sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==
 
-"string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0, string-width@^4.2.0:
+"string-width-cjs@npm:string-width@^4.2.0":
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
+  integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
+  dependencies:
+    emoji-regex "^8.0.0"
+    is-fullwidth-code-point "^3.0.0"
+    strip-ansi "^6.0.1"
+
+string-width@^4.1.0, string-width@^4.2.0:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -4933,7 +4950,14 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
+  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+  dependencies:
+    ansi-regex "^5.0.1"
+
+strip-ansi@^6.0.0, strip-ansi@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
