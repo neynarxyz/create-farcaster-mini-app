@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useCallback, useState, useMemo } from "react";
+import { Input } from "../components/ui/input"
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, {
+    AddFrame,
   FrameNotificationDetails,
-  type FrameContext,
+  SignIn as SignInCore,
+  type Context,
 } from "@farcaster/frame-sdk";
 import {
   useAccount,
@@ -24,14 +27,15 @@ import { truncateAddress } from "~/lib/truncateAddress";
 import { base, optimism } from "wagmi/chains";
 import { BaseError, UserRejectedRequestError } from "viem";
 import { useSession } from "next-auth/react"
-import { SignIn as SignInCore } from "@farcaster/frame-core";
-import { SignInResult } from "@farcaster/frame-core/dist/actions/signIn";
+import { createStore } from 'mipd'
+import { Label } from "~/components/ui/label";
+
 
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
 ) {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
-  const [context, setContext] = useState<FrameContext>();
+  const [context, setContext] = useState<Context.FrameContext>();
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
 
@@ -124,9 +128,21 @@ export default function Demo(
         console.log("primaryButtonClicked");
       });
 
+      console.log("Calling ready");
       sdk.actions.ready({});
+
+// Set up a MIPD Store, and request Providers.
+const store = createStore()
+
+// Subscribe to the MIPD Store.
+store.subscribe(providerDetails => {
+  console.log("PROVIDER DETAILS", providerDetails)
+  // => [EIP6963ProviderDetail, EIP6963ProviderDetail, ...]
+})
+
     };
     if (sdk && !isSDKLoaded) {
+      console.log("Calling load");
       setIsSDKLoaded(true);
       load();
       return () => {
@@ -153,19 +169,23 @@ export default function Demo(
 
       const result = await sdk.actions.addFrame();
 
-      if (result.added) {
-        if (result.notificationDetails) {
-          setNotificationDetails(result.notificationDetails);
-        }
-        setAddFrameResult(
-          result.notificationDetails
-            ? `Added, got notificaton token ${result.notificationDetails.token} and url ${result.notificationDetails.url}`
-            : "Added, got no notification details"
-        );
-      } else {
-        setAddFrameResult(`Not added: ${result.reason}`);
+      if (result.notificationDetails) {
+        setNotificationDetails(result.notificationDetails);
       }
+      setAddFrameResult(
+        result.notificationDetails
+          ? `Added, got notificaton token ${result.notificationDetails.token} and url ${result.notificationDetails.url}`
+          : "Added, got no notification details"
+      );
     } catch (error) {
+      if (error instanceof AddFrame.RejectedByUser) {
+        setAddFrameResult(`Not added: ${error.message}`);
+      }
+      
+      if (error instanceof AddFrame.InvalidDomainManifest) {
+        setAddFrameResult(`Not added: ${error.message}`);
+      }
+
       setAddFrameResult(`Error: ${error}`);
     }
   }, []);
@@ -305,6 +325,15 @@ export default function Demo(
               </pre>
             </div>
             <Button onClick={openWarpcastUrl}>Open Warpcast Link</Button>
+          </div>
+
+          <div className="mb-4">
+            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
+              <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+                sdk.actions.viewProfile
+              </pre>
+            </div>
+            <ViewProfile />
           </div>
 
           <div className="mb-4">
@@ -553,7 +582,7 @@ function SendEth() {
 function SignIn() {
   const [signingIn, setSigningIn] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const [signInResult, setSignInResult] = useState<SignInResult>();
+  const [signInResult, setSignInResult] = useState<SignInCore.SignInResult>();
   const [signInFailure, setSignInFailure] = useState<string>();
   const { data: session, status } = useSession()
 
@@ -638,6 +667,33 @@ function SignIn() {
   );
 }
 
+function ViewProfile() {
+  const [fid, setFid] = useState('3');
+
+  return (
+    <>
+      <div>
+        <Label className="text-xs font-semibold text-gray-500 mb-1" htmlFor="view-profile-fid">Fid</Label>
+        <Input
+          id="view-profile-fid"
+          type="number"
+          value={fid}
+          className="mb-2"
+          onChange={(e) => { 
+            setFid(e.target.value)
+          }}
+          step="1"
+          min="1"
+        />
+      </div>
+      <Button
+        onClick={() => { sdk.actions.viewProfile({ fid: parseInt(fid) }) }}
+      >
+        View Profile
+      </Button>
+    </>
+  );
+}
 
 const renderError = (error: Error | null) => {
   if (!error) return null;
