@@ -24,7 +24,7 @@ import {
 import { config } from "~/components/providers/WagmiProvider";
 import { Button } from "~/components/ui/Button";
 import { truncateAddress } from "~/lib/truncateAddress";
-import { base, optimism } from "wagmi/chains";
+import { base, degen, mainnet, optimism } from "wagmi/chains";
 import { BaseError, UserRejectedRequestError } from "viem";
 import { useSession } from "next-auth/react"
 import { createStore } from 'mipd'
@@ -84,8 +84,20 @@ export default function Demo(
     isPending: isSwitchChainPending,
   } = useSwitchChain();
 
+  const nextChain = useMemo(() => {
+    if (chainId === base.id) {
+      return optimism;
+    } else if (chainId === optimism.id) {
+      return degen;
+    } else if (chainId === degen.id) {
+      return mainnet;
+    } else {
+      return base;
+    }
+  }, [chainId]);
+
   const handleSwitchChain = useCallback(() => {
-    switchChain({ chainId: chainId === base.id ? optimism.id : base.id });
+    switchChain({ chainId: nextChain.id });
   }, [switchChain, chainId]);
 
   useEffect(() => {
@@ -470,7 +482,7 @@ store.subscribe(providerDetails => {
                   disabled={isSwitchChainPending}
                   isLoading={isSwitchChainPending}
                 >
-                  Switch to {chainId === base.id ? "Optimism" : "Base"}
+                  Switch to {nextChain.name}
                 </Button>
                 {isSwitchChainError && renderError(switchChainError)}
               </div>
