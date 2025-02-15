@@ -5,7 +5,7 @@ export const runtime = "edge";
 export const alt = "Hello Frame";
 export const size = {
   width: 600,
-  height: 400,
+  height: 600,
 };
 
 export const contentType = "image/png";
