@@ -16,6 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const frame = {
     version: "next",
     imageUrl: `${appUrl}/frames/token/${chainId}/${address}/opengraph-image`,
+    aspectRatio: "1:1",
     button: {
       title: "View Token",
       action: {
