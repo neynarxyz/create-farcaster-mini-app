@@ -34,7 +34,6 @@ async function init() {
   console.log(`\nCreating a new Frames v2 app in ${projectPath}`);
 
   // Clone the repository
-  console.log(`\nCloning the template into ${projectPath}...`);
   execSync(`git clone ${REPO_URL} "${projectPath}"`);
 
   // Remove the .git directory
@@ -68,9 +67,9 @@ async function init() {
   if (fs.existsSync(envExamplePath)) {
     fs.copyFileSync(envExamplePath, envPath);
     fs.unlinkSync(envExamplePath);
-    console.log('Created .env file from .env.example');
+    console.log('\nCreated .env file from .env.example');
   } else {
-    console.log('.env.example does not exist, skipping copy and remove operations');
+    console.log('\n.env.example does not exist, skipping copy and remove operations');
   }
 
   // Update README
@@ -95,7 +94,7 @@ async function init() {
   execSync('git add .', { cwd: projectPath });
   execSync('git commit -m "initial commit from frames-v2-quickstart"', { cwd: projectPath });
 
-  console.log(`\n🖼️ ✨ Successfully created ${projectName} with git and dependencies installed! ✨ 🖼️\n`);
+  console.log(`\n🖼️✨ Successfully created ${projectName} with git and dependencies installed! ✨🖼️\n`);
   console.log('Next steps:');
   console.log(`  cd ${projectName}`);
   console.log('  npm run dev');
