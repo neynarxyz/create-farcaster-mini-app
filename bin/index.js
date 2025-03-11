@@ -31,7 +31,7 @@ async function init() {
   const projectName = answers.projectName;
   const projectPath = path.join(process.cwd(), projectName);
 
-  console.log(`\nCreating a new Frames v2 app in ${projectPath}`);
+  console.log(`\nCreating a new Frames v2 app in ${projectPath}\n`);
 
   // Clone the repository
   execSync(`git clone ${REPO_URL} "${projectPath}"`);
@@ -98,7 +98,7 @@ async function init() {
   console.log(`\n🖼️✨ Successfully created frame ${projectName} with git and dependencies installed! ✨🖼️`);
   console.log('\nTo run the app:');
   console.log(`  cd ${projectName}`);
-  console.log('  npm run dev');
+  console.log('  npm run dev\n');
 }
 
 init().catch((err) => {

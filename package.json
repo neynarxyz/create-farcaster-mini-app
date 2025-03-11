@@ -18,7 +18,7 @@
     "lint": "next lint"
   },
   "bin": {
-    "frames-v2-quickstart": "./bin/index.js"
+    "testing-frames-v2-quickstart": "./bin/index.js"
   },
   "dependencies": {
     "@farcaster/auth-kit": "^0.6.0",
