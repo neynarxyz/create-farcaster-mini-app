@@ -94,8 +94,8 @@ async function init() {
   execSync('git add .', { cwd: projectPath });
   execSync('git commit -m "initial commit from frames-v2-quickstart"', { cwd: projectPath });
 
-  console.log(`\n🖼️✨ Successfully created ${projectName} with git and dependencies installed! ✨🖼️\n`);
-  console.log('Next steps:');
+  console.log(`\n🖼️✨ Successfully created frame ${projectName} with git and dependencies installed! ✨🖼️`);
+  console.log('\nTo run the app:');
   console.log(`  cd ${projectName}`);
   console.log('  npm run dev');
 }
