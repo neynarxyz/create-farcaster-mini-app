@@ -51,6 +51,7 @@ async function init() {
   delete packageJson.repository;
   delete packageJson.license;
   delete packageJson.bin;
+  delete packageJson.files;
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
   // Remove the bin directory
