@@ -87,12 +87,7 @@ async function init() {
 
   // Install dependencies
   console.log('\nInstalling dependencies...');
-  try {
-    execSync('npm install --legacy-peer-deps', { cwd: projectPath, stdio: 'inherit' });
-  } catch (error) {
-    console.log('\nNPM install failed. Trying with yarn...');
-    execSync('yarn install', { cwd: projectPath, stdio: 'inherit' });
-  }
+  execSync('npm install', { cwd: projectPath, stdio: 'inherit' });
 
   // Initialize git repository
   console.log('\nInitializing git repository...');
