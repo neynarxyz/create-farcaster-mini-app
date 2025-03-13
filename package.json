@@ -14,7 +14,8 @@
     "web3"
   ],
   "scripts": {
-    "dev": "lt --port 3000 & next dev",
+    "localtunnel": "node localtunnel.js",
+    "dev": "node dev.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
