@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const REPO_URL = 'https://github.com/lucas-neynar/frames-v2-quickstart.git';
-const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version;
+const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
 
 async function init() {
   const answers = await inquirer.prompt([
@@ -39,20 +39,9 @@ async function init() {
       }
     },
     {
-      type: 'input',
-      name: 'fid',
-      message: 'Enter your Farcaster FID:',
-      validate: (input) => {
-        if (input.trim() === '') {
-          return 'FID cannot be empty';
-        }
-        return true;
-      }
-    },
-    {
       type: 'password',
       name: 'seedPhrase',
-      message: 'Enter your Farcaster account seed phrase:',
+      message: 'Enter your Farcaster custody account seed phrase:',
       validate: (input) => {
         if (input.trim() === '') {
           return 'Seed phrase cannot be empty';
@@ -68,19 +57,17 @@ async function init() {
   console.log(`\nCreating a new Frames v2 app in ${projectPath}\n`);
 
   // Clone the repository
-  execSync(`git clone ${REPO_URL} "${projectPath}"`);
+  try {
+    execSync(`git clone ${REPO_URL} "${projectPath}"`);
+  } catch (error) {
+    console.error('\n❌ Error: Failed to create project directory.');
+    console.error('Please make sure you have write permissions and try again.');
+    process.exit(1);
+  }
 
   // Remove the .git directory
   console.log('\nRemoving .git directory...');
   fs.rmSync(path.join(projectPath, '.git'), { recursive: true, force: true });
-
-  // Generate manifest and write to public folder
-  console.log('\nGenerating manifest...');
-  const manifest = await generateManifest(answers.fid, answers.seedPhrase);
-  fs.writeFileSync(
-    path.join(projectPath, 'public/manifest.json'),
-    JSON.stringify(manifest)
-  );
 
   // Update package.json
   console.log('\nUpdating package.json...');
@@ -96,27 +83,31 @@ async function init() {
   delete packageJson.files;
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
-  // Remove the bin directory
-  console.log('\nRemoving bin directory...');
-  const binPath = path.join(projectPath, 'bin');
-  if (fs.existsSync(binPath)) {
-    fs.rmSync(binPath, { recursive: true, force: true });
-  }
-
   // Handle .env file
   console.log('\nSetting up environment variables...');
   const envExamplePath = path.join(projectPath, '.env.example');
   const envPath = path.join(projectPath, '.env');
   if (fs.existsSync(envExamplePath)) {
-    fs.copyFileSync(envExamplePath, envPath);
-    fs.unlinkSync(envExamplePath);
+    // Read the example file content
+    const envExampleContent = fs.readFileSync(envExamplePath, 'utf8');
+    // Write it to .env
+    fs.writeFileSync(envPath, envExampleContent);
     // Append project name and description to .env
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
+    fs.unlinkSync(envExamplePath);
     console.log('\nCreated .env file from .env.example');
   } else {
     console.log('\n.env.example does not exist, skipping copy and remove operations');
   }
+
+  // Generate manifest and write to public folder
+  console.log('\nGenerating manifest...');
+  const manifest = await generateManifest(answers.seedPhrase, projectPath);
+  fs.writeFileSync(
+    path.join(projectPath, 'public/manifest.json'),
+    JSON.stringify(manifest)
+  );
 
   // Update README
   console.log('\nUpdating README...');
@@ -134,13 +125,20 @@ async function init() {
   console.log('\nInstalling dependencies...');
   execSync('npm install', { cwd: projectPath, stdio: 'inherit' });
 
+  // Remove the bin directory
+  console.log('\nRemoving bin directory...');
+  const binPath = path.join(projectPath, 'bin');
+  if (fs.existsSync(binPath)) {
+    fs.rmSync(binPath, { recursive: true, force: true });
+  }
+
   // Initialize git repository
   console.log('\nInitializing git repository...');
   execSync('git init', { cwd: projectPath });
   execSync('git add .', { cwd: projectPath });
   execSync('git commit -m "initial commit from frames-v2-quickstart"', { cwd: projectPath });
 
-  console.log(`\n🖼️✨ Successfully created frame ${projectName} with git and dependencies installed! ✨🖼️`);
+  console.log(`\n🪐 ✨ Successfully created frame ${projectName} with git and dependencies installed! ✨🪐`);
   console.log('\nTo run the app:');
   console.log(`  cd ${projectName}`);
   console.log('  npm run dev\n');

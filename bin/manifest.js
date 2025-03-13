@@ -1,11 +1,44 @@
 // utils to generate a manifest.json file for a frames v2 app
 import { mnemonicToAccount } from 'viem/accounts';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-export async function generateManifest(fid, seedPhrase) {
-  if (!Number.isInteger(fid) || fid <= 0) {
-    throw new Error('FID must be a positive integer');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+async function lookupFidByCustodyAddress(custodyAddress, projectPath) {
+  // Load environment variables from the project's .env file
+  dotenv.config({ path: join(projectPath, '.env') });
+  
+  const apiKey = process.env.NEYNAR_API_KEY;
+  if (!apiKey) {
+    throw new Error('Neynar API key is required. Please set NEYNAR_API_KEY in your .env file');
   }
 
+  const response = await fetch(
+    `https://api.neynar.com/v2/farcaster/user/custody-address?custody_address=${custodyAddress}`,
+    {
+      headers: {
+        'accept': 'application/json',
+        'x-api-key': apiKey
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to lookup FID: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  if (!data.user?.fid) {
+    throw new Error('No FID found for this custody address');
+  }
+
+  return data.user.fid;
+}
+
+export async function generateManifest(seedPhrase, projectPath) {
   let account;
   try {
     account = mnemonicToAccount(seedPhrase);
@@ -13,6 +46,9 @@ export async function generateManifest(fid, seedPhrase) {
     throw new Error('Invalid seed phrase');
   }
   const custodyAddress = account.address;
+
+  // Look up FID using custody address
+  const fid = await lookupFidByCustodyAddress(custodyAddress, projectPath);
 
   const header = {
     fid,
