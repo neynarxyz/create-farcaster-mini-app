@@ -5,8 +5,8 @@ import "~/app/globals.css";
 import { Providers } from "~/app/providers";
 
 export const metadata: Metadata = {
-  title: "Farcaster Frames v2 Demo",
-  description: "A Farcaster Frames v2 demo app",
+  title: process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo",
+  description: process.env.NEXT_PUBLIC_FRAME_DESCRIPTION || "A Farcaster Frames v2 demo app",
 };
 
 export default async function RootLayout({

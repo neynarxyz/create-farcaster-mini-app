@@ -6,22 +6,56 @@ import { dirname } from 'path';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { generateManifest } from './manifest.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const REPO_URL = 'https://github.com/lucas-neynar/frames-v2-quickstart.git';
-const SCRIPT_VERSION = '0.1.0';
+const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version;
 
 async function init() {
   const answers = await inquirer.prompt([
     {
       type: 'input',
       name: 'projectName',
-      message: 'What is the name of your project?',
+      message: 'What is the name of your frame?',
       validate: (input) => {
         if (input.trim() === '') {
           return 'Project name cannot be empty';
+        }
+        return true;
+      }
+    },
+    {
+      type: 'input',
+      name: 'description',
+      message: 'Give a one-line description of your frame:',
+      validate: (input) => {
+        if (input.trim() === '') {
+          return 'Description cannot be empty';
+        }
+        return true;
+      }
+    },
+    {
+      type: 'input',
+      name: 'fid',
+      message: 'Enter your Farcaster FID:',
+      validate: (input) => {
+        if (input.trim() === '') {
+          return 'FID cannot be empty';
+        }
+        return true;
+      }
+    },
+    {
+      type: 'password',
+      name: 'seedPhrase',
+      message: 'Enter your Farcaster account seed phrase:',
+      validate: (input) => {
+        if (input.trim() === '') {
+          return 'Seed phrase cannot be empty';
         }
         return true;
       }
@@ -39,6 +73,14 @@ async function init() {
   // Remove the .git directory
   console.log('\nRemoving .git directory...');
   fs.rmSync(path.join(projectPath, '.git'), { recursive: true, force: true });
+
+  // Generate manifest and write to public folder
+  console.log('\nGenerating manifest...');
+  const manifest = await generateManifest(answers.fid, answers.seedPhrase);
+  fs.writeFileSync(
+    path.join(projectPath, 'public/manifest.json'),
+    JSON.stringify(manifest)
+  );
 
   // Update package.json
   console.log('\nUpdating package.json...');
@@ -68,6 +110,9 @@ async function init() {
   if (fs.existsSync(envExamplePath)) {
     fs.copyFileSync(envExamplePath, envPath);
     fs.unlinkSync(envExamplePath);
+    // Append project name and description to .env
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
     console.log('\nCreated .env file from .env.example');
   } else {
     console.log('\n.env.example does not exist, skipping copy and remove operations');

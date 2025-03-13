@@ -29,6 +29,7 @@ export const authOptions: AuthOptions = {
         // In a production app with a server, these should be fetched from
         // your Farcaster data indexer rather than have them accepted as part
         // of credentials.
+        // question: should these natively use the Neynar API?
         name: {
           label: "Name",
           type: "text",
@@ -49,6 +50,7 @@ export const authOptions: AuthOptions = {
         const verifyResponse = await appClient.verifySignInMessage({
           message: credentials?.message as string,
           signature: credentials?.signature as `0x${string}`,
+          // question: what domain should this be?
           domain: new URL(process.env.NEXTAUTH_URL ?? '').hostname,
           nonce: csrfToken,
         });

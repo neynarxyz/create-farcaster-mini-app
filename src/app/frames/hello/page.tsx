@@ -10,7 +10,7 @@ const frame = {
     title: "Launch Frame",
     action: {
       type: "launch_frame",
-      name: "Farcaster Frames v2 Demo",
+      name: process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo",
       url: `${appUrl}/frames/hello/`,
       splashImageUrl: `${appUrl}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
