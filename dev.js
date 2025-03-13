@@ -3,6 +3,7 @@ import { spawn } from 'child_process';
 
 let tunnel;
 let nextDev;
+let isCleaningUp = false;
 
 async function startDev() {
   // Start localtunnel and get URL
@@ -16,16 +17,25 @@ async function startDev() {
   });
 
   // Handle cleanup
-  const cleanup = () => {
-    if (tunnel) {
-      tunnel.close();
-      console.log('\n🌐 Tunnel closed');
+  const cleanup = async () => {
+    if (isCleaningUp) return;
+    isCleaningUp = true;
+
+    try {
+      if (nextDev) {
+        nextDev.kill();
+        console.log('\n🛑 Next.js dev server stopped');
+      }
+      
+      if (tunnel) {
+        await tunnel.close();
+        console.log('\n🌐 Tunnel closed');
+      }
+    } catch (error) {
+      console.error('Error during cleanup:', error);
+    } finally {
+      process.exit(0);
     }
-    if (nextDev) {
-      nextDev.kill();
-      console.log('\n🛑 Next.js dev server stopped');
-    }
-    process.exit(0);
   };
 
   // Handle process termination
