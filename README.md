@@ -10,3 +10,8 @@ To create a new frames project, run:
 ```{bash}
 npx frames-v2-quickstart
 ```
+
+TODO:
+* pin dependencies 
+* install metrics / enable notifications
+* solidify onchain tx support

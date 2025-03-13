@@ -99,7 +99,7 @@ async function init() {
       type: 'confirm',
       name: 'useNeynar',
       message: 'Would you like to use Neynar in your frame?',
-      default: true
+      default: false
     }
   ]);
 
@@ -234,7 +234,14 @@ async function init() {
   execSync('git add .', { cwd: projectPath });
   execSync('git commit -m "initial commit from frames-v2-quickstart"', { cwd: projectPath });
 
-  console.log(`\n🪐✨ Successfully created frame ${projectName} with git and dependencies installed! ✨🪐`);
+  // Calculate border length based on message length
+  const message = `✨🪐 Successfully created frame ${projectName} with git and dependencies installed! 🪐✨`;
+  const borderLength = message.length;
+  const borderStars = '✨'.repeat((borderLength / 2) + 1);
+
+  console.log(`\n${borderStars}`);
+  console.log(`${message}`);
+  console.log(`${borderStars}`);
   console.log('\nTo run the app:');
   console.log(`  cd ${projectName}`);
   console.log('  npm run dev\n');

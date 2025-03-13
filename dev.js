@@ -10,10 +10,10 @@ async function startDev() {
   tunnel = await localtunnel({ port: 3000 });
   console.log(`\n🌐 Local tunnel URL: ${tunnel.url}`);
   
-  // Start next dev with the tunnel URL as an environment variable
+  // Start next dev with the tunnel URL as relevant environment variables
   nextDev = spawn('next', ['dev'], {
     stdio: 'inherit',
-    env: { ...process.env, NEXT_PUBLIC_URL: tunnel.url }
+    env: { ...process.env, NEXT_PUBLIC_URL: tunnel.url, NEXTAUTH_URL: tunnel.url }
   });
 
   // Handle cleanup
