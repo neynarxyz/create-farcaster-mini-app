@@ -7,6 +7,7 @@ const appUrl = process.env.NEXT_PUBLIC_URL;
 // question: do we need metadata both in this file and in the .well-known/farcaster.json file?
 const appName = process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo";
 const splashImageUrl = process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL || `${appUrl}/splash.png`;
+const iconUrl = process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL || `${appUrl}/icon.png`;
 
 const frame = {
   version: "next",
@@ -18,6 +19,7 @@ const frame = {
       name: appName,
       url: appUrl,
       splashImageUrl,
+      iconUrl,
       splashBackgroundColor: "#f7f7f7",
     },
   },

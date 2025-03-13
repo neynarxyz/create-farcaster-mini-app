@@ -7,7 +7,6 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { mnemonicToAccount } from 'viem/accounts';
-import { generateManifest } from './manifest.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -82,6 +81,12 @@ async function init() {
       type: 'input',
       name: 'splashImageUrl',
       message: 'Enter the URL for your splash image\n(optional -- leave blank to use the default public/splash.png image or replace public/splash.png with your own)\n\nExternal splash image URL:',
+      default: null
+    },
+    {
+      type: 'input',
+      name: 'iconImageUrl',
+      message: 'Enter the URL for your app icon\n(optional -- leave blank to use the default public/icon.png image or replace public/icon.png with your own)\n\nExternal app icon URL:',
       default: null
     },
     {
@@ -180,11 +185,18 @@ async function init() {
       fs.appendFileSync(envPath, `\nFID="${fid}"`);
     }
 
-    // Append all environment variables
+    if (answers.splashImageUrl) {
+      fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL="${answers.splashImageUrl}"`);
+    }
+
+    if (answers.iconImageUrl) {
+      fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_ICON_IMAGE_URL="${answers.iconImageUrl}"`);
+    }
+
+    // Append all remaining environment variables
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL="${answers.splashImageUrl}"`);
     fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO'}"`);
     
     fs.unlinkSync(envExamplePath);
