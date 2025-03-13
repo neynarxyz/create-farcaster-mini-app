@@ -6,6 +6,7 @@ import { dirname } from 'path';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { mnemonicToAccount } from 'viem/accounts';
 import { generateManifest } from './manifest.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,6 +14,33 @@ const __dirname = dirname(__filename);
 
 const REPO_URL = 'https://github.com/lucas-neynar/frames-v2-quickstart.git';
 const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
+
+async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
+  if (!apiKey) {
+    throw new Error('Neynar API key is required');
+  }
+
+  const response = await fetch(
+    `https://api.neynar.com/v2/farcaster/user/custody-address?custody_address=${custodyAddress}`,
+    {
+      headers: {
+        'accept': 'application/json',
+        'x-api-key': apiKey
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to lookup FID: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  if (!data.user?.fid) {
+    throw new Error('No FID found for this custody address');
+  }
+
+  return data.user.fid;
+}
 
 async function init() {
   const answers = await inquirer.prompt([
@@ -59,15 +87,34 @@ async function init() {
     {
       type: 'password',
       name: 'seedPhrase',
-      message: 'Enter your Farcaster custody account seed phrase:',
-      validate: (input) => {
-        if (input.trim() === '') {
-          return 'Seed phrase cannot be empty';
-        }
-        return true;
-      }
+      message: 'Enter your Farcaster custody account seed phrase to generate a signed manifest for your frame\n(optional -- leave blank to create an unsigned frame)\n(seed phrase is only ever stored locally)\n\nSeed phrase:',
+      default: null
+    },
+    {
+      type: 'confirm',
+      name: 'useNeynar',
+      message: 'Would you like to use Neynar in your frame?',
+      default: true
     }
   ]);
+
+  // If using Neynar, ask for API key
+  if (answers.useNeynar) {
+    const neynarAnswers = await inquirer.prompt([
+      {
+        type: 'password',
+        name: 'neynarApiKey',
+        message: 'Enter your Neynar API key:',
+        validate: (input) => {
+          if (input.trim() === '') {
+            return 'Neynar API key cannot be empty';
+          }
+          return true;
+        }
+      }
+    ]);
+    answers.neynarApiKey = neynarAnswers.neynarApiKey;
+  }
 
   const projectName = answers.projectName;
   const projectPath = path.join(process.cwd(), projectName);
@@ -99,6 +146,13 @@ async function init() {
   delete packageJson.license;
   delete packageJson.bin;
   delete packageJson.files;
+
+  // Add Neynar dependencies if selected
+  if (answers.useNeynar) {
+    packageJson.dependencies['@neynar/nodejs-sdk'] = '^2.19.0';
+    packageJson.dependencies['@neynar/react'] = '^1.2.0';
+  }
+
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
   // Handle .env file
@@ -110,24 +164,35 @@ async function init() {
     const envExampleContent = fs.readFileSync(envExamplePath, 'utf8');
     // Write it to .env
     fs.writeFileSync(envPath, envExampleContent);
-    // Append project name, description, and button text to .env
+    
+    // Generate custody address from seed phrase
+    if (answers.seedPhrase) {
+      const account = mnemonicToAccount(answers.seedPhrase);
+      const custodyAddress = account.address;
+
+      // Look up FID using custody address
+      console.log('\nLooking up FID...', answers.useNeynar, answers.neynarApiKey);
+      const neynarApiKey = answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO';
+      console.log('neynarApiKey', neynarApiKey);
+      const fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey);
+
+      // Write seed phrase and FID to .env for manifest signature generation
+      fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
+      fs.appendFileSync(envPath, `\nFID="${fid}"`);
+    }
+
+    // Append all environment variables
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL="${answers.splashImageUrl}"`);
+    fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO'}"`);
+    
     fs.unlinkSync(envExamplePath);
     console.log('\nCreated .env file from .env.example');
   } else {
     console.log('\n.env.example does not exist, skipping copy and remove operations');
   }
-
-  // Generate manifest and write to public folder
-  console.log('\nGenerating manifest...');
-  const manifest = await generateManifest(answers.seedPhrase, projectPath);
-  fs.writeFileSync(
-    path.join(projectPath, 'public/manifest.json'),
-    JSON.stringify(manifest)
-  );
 
   // Update README
   console.log('\nUpdating README...');
