@@ -3,6 +3,7 @@ import { join } from 'path';
 
 export async function GET() {
   const appUrl = process.env.NEXT_PUBLIC_URL;
+  const splashImageUrl = process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL || `${appUrl}/splash.png`;
 
   let accountAssociation; // TODO: add type
   try {
@@ -22,8 +23,8 @@ export async function GET() {
       iconUrl: `${appUrl}/icon.png`,
       homeUrl: appUrl,
       imageUrl: `${appUrl}/frames/hello/opengraph-image`,
-      buttonTitle: "Launch Frame",
-      splashImageUrl: `${appUrl}/splash.png`,
+      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || "Launch Frame",
+      splashImageUrl,
       splashBackgroundColor: "#f7f7f7",
       webhookUrl: `${appUrl}/api/webhook`,
     },

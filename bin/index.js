@@ -39,6 +39,24 @@ async function init() {
       }
     },
     {
+      type: 'input',
+      name: 'buttonText',
+      message: 'Enter the button text for your frame:',
+      default: 'Launch Frame',
+      validate: (input) => {
+        if (input.trim() === '') {
+          return 'Button text cannot be empty';
+        }
+        return true;
+      }
+    },
+    {
+      type: 'input',
+      name: 'splashImageUrl',
+      message: 'Enter the URL for your splash image\n(optional -- leave blank to use the default public/splash.png image or replace public/splash.png with your own)\n\nExternal splash image URL:',
+      default: null
+    },
+    {
       type: 'password',
       name: 'seedPhrase',
       message: 'Enter your Farcaster custody account seed phrase:',
@@ -92,9 +110,11 @@ async function init() {
     const envExampleContent = fs.readFileSync(envExamplePath, 'utf8');
     // Write it to .env
     fs.writeFileSync(envPath, envExampleContent);
-    // Append project name and description to .env
+    // Append project name, description, and button text to .env
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL="${answers.splashImageUrl}"`);
     fs.unlinkSync(envExamplePath);
     console.log('\nCreated .env file from .env.example');
   } else {
@@ -138,7 +158,7 @@ async function init() {
   execSync('git add .', { cwd: projectPath });
   execSync('git commit -m "initial commit from frames-v2-quickstart"', { cwd: projectPath });
 
-  console.log(`\n🪐 ✨ Successfully created frame ${projectName} with git and dependencies installed! ✨🪐`);
+  console.log(`\n🪐✨ Successfully created frame ${projectName} with git and dependencies installed! ✨🪐`);
   console.log('\nTo run the app:');
   console.log(`  cd ${projectName}`);
   console.log('  npm run dev\n');

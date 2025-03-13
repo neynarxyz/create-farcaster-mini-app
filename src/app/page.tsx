@@ -4,18 +4,20 @@ import App from "./app";
 const appUrl = process.env.NEXT_PUBLIC_URL;
 
 // frame preview metadata
+// question: do we need metadata both in this file and in the .well-known/farcaster.json file?
 const appName = process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo";
+const splashImageUrl = process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL || `${appUrl}/splash.png`;
 
 const frame = {
   version: "next",
   imageUrl: `${appUrl}/opengraph-image`,
   button: {
-    title: "Launch Frame",
+    title: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || "Launch Frame",
     action: {
       type: "launch_frame",
       name: appName,
       url: appUrl,
-      splashImageUrl: `${appUrl}/splash.png`,
+      splashImageUrl,
       splashBackgroundColor: "#f7f7f7",
     },
   },
