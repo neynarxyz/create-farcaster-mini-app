@@ -9,7 +9,6 @@ export const size = {
 export const contentType = "image/png";
 
 // dynamically generated OG image for frame preview
-// TODO: make this dynamic with user info (like robin's example)
 export default async function Image() {
   return new ImageResponse(
     (

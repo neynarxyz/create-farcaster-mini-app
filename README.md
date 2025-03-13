@@ -10,7 +10,3 @@ To create a new frames project, run:
 ```{bash}
 npx frames-v2-quickstart
 ```
-
-## TODO
-* try ngrok locally, then integrate with localtunnel if possible
-* ask for seed phrase in setup and generate manifest

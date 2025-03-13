@@ -63,7 +63,6 @@ export const authOptions: AuthOptions = {
         });
 
         const domain = getDomainFromUrl(process.env.NEXTAUTH_URL);
-        console.log('Using domain for auth:', domain);
 
         const verifyResponse = await appClient.verifySignInMessage({
           message: credentials?.message as string,

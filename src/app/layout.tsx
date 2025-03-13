@@ -13,14 +13,9 @@ export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-  console.log('Environment variables:');
-  console.log('NEXT_PUBLIC_URL:', process.env.NEXT_PUBLIC_URL);
-  console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
-  
+}>) {  
   const session = await getSession()
-  console.log('Session:', session);
-  
+
   return (
     <html lang="en">
       <body>
