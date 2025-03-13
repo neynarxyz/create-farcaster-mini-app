@@ -147,11 +147,46 @@ async function init() {
   delete packageJson.bin;
   delete packageJson.files;
 
+  // Update all dependencies to use React 19
+  packageJson.dependencies = {
+    ...packageJson.dependencies,
+    'react': '^19.0.0',
+    'react-dom': '^19.0.0',
+    '@farcaster/auth-kit': '^0.6.0',
+    '@farcaster/frame-core': '^0.0.29',
+    '@farcaster/frame-node': '^0.0.18',
+    '@farcaster/frame-sdk': '^0.0.31',
+    '@farcaster/frame-wagmi-connector': '^0.0.19',
+    '@radix-ui/react-label': '^2.1.1',
+    '@tanstack/react-query': '^5.61.0',
+    '@upstash/redis': '^1.34.3',
+    'class-variance-authority': '^0.7.1',
+    'clsx': '^2.1.1',
+    'dotenv': '^16.4.7',
+    'inquirer': '^12.4.3',
+    'localtunnel': '^2.0.2',
+    'lucide-react': '^0.469.0',
+    'next': '15.0.3',
+    'next-auth': '^4.24.11',
+    'ox': '^0.4.2',
+    'tailwind-merge': '^2.6.0',
+    'tailwindcss-animate': '^1.0.7',
+    'viem': '^2.23.6',
+    'wagmi': '^2.14.12'
+  };
+
   // Add Neynar dependencies if selected
   if (answers.useNeynar) {
     packageJson.dependencies['@neynar/nodejs-sdk'] = '^2.19.0';
     packageJson.dependencies['@neynar/react'] = '^1.2.0';
   }
+
+  // Update devDependencies to use React 19 types
+  packageJson.devDependencies = {
+    ...packageJson.devDependencies,
+    '@types/react': '^19.0.0',
+    '@types/react-dom': '^19.0.0'
+  };
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
@@ -171,9 +206,8 @@ async function init() {
       const custodyAddress = account.address;
 
       // Look up FID using custody address
-      console.log('\nLooking up FID...', answers.useNeynar, answers.neynarApiKey);
+      console.log('\nLooking up FID...');
       const neynarApiKey = answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO';
-      console.log('neynarApiKey', neynarApiKey);
       const fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey);
 
       // Write seed phrase and FID to .env for manifest signature generation
