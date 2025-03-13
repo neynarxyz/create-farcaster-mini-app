@@ -1,7 +1,7 @@
 // utils to generate a manifest.json file for a frames v2 app
-const { mnemonicToAccount } = require('viem/accounts');
+import { mnemonicToAccount } from 'viem/accounts';
 
-async function generateManifest(fid, seedPhrase) {
+export async function generateManifest(fid, seedPhrase) {
   if (!Number.isInteger(fid) || fid <= 0) {
     throw new Error('FID must be a positive integer');
   }
@@ -39,5 +39,3 @@ async function generateManifest(fid, seedPhrase) {
 
   return jsonJfs;
 }
-
-module.exports = { generateManifest };

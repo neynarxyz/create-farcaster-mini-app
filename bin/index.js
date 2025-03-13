@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-const inquirer = require('inquirer');
-const { fileURLToPath } = require('url');
-const { dirname } = require('path');
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const { generateManifest } = require('./manifest.js');
+import inquirer from 'inquirer';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { generateManifest } from './manifest.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
