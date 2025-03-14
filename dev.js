@@ -8,7 +8,15 @@ let isCleaningUp = false;
 async function startDev() {
   // Start localtunnel and get URL
   tunnel = await localtunnel({ port: 3000 });
-  console.log(`\n🌐 Local tunnel URL: ${tunnel.url}`);
+  console.log(`
+🌐 Local tunnel URL: ${tunnel.url}
+
+📱 To test in Warpcast mobile app:
+   1. Open Warpcast on your phone
+   2. Go to Settings > Developer > Frames
+   4. Enter this URL: ${tunnel.url}
+   5. Click "Launch"
+`);
   
   // Start next dev with the tunnel URL as relevant environment variables
   nextDev = spawn('next', ['dev'], {
