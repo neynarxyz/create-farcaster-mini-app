@@ -10,6 +10,7 @@ async function startDev() {
   // Start ngrok and get URL
   tunnel = await ngrok.connect({
     addr: 3000,
+    proto: 'http'
   });
   console.log(`\n🌐 Ngrok tunnel URL: ${tunnel}`);
   
