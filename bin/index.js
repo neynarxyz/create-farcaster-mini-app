@@ -14,6 +14,28 @@ const __dirname = dirname(__filename);
 const REPO_URL = 'https://github.com/lucas-neynar/frames-v2-quickstart.git';
 const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
 
+function printWelcomeMessage() {
+  const purple = '\x1b[35m';
+  const blue = '\x1b[34m';
+  const reset = '\x1b[0m';
+  const dim = '\x1b[2m';
+  const bright = '\x1b[1m';
+
+  console.log(`
+${purple}╔════════════════════════════════════════════════════════════╗${reset}
+${purple}║                                                            ║${reset}
+${purple}║${reset}     ${bright}Welcome to Frames v2 Quickstart!${reset}                      ${purple}║${reset}
+${purple}║${reset}     ${dim}The fastest way to build Farcaster Frames${reset}               ${purple}║${reset}
+${purple}║                                                            ║${reset}
+${purple}╚════════════════════════════════════════════════════════════╝${reset}
+
+${blue}Version:${reset} ${SCRIPT_VERSION}
+${blue}Repository:${reset} ${dim}${REPO_URL}${reset}
+
+Let's create your Frame! 🚀
+`);
+}
+
 async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
   if (!apiKey) {
     throw new Error('Neynar API key is required');
@@ -42,6 +64,8 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
 }
 
 async function init() {
+  printWelcomeMessage();
+
   const answers = await inquirer.prompt([
     {
       type: 'input',
@@ -90,12 +114,6 @@ async function init() {
       default: null
     },
     {
-      type: 'password',
-      name: 'seedPhrase',
-      message: 'Enter your Farcaster custody account seed phrase to generate a signed manifest for your frame\n(optional -- leave blank to create an unsigned frame)\n(seed phrase is only ever stored locally)\n\nSeed phrase:',
-      default: null
-    },
-    {
       type: 'confirm',
       name: 'useNeynar',
       message: 'Would you like to use Neynar in your frame?',
@@ -120,6 +138,17 @@ async function init() {
     ]);
     answers.neynarApiKey = neynarAnswers.neynarApiKey;
   }
+
+  // Ask for seed phrase last
+  const seedPhraseAnswer = await inquirer.prompt([
+    {
+      type: 'password',
+      name: 'seedPhrase',
+      message: 'Enter your Farcaster custody account seed phrase to generate a signed manifest for your frame\n(optional -- leave blank to create an unsigned frame)\n(seed phrase is only ever stored locally)\n\nSeed phrase:',
+      default: null
+    }
+  ]);
+  answers.seedPhrase = seedPhraseAnswer.seedPhrase;
 
   const projectName = answers.projectName;
   const projectPath = path.join(process.cwd(), projectName);
@@ -177,7 +206,6 @@ async function init() {
     "lucide-react": "^0.469.0",
     "next": "15.0.3",
     "next-auth": "^4.24.11",
-    "ngrok": "^5.0.0-beta.2",
     "ox": "^0.4.2",
     "react": "^18",
     "react-dom": "^18",

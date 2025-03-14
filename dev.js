@@ -1,5 +1,4 @@
-// import localtunnel from 'localtunnel';
-import ngrok from 'ngrok';
+import localtunnel from 'localtunnel';
 import { spawn } from 'child_process';
 
 let tunnel;
@@ -7,17 +6,14 @@ let nextDev;
 let isCleaningUp = false;
 
 async function startDev() {
-  // Start ngrok and get URL
-  tunnel = await ngrok.connect({
-    addr: 3000,
-    proto: 'http'
-  });
-  console.log(`\n🌐 Ngrok tunnel URL: ${tunnel}`);
+  // Start localtunnel and get URL
+  tunnel = await localtunnel({ port: 3000 });
+  console.log(`\n🌐 Local tunnel URL: ${tunnel.url}`);
   
   // Start next dev with the tunnel URL as relevant environment variables
   nextDev = spawn('next', ['dev'], {
     stdio: 'inherit',
-    env: { ...process.env, NEXT_PUBLIC_URL: tunnel, NEXTAUTH_URL: tunnel }
+    env: { ...process.env, NEXT_PUBLIC_URL: tunnel.url, NEXTAUTH_URL: tunnel.url }
   });
 
   // Handle cleanup
@@ -32,10 +28,8 @@ async function startDev() {
       }
       
       if (tunnel) {
-        // Comment out localtunnel cleanup
-        // await tunnel.close();
-        await ngrok.kill(); // Kill all ngrok processes
-        console.log('\n🌐 Ngrok tunnel closed');
+        await tunnel.close();
+        console.log('\n🌐 Tunnel closed');
       }
     } catch (error) {
       console.error('Error during cleanup:', error);
@@ -47,7 +41,7 @@ async function startDev() {
   // Handle process termination
   process.on('SIGINT', cleanup);
   process.on('SIGTERM', cleanup);
-  // tunnel.on('close', cleanup); // Remove localtunnel event listener
+  tunnel.on('close', cleanup);
 }
 
 startDev().catch(console.error); 
