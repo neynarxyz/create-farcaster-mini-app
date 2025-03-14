@@ -150,6 +150,54 @@ async function init() {
   ]);
   answers.seedPhrase = seedPhraseAnswer.seedPhrase;
 
+  let account;
+  let custodyAddress;
+  let fid;
+
+  if (answers.seedPhrase) {
+    let fidLookupSuccessful = false;
+    while (!fidLookupSuccessful) {
+      try {
+        // Generate custody address from seed phrase
+        account = mnemonicToAccount(answers.seedPhrase);
+        custodyAddress = account.address;
+
+        // Look up FID using custody address
+        console.log('\nLooking up FID...');
+        const neynarApiKey = answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO';
+        fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey);
+        
+        if (!fid) {
+          throw new Error('No FID found for this custody address');
+        }
+        
+        fidLookupSuccessful = true;
+      } catch (error) {
+        console.error('\n❌ Error:', error.message);
+        console.log('\n⚠️  Could not find an FID for this seed phrase. This usually means:');
+        console.log('1. The seed phrase might be incorrect');
+        console.log('2. The account might not be registered on Farcaster');
+        console.log('3. The custody address might not be linked to a Farcaster account\n');
+
+        // Ask for seed phrase again
+        const retryAnswer = await inquirer.prompt([
+          {
+            type: 'password',
+            name: 'seedPhrase',
+            message: 'Please enter your seed phrase again (or leave empty to continue without signing):\n',
+            default: null
+          }
+        ]);
+
+        if (!retryAnswer.seedPhrase) {
+          console.log('\n⚠️  Continuing without frame signing...');
+          break;
+        }
+        answers.seedPhrase = retryAnswer.seedPhrase;
+      }
+    }
+  }
+
   const projectName = answers.projectName;
   const projectPath = path.join(process.cwd(), projectName);
 

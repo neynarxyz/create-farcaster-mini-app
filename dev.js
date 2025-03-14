@@ -15,7 +15,7 @@ async function startDev() {
    1. Open Warpcast on your phone
    2. Go to Settings > Developer > Frames
    4. Enter this URL: ${tunnel.url}
-   5. Click "Launch"
+   5. Click "Launch" (note that it may take ~10 seconds to load)
 `);
   
   // Start next dev with the tunnel URL as relevant environment variables
