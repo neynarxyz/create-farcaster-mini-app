@@ -8,8 +8,28 @@ let isCleaningUp = false;
 async function startDev() {
   // Start localtunnel and get URL
   tunnel = await localtunnel({ port: 3000 });
+  let ip;
+  try {
+    ip = await fetch('https://ipv4.icanhazip.com').then(res => res.text()).then(ip => ip.trim());
+  } catch (error) {
+    console.error('Error getting IP address:', error);
+  }
+
   console.log(`
 🌐 Local tunnel URL: ${tunnel.url}
+
+💻 To test on desktop:
+   1. Open the localtunnel URL in your browser: ${tunnel.url}
+   2. Enter your IP address in the password field${ip ? `: ${ip}` : ''}
+   3. Click "Click to Submit" -- your frame should now load
+   4. Navigate to the Warpcast Frame Developer Tools: https://warpcast.com/~/developers/frames
+   5. Enter your frame URL: ${tunnel.url}
+   6. Click "Preview" to launch your frame within Warpcast
+
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+⚠️ You will not be able to load your frame in Warpcast until    ⚠️
+⚠️ you submit your IP address in the localtunnel password field ⚠️
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
 
 📱 To test in Warpcast mobile app:
    1. Open Warpcast on your phone
