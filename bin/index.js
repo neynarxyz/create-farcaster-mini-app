@@ -24,7 +24,7 @@ function printWelcomeMessage() {
   console.log(`
 ${purple}╔═══════════════════════════════════════════════════╗${reset}
 ${purple}║                                                   ║${reset}
-${purple}║${reset}          ${bright}Welcome to Frames v2 Quickstart${reset}           ${purple}║${reset}
+${purple}║${reset}          ${bright}Welcome to Frames v2 Quickstart${reset}          ${purple}║${reset}
 ${purple}║${reset}     ${dim}The fastest way to build Farcaster Frames${reset}     ${purple}║${reset}
 ${purple}║                                                   ║${reset}
 ${purple}╚═══════════════════════════════════════════════════╝${reset}
