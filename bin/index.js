@@ -163,7 +163,7 @@ async function init() {
         custodyAddress = account.address;
 
         // Look up FID using custody address
-        console.log('\nLooking up FID...');
+        console.log('\nUsing seed phrase to look up FID by custody address...');
         const neynarApiKey = answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO';
         fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey);
         
