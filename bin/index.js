@@ -139,6 +139,13 @@ async function init() {
   console.log('\nRemoving .git directory...');
   fs.rmSync(path.join(projectPath, '.git'), { recursive: true, force: true });
 
+  // Remove package-lock.json
+  console.log('\nRemoving package-lock.json...');
+  const packageLockPath = path.join(projectPath, 'package-lock.json');
+  if (fs.existsSync(packageLockPath)) {
+    fs.unlinkSync(packageLockPath);
+  }
+
   // Update package.json
   console.log('\nUpdating package.json...');
   const packageJsonPath = path.join(projectPath, 'package.json');
@@ -170,6 +177,7 @@ async function init() {
     "lucide-react": "^0.469.0",
     "next": "15.0.3",
     "next-auth": "^4.24.11",
+    "ngrok": "^5.0.0-beta.2",
     "ox": "^0.4.2",
     "react": "^18",
     "react-dom": "^18",
