@@ -24,7 +24,7 @@ function printWelcomeMessage() {
   console.log(`
 ${purple}╔═══════════════════════════════════════════════════╗${reset}
 ${purple}║                                                   ║${reset}
-${purple}║${reset}     ${bright}Welcome to Frames v2 Quickstart!${reset}              ${purple}║${reset}
+${purple}║${reset}          ${bright}Welcome to Frames v2 Quickstart${reset}              ${purple}║${reset}
 ${purple}║${reset}     ${dim}The fastest way to build Farcaster Frames${reset}     ${purple}║${reset}
 ${purple}║                                                   ║${reset}
 ${purple}╚═══════════════════════════════════════════════════╝${reset}
@@ -172,6 +172,7 @@ async function init() {
         }
         
         fidLookupSuccessful = true;
+        console.log(`\n✅ Successfully found FID ${fid} for custody address ${custodyAddress}`);
       } catch (error) {
         console.error('\n❌ Error:', error.message);
         console.log('\n⚠️  Could not find an FID for this seed phrase. This usually means:');
