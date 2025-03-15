@@ -11,7 +11,7 @@ import { mnemonicToAccount } from 'viem/accounts';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const REPO_URL = 'git://github.com/neynarxyz/create-neynar-farcaster-frame.git';
+const REPO_URL = 'https://github.com/neynarxyz/create-neynar-farcaster-frame.git';
 const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
 
 function printWelcomeMessage() {
