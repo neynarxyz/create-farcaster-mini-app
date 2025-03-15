@@ -21,10 +21,10 @@ async function startDev() {
 💻 To test on desktop:
    1. Open the localtunnel URL in your browser: ${tunnel.url}
    2. Enter your IP address in the password field${ip ? `: ${ip}` : ''}
-   3. Click "Click to Submit" -- your frame should now load
+   3. Click "Click to Submit" -- your frame should now load in the browser
    4. Navigate to the Warpcast Frame Developer Tools: https://warpcast.com/~/developers/frames
    5. Enter your frame URL: ${tunnel.url}
-   6. Click "Preview" to launch your frame within Warpcast
+   6. Click "Preview" to launch your frame within Warpcast (note that it may take ~10 seconds to load)
 
 
 ❗️ You will not be able to load your frame in Warpcast until    ❗️
