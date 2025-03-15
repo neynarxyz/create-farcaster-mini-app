@@ -225,15 +225,7 @@ async function init() {
   try {
     console.log(`\nCloning repository from ${REPO_URL}...`);
     execSync(`git clone -b main ${REPO_URL} "${projectPath}" && cd "${projectPath}" && git fetch origin main && git reset --hard origin/main`);
-    
-    // Debug: Check initial page.tsx content
-    const pagePath = path.join(projectPath, 'src', 'app', 'page.tsx');
-    if (fs.existsSync(pagePath)) {
-      console.log('\nInitial page.tsx content:');
-      console.log(fs.readFileSync(pagePath, 'utf8'));
-    } else {
-      console.log('\npage.tsx does not exist after clone');
-    }
+
   } catch (error) {
     console.error('\n❌ Error: Failed to create project directory.');
     console.error('Please make sure you have write permissions and try again.');
@@ -243,13 +235,6 @@ async function init() {
   // Remove the .git directory
   console.log('\nRemoving .git directory...');
   fs.rmSync(path.join(projectPath, '.git'), { recursive: true, force: true });
-
-  // Debug: Check page.tsx content after .git removal
-  const pagePath = path.join(projectPath, 'src', 'app', 'page.tsx');
-  if (fs.existsSync(pagePath)) {
-    console.log('\npage.tsx content after .git removal:');
-    console.log(fs.readFileSync(pagePath, 'utf8'));
-  }
 
   // Remove package-lock.json
   console.log('\nRemoving package-lock.json...');
@@ -262,12 +247,6 @@ async function init() {
   console.log('\nUpdating package.json...');
   const packageJsonPath = path.join(projectPath, 'package.json');
   let packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-
-  // Debug: Check page.tsx content after package.json update
-  if (fs.existsSync(pagePath)) {
-    console.log('\npage.tsx content after package.json update:');
-    console.log(fs.readFileSync(pagePath, 'utf8'));
-  }
 
   packageJson.name = projectName;
   packageJson.version = '0.1.0';
@@ -381,21 +360,9 @@ async function init() {
 
   // Install dependencies
   console.log('\nInstalling dependencies...');
-  
-  // Debug: Check page.tsx content before npm install
-  if (fs.existsSync(pagePath)) {
-    console.log('\npage.tsx content before npm install:');
-    console.log(fs.readFileSync(pagePath, 'utf8'));
-  }
 
   execSync('npm cache clean --force', { cwd: projectPath, stdio: 'inherit' });
   execSync('npm install', { cwd: projectPath, stdio: 'inherit' });
-
-  // Debug: Check page.tsx content after npm install
-  if (fs.existsSync(pagePath)) {
-    console.log('\npage.tsx content after npm install:');
-    console.log(fs.readFileSync(pagePath, 'utf8'));
-  }
 
   // Remove the bin directory
   console.log('\nRemoving bin directory...');
