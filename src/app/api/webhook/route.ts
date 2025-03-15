@@ -11,6 +11,13 @@ import {
 import { sendFrameNotification } from "~/lib/notifs";
 
 export async function POST(request: NextRequest) {
+  // If Neynar is enabled, we don't need to handle webhooks here
+  // as they will be handled by Neynar's webhook endpoint
+  const neynarEnabled = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID;
+  if (neynarEnabled) {
+    return Response.json({ success: true });
+  }
+
   const requestJson = await request.json();
 
   let data;
@@ -45,6 +52,8 @@ export async function POST(request: NextRequest) {
   const fid = data.fid;
   const event = data.event;
 
+  // Only handle notifications if Neynar is not enabled
+  // When Neynar is enabled, notifications are handled through their webhook
   switch (event.event) {
     case "frame_added":
       if (event.notificationDetails) {
@@ -57,12 +66,12 @@ export async function POST(request: NextRequest) {
       } else {
         await deleteUserNotificationDetails(fid);
       }
-
       break;
+
     case "frame_removed":
       await deleteUserNotificationDetails(fid);
-
       break;
+
     case "notifications_enabled":
       await setUserNotificationDetails(fid, event.notificationDetails);
       await sendFrameNotification({
@@ -70,11 +79,10 @@ export async function POST(request: NextRequest) {
         title: "Ding ding ding",
         body: "Notifications are now enabled",
       });
-
       break;
+
     case "notifications_disabled":
       await deleteUserNotificationDetails(fid);
-
       break;
   }
 

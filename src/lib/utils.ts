@@ -62,6 +62,13 @@ export async function generateFarcasterMetadata() {
     };
   }
 
+  // Determine webhook URL based on whether Neynar is enabled
+  const neynarApiKey = process.env.NEYNAR_API_KEY;
+  const neynarClientId = process.env.NEYNAR_CLIENT_ID;
+  const webhookUrl = neynarApiKey && neynarClientId 
+    ? `https://api.neynar.com/f/app/${neynarClientId}/event`
+    : `${appUrl}/api/webhook`;
+
   return {
     accountAssociation,
     frame: {
@@ -73,7 +80,7 @@ export async function generateFarcasterMetadata() {
       buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || "Launch Frame",
       splashImageUrl: process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL || `${appUrl}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
-      webhookUrl: `${appUrl}/api/webhook`,
+      webhookUrl,
     },
   };
 }

@@ -1,4 +1,4 @@
-# 🖼️ frames-v2-demo
+# Frames v2 Quickstart by Neynar 🪐
 
 A Farcaster Frames v2 quickstart npx script.
 
@@ -8,5 +8,5 @@ This is a [NextJS](https://nextjs.org/) + TypeScript + React app.
 
 To create a new frames project, run:
 ```{bash}
-npx frames-v2-demo
+npx create-neynar-farcaster-frame
 ```

@@ -1,6 +1,6 @@
 {
-  "name": "frames-v2-demo",
-  "version": "0.2.0",
+  "name": "create-neynar-farcaster-frame",
+  "version": "1.0.0",
   "type": "module",
   "files": [
     "bin/index.js"
@@ -21,7 +21,7 @@
     "lint": "next lint"
   },
   "bin": {
-    "frames-v2-demo": "./bin/index.js"
+    "create-neynar-farcaster-frame": "./bin/index.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
