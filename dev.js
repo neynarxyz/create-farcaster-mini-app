@@ -20,7 +20,7 @@ async function startDev() {
 
 💻 To test on desktop:
    1. Open the localtunnel URL in your browser: ${tunnel.url}
-   2. Enter your IP address in the password field${ip ? `: ${ip}` : ''}
+   2. Enter your IP address in the password field${ip ? `: ${ip}` : ''} (note that this IP may be incorrect if you are using a VPN)
    3. Click "Click to Submit" -- your frame should now load in the browser
    4. Navigate to the Warpcast Frame Developer Tools: https://warpcast.com/~/developers/frames
    5. Enter your frame URL: ${tunnel.url}
@@ -49,15 +49,33 @@ async function startDev() {
     if (isCleaningUp) return;
     isCleaningUp = true;
 
+    console.log('\n\nShutting down...');
+
     try {
       if (nextDev) {
-        nextDev.kill();
-        console.log('\n🛑 Next.js dev server stopped');
+        // Kill the main process first
+        nextDev.kill('SIGKILL');
+        // Then kill any remaining child processes in the group
+        process.kill(-nextDev.pid);
+        console.log('🛑 Next.js dev server stopped');
       }
       
       if (tunnel) {
         await tunnel.close();
-        console.log('\n🌐 Tunnel closed');
+        console.log('🌐 Tunnel closed');
+      }
+
+      // Force kill any remaining processes on port 3000
+      try {
+        if (process.platform === 'darwin') { // macOS
+          await spawn('lsof', ['-ti', ':3000']).stdout.on('data', (data) => {
+            data.toString().split('\n').forEach(pid => {
+              if (pid) process.kill(parseInt(pid), 'SIGKILL');
+            });
+          });
+        }
+      } catch (e) {
+        // Ignore errors if no process found
       }
     } catch (error) {
       console.error('Error during cleanup:', error);
@@ -69,6 +87,7 @@ async function startDev() {
   // Handle process termination
   process.on('SIGINT', cleanup);
   process.on('SIGTERM', cleanup);
+  process.on('exit', cleanup);
   tunnel.on('close', cleanup);
 }
 

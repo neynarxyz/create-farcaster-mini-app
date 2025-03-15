@@ -11,7 +11,7 @@ import { mnemonicToAccount } from 'viem/accounts';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const REPO_URL = 'https://github.com/neynarxyz/create-neynar-farcaster-frame.git';
+const REPO_URL = 'https://github.com/neynarxyz/create-neynar-farcaster-frame.git#main';
 const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
 
 function printWelcomeMessage() {
@@ -223,7 +223,17 @@ async function init() {
 
   // Clone the repository
   try {
-    execSync(`git clone ${REPO_URL} "${projectPath}"`);
+    console.log(`\nCloning repository from ${REPO_URL}...`);
+    execSync(`git clone -b main ${REPO_URL} "${projectPath}" && cd "${projectPath}" && git fetch origin main && git reset --hard origin/main`);
+    
+    // Debug: Check initial page.tsx content
+    const pagePath = path.join(projectPath, 'src', 'app', 'page.tsx');
+    if (fs.existsSync(pagePath)) {
+      console.log('\nInitial page.tsx content:');
+      console.log(fs.readFileSync(pagePath, 'utf8'));
+    } else {
+      console.log('\npage.tsx does not exist after clone');
+    }
   } catch (error) {
     console.error('\n❌ Error: Failed to create project directory.');
     console.error('Please make sure you have write permissions and try again.');
@@ -233,6 +243,13 @@ async function init() {
   // Remove the .git directory
   console.log('\nRemoving .git directory...');
   fs.rmSync(path.join(projectPath, '.git'), { recursive: true, force: true });
+
+  // Debug: Check page.tsx content after .git removal
+  const pagePath = path.join(projectPath, 'src', 'app', 'page.tsx');
+  if (fs.existsSync(pagePath)) {
+    console.log('\npage.tsx content after .git removal:');
+    console.log(fs.readFileSync(pagePath, 'utf8'));
+  }
 
   // Remove package-lock.json
   console.log('\nRemoving package-lock.json...');
@@ -245,6 +262,13 @@ async function init() {
   console.log('\nUpdating package.json...');
   const packageJsonPath = path.join(projectPath, 'package.json');
   let packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+
+  // Debug: Check page.tsx content after package.json update
+  if (fs.existsSync(pagePath)) {
+    console.log('\npage.tsx content after package.json update:');
+    console.log(fs.readFileSync(pagePath, 'utf8'));
+  }
+
   packageJson.name = projectName;
   packageJson.version = '0.1.0';
   delete packageJson.author;
@@ -357,7 +381,20 @@ async function init() {
 
   // Install dependencies
   console.log('\nInstalling dependencies...');
+  
+  // Debug: Check page.tsx content before npm install
+  if (fs.existsSync(pagePath)) {
+    console.log('\npage.tsx content before npm install:');
+    console.log(fs.readFileSync(pagePath, 'utf8'));
+  }
+
   execSync('npm install', { cwd: projectPath, stdio: 'inherit' });
+
+  // Debug: Check page.tsx content after npm install
+  if (fs.existsSync(pagePath)) {
+    console.log('\npage.tsx content after npm install:');
+    console.log(fs.readFileSync(pagePath, 'utf8'));
+  }
 
   // Remove the bin directory
   console.log('\nRemoving bin directory...');
