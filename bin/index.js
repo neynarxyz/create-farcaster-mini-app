@@ -11,7 +11,7 @@ import { mnemonicToAccount } from 'viem/accounts';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const REPO_URL = 'https://github.com/neynarxyz/create-neynar-farcaster-frame.git#main';
+const REPO_URL = 'git://github.com/neynarxyz/create-neynar-farcaster-frame.git';
 const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
 
 function printWelcomeMessage() {
@@ -388,6 +388,7 @@ async function init() {
     console.log(fs.readFileSync(pagePath, 'utf8'));
   }
 
+  execSync('npm cache clean --force', { cwd: projectPath, stdio: 'inherit' });
   execSync('npm install', { cwd: projectPath, stdio: 'inherit' });
 
   // Debug: Check page.tsx content after npm install
