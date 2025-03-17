@@ -1,6 +1,15 @@
 import localtunnel from 'localtunnel';
 import { spawn } from 'child_process';
 import { createServer } from 'net';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Load environment variables
+dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.join(__dirname, '..');
 
 let tunnel;
 let nextDev;
@@ -23,30 +32,71 @@ async function checkPort(port) {
   });
 }
 
+async function killProcessOnPort(port) {
+  try {
+    if (process.platform === 'win32') {
+      // Windows: Use netstat to find the process
+      const netstat = spawn('netstat', ['-ano', '|', 'findstr', `:${port}`]);
+      netstat.stdout.on('data', (data) => {
+        const match = data.toString().match(/\s+(\d+)$/);
+        if (match) {
+          const pid = match[1];
+          spawn('taskkill', ['/F', '/PID', pid]);
+        }
+      });
+      await new Promise((resolve) => netstat.on('close', resolve));
+    } else {
+      // Unix-like systems: Use lsof
+      const lsof = spawn('lsof', ['-ti', `:${port}`]);
+      lsof.stdout.on('data', (data) => {
+        data.toString().split('\n').forEach(pid => {
+          if (pid) {
+            try {
+              process.kill(parseInt(pid), 'SIGKILL');
+            } catch (e) {
+              if (e.code !== 'ESRCH') throw e;
+            }
+          }
+        });
+      });
+      await new Promise((resolve) => lsof.on('close', resolve));
+    }
+  } catch (e) {
+    // Ignore errors if no process found
+  }
+}
+
 async function startDev() {
   // Check if port 3000 is already in use
   const isPortInUse = await checkPort(3000);
   if (isPortInUse) {
     console.error('Port 3000 is already in use. To find and kill the process using this port:\n\n' +
-      '1. On macOS/Linux, run: lsof -i :3000\n' +
-      '   On Windows, run: netstat -ano | findstr :3000\n\n' +
-      '2. Note the PID (Process ID) from the output\n\n' + 
-      '3. On macOS/Linux, run: kill -9 <PID>\n' +
-      '   On Windows, run: taskkill /PID <PID> /F\n\n' +
-      'Then try running this command again.');
+      (process.platform === 'win32' 
+        ? '1. Run: netstat -ano | findstr :3000\n' +
+          '2. Note the PID (Process ID) from the output\n' +
+          '3. Run: taskkill /PID <PID> /F\n'
+        : '1. On macOS/Linux, run: lsof -i :3000\n' +
+          '2. Note the PID (Process ID) from the output\n' +
+          '3. Run: kill -9 <PID>\n') +
+      '\nThen try running this command again.');
     process.exit(1);
   }
 
-  // Start localtunnel and get URL
-  tunnel = await localtunnel({ port: 3000 });
-  let ip;
-  try {
-    ip = await fetch('https://ipv4.icanhazip.com').then(res => res.text()).then(ip => ip.trim());
-  } catch (error) {
-    console.error('Error getting IP address:', error);
-  }
+  const useTunnel = process.env.USE_TUNNEL === 'true';
+  let frameUrl;
 
-  console.log(`
+  if (useTunnel) {
+    // Start localtunnel and get URL
+    tunnel = await localtunnel({ port: 3000 });
+    let ip;
+    try {
+      ip = await fetch('https://ipv4.icanhazip.com').then(res => res.text()).then(ip => ip.trim());
+    } catch (error) {
+      console.error('Error getting IP address:', error);
+    }
+
+    frameUrl = tunnel.url;
+    console.log(`
 🌐 Local tunnel URL: ${tunnel.url}
 
 💻 To test on desktop:
@@ -68,11 +118,28 @@ async function startDev() {
    4. Enter this URL: ${tunnel.url}
    5. Click "Launch" (note that it may take ~10 seconds to load)
 `);
+  } else {
+    frameUrl = 'https://localhost:3000';
+    console.log(`
+💻 To test your frame:
+   1. Open the Warpcast Frame Developer Tools: https://warpcast.com/~/developers/frames
+   2. Scroll down to the "Launch Frame" tool
+   3. Enter this URL: ${frameUrl}
+   4. Click "Preview" to test your frame
+
+Note: You may need to accept the self-signed certificate in your browser when first visiting ${frameUrl}
+`);
+  }
   
-  // Start next dev with the tunnel URL as relevant environment variables
-  nextDev = spawn('next', ['dev'], {
+  // Start next dev with appropriate configuration
+  const nextBin = process.platform === 'win32' 
+    ? path.join(projectRoot, 'node_modules', '.bin', 'next.cmd')
+    : path.join(projectRoot, 'node_modules', '.bin', 'next');
+
+  nextDev = spawn(nextBin, ['dev', ...(useTunnel ? [] : ['--experimental-https'])], {
     stdio: 'inherit',
-    env: { ...process.env, NEXT_PUBLIC_URL: tunnel.url, NEXTAUTH_URL: tunnel.url }
+    env: { ...process.env, NEXT_PUBLIC_URL: frameUrl, NEXTAUTH_URL: frameUrl },
+    cwd: projectRoot
   });
 
   // Handle cleanup
@@ -113,27 +180,7 @@ async function startDev() {
       }
 
       // Force kill any remaining processes on port 3000
-      try {
-        if (process.platform === 'darwin') { // macOS
-          const lsof = spawn('lsof', ['-ti', ':3000']);
-          lsof.stdout.on('data', (data) => {
-            data.toString().split('\n').forEach(pid => {
-              if (pid) {
-                try {
-                  process.kill(parseInt(pid), 'SIGKILL');
-                } catch (e) {
-                  // Ignore ESRCH errors when killing individual processes
-                  if (e.code !== 'ESRCH') throw e;
-                }
-              }
-            });
-          });
-          // Wait for lsof to complete
-          await new Promise((resolve) => lsof.on('close', resolve));
-        }
-      } catch (e) {
-        // Ignore errors if no process found
-      }
+      await killProcessOnPort(3000);
     } catch (error) {
       console.error('Error during cleanup:', error);
     } finally {
@@ -145,7 +192,9 @@ async function startDev() {
   process.on('SIGINT', cleanup);
   process.on('SIGTERM', cleanup);
   process.on('exit', cleanup);
-  tunnel.on('close', cleanup);
+  if (tunnel) {
+    tunnel.on('close', cleanup);
+  }
 }
 
 startDev().catch(console.error); 

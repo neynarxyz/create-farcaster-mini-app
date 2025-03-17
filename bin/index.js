@@ -156,6 +156,27 @@ async function init() {
     answers.neynarApiKey = null;
   }
 
+  // Ask about localhost vs tunnel
+  const hostingAnswer = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'useTunnel',
+      message: 'Would you like to use a tunnel for development?\n\n' +
+        'Using a tunnel:\n' +
+        '- No sudo privileges required\n' +
+        '- Works with all Warpcast Frame Developer Tools\n' +
+        '- Possible to test on mobile devices\n\n' +
+        'Using localhost:\n' +
+        '- Requires sudo privileges to enable HTTPS\n' +
+        '- Only works with the "Launch Frame" Warpcast tool\n' +
+        '- Cannot test frame embeds or mobile devices\n\n' +
+        'Note: You can always switch between localhost and tunnel by editing the USE_TUNNEL environment variable in .env.local\n\n' +
+        'Use tunnel?',
+      default: true
+    }
+  ]);
+  answers.useTunnel = hostingAnswer.useTunnel;
+
   // Ask for seed phrase last
   const seedPhraseAnswer = await inquirer.prompt([
     {
@@ -219,13 +240,15 @@ async function init() {
   const projectName = answers.projectName;
   const projectPath = path.join(process.cwd(), projectName);
 
-  console.log(`\nCreating a new Frames v2 app in ${projectPath}\n`);
+  console.log(`\nCreating a new Frames v2 app in ${projectPath}`);
 
   // Clone the repository
   try {
     console.log(`\nCloning repository from ${REPO_URL}...`);
-    execSync(`git clone -b main ${REPO_URL} "${projectPath}" && cd "${projectPath}" && git fetch origin main && git reset --hard origin/main`);
-
+    // Use separate commands for better cross-platform compatibility
+    execSync(`git clone ${REPO_URL} "${projectPath}"`, { stdio: 'inherit' });
+    execSync('git fetch origin main', { cwd: projectPath, stdio: 'inherit' });
+    execSync('git reset --hard origin/main', { cwd: projectPath, stdio: 'inherit' });
   } catch (error) {
     console.error('\n❌ Error: Failed to create project directory.');
     console.error('Please make sure you have write permissions and try again.');
@@ -341,6 +364,7 @@ async function init() {
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
     fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO'}"`);
+    fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
     
     fs.unlinkSync(envExamplePath);
     console.log('\nCreated .env.local file from .env.example');
