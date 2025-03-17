@@ -1,4 +1,4 @@
-import { NeynarAPIClient } from '@neynar/nodejs-sdk';
+import { NeynarAPIClient, Configuration } from '@neynar/nodejs-sdk';
 
 let neynarClient: NeynarAPIClient | null = null;
 
@@ -11,7 +11,8 @@ export function getNeynarClient() {
     if (!apiKey) {
       throw new Error('NEYNAR_API_KEY not configured');
     }
-    neynarClient = new NeynarAPIClient(apiKey);
+    const config = new Configuration({ apiKey });
+    neynarClient = new NeynarAPIClient(config);
   }
   return neynarClient;
 }
