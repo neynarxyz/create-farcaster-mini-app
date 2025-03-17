@@ -6,6 +6,19 @@ let nextDev;
 let isCleaningUp = false;
 
 async function startDev() {
+  // Check if port 3000 is already in use
+  const isPortInUse = await checkPort(3000);
+  if (isPortInUse) {
+    console.error('Port 3000 is already in use. To find and kill the process using this port:\n\n' +
+      '1. On macOS/Linux, run: lsof -i :3000\n' +
+      '   On Windows, run: netstat -ano | findstr :3000\n\n' +
+      '2. Note the PID (Process ID) from the output\n\n' + 
+      '3. On macOS/Linux, run: kill -9 <PID>\n' +
+      '   On Windows, run: taskkill /PID <PID> /F\n\n' +
+      'Then try running this command again.');
+    process.exit(1);
+  }
+
   // Start localtunnel and get URL
   tunnel = await localtunnel({ port: 3000 });
   let ip;
@@ -53,28 +66,52 @@ async function startDev() {
 
     try {
       if (nextDev) {
-        // Kill the main process first
-        nextDev.kill('SIGKILL');
-        // Then kill any remaining child processes in the group
-        if (nextDev?.pid) {
-          process.kill(-nextDev.pid);
+        try {
+          // Kill the main process first
+          nextDev.kill('SIGKILL');
+          // Then kill any remaining child processes in the group
+          if (nextDev?.pid) {
+            try {
+              process.kill(-nextDev.pid);
+            } catch (e) {
+              // Ignore ESRCH errors when killing process group
+              if (e.code !== 'ESRCH') throw e;
+            }
+          }
+          console.log('🛑 Next.js dev server stopped');
+        } catch (e) {
+          // Ignore errors when killing nextDev
+          console.log('Note: Next.js process already terminated');
         }
-        console.log('🛑 Next.js dev server stopped');
       }
       
       if (tunnel) {
-        await tunnel.close();
-        console.log('🌐 Tunnel closed');
+        try {
+          await tunnel.close();
+          console.log('🌐 Tunnel closed');
+        } catch (e) {
+          console.log('Note: Tunnel already closed');
+        }
       }
 
       // Force kill any remaining processes on port 3000
       try {
         if (process.platform === 'darwin') { // macOS
-          await spawn('lsof', ['-ti', ':3000']).stdout.on('data', (data) => {
+          const lsof = spawn('lsof', ['-ti', ':3000']);
+          lsof.stdout.on('data', (data) => {
             data.toString().split('\n').forEach(pid => {
-              if (pid) process.kill(parseInt(pid), 'SIGKILL');
+              if (pid) {
+                try {
+                  process.kill(parseInt(pid), 'SIGKILL');
+                } catch (e) {
+                  // Ignore ESRCH errors when killing individual processes
+                  if (e.code !== 'ESRCH') throw e;
+                }
+              }
             });
           });
+          // Wait for lsof to complete
+          await new Promise((resolve) => lsof.on('close', resolve));
         }
       } catch (e) {
         // Ignore errors if no process found
