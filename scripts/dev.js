@@ -56,7 +56,9 @@ async function startDev() {
         // Kill the main process first
         nextDev.kill('SIGKILL');
         // Then kill any remaining child processes in the group
-        process.kill(-nextDev.pid);
+        if (nextDev?.pid) {
+          process.kill(-nextDev.pid);
+        }
         console.log('🛑 Next.js dev server stopped');
       }
       

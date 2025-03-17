@@ -1,6 +1,6 @@
 {
   "name": "create-neynar-farcaster-frame",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "files": [
     "bin/index.js"
@@ -14,8 +14,7 @@
     "web3"
   ],
   "scripts": {
-    "localtunnel": "node localtunnel.js",
-    "dev": "node dev.js",
+    "dev": "node scripts/dev.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -27,5 +26,9 @@
     "dotenv": "^16.4.7",
     "inquirer": "^12.4.3",
     "viem": "^2.23.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@neynar/nodejs-sdk": "^2.19.0"
   }
 }
