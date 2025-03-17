@@ -161,7 +161,7 @@ async function init() {
     {
       type: 'password',
       name: 'seedPhrase',
-      message: 'Enter your Farcaster custody account seed phrase to generate a signed manifest for your frame\n(optional -- leave blank to create an unsigned frame)\n(seed phrase is only ever stored locally)\n\nSeed phrase:',
+      message: 'Enter your Farcaster custody account seed phrase to generate a signed manifest for your frame\n(optional -- leave blank to create an unsigned frame)\n(seed phrase is only ever stored in .env.local)\n\nSeed phrase:',
       default: null
     }
   ]);
@@ -256,6 +256,8 @@ async function init() {
   delete packageJson.license;
   delete packageJson.bin;
   delete packageJson.files;
+  delete packageJson.dependencies;
+  delete packageJson.devDependencies;
 
   // Add dependencies
   packageJson.dependencies = {
@@ -304,11 +306,11 @@ async function init() {
   // Handle .env file
   console.log('\nSetting up environment variables...');
   const envExamplePath = path.join(projectPath, '.env.example');
-  const envPath = path.join(projectPath, '.env');
+  const envPath = path.join(projectPath, '.env.local');
   if (fs.existsSync(envExamplePath)) {
     // Read the example file content
     const envExampleContent = fs.readFileSync(envExamplePath, 'utf8');
-    // Write it to .env
+    // Write it to .env.local
     fs.writeFileSync(envPath, envExampleContent);
     
     // Generate custody address from seed phrase
@@ -321,7 +323,7 @@ async function init() {
       const neynarApiKey = answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO';
       const fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey);
 
-      // Write seed phrase and FID to .env for manifest signature generation
+      // Write seed phrase and FID to .env.local for manifest signature generation
       fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
       fs.appendFileSync(envPath, `\nFID="${fid}"`);
     }
@@ -341,7 +343,7 @@ async function init() {
     fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO'}"`);
     
     fs.unlinkSync(envExamplePath);
-    console.log('\nCreated .env file from .env.example');
+    console.log('\nCreated .env.local file from .env.example');
   } else {
     console.log('\n.env.example does not exist, skipping copy and remove operations');
   }
