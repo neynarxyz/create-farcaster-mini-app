@@ -1,9 +1,27 @@
 import localtunnel from 'localtunnel';
 import { spawn } from 'child_process';
+import { createServer } from 'net';
 
 let tunnel;
 let nextDev;
 let isCleaningUp = false;
+
+async function checkPort(port) {
+  return new Promise((resolve) => {
+    const server = createServer();
+    
+    server.once('error', () => {
+      resolve(true); // Port is in use
+    });
+    
+    server.once('listening', () => {
+      server.close();
+      resolve(false); // Port is free
+    });
+    
+    server.listen(port);
+  });
+}
 
 async function startDev() {
   // Check if port 3000 is already in use
