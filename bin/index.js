@@ -150,10 +150,29 @@ async function init() {
     } else {
       answers.useNeynar = true;
       answers.neynarApiKey = neynarKeyAnswer.neynarApiKey;
+
+      // Get Neynar client ID if using Neynar
+      if (answers.useNeynar) {
+        const neynarClientIdAnswer = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'neynarClientId',
+            message: 'Enter your Neynar client ID:',
+            validate: (input) => {
+              if (input && !/^[a-zA-Z0-9-]+$/.test(input)) {
+                return 'Invalid Neynar client ID format';
+              }
+              return true;
+            }
+          }
+        ]);
+        answers.neynarClientId = neynarClientIdAnswer.neynarClientId;
+      }
     }
   } else {
     answers.useNeynar = false;
     answers.neynarApiKey = null;
+    answers.neynarClientId = null;
   }
 
   // Ask about localhost vs tunnel
@@ -342,9 +361,11 @@ async function init() {
       const custodyAddress = account.address;
 
       // Look up FID using custody address
-      console.log('\nLooking up FID...');
-      const neynarApiKey = answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO';
-      const fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey);
+      if (!fid) {
+        console.log('\nLooking up FID...');
+        const neynarApiKey = answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO';
+        fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey);
+      }
 
       // Write seed phrase and FID to .env.local for manifest signature generation
       fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
@@ -364,6 +385,9 @@ async function init() {
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
     fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO'}"`);
+    if (answers.neynarClientId) {
+      fs.appendFileSync(envPath, `\nNEYNAR_CLIENT_ID="${answers.neynarClientId}"`);
+    }
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
     
     fs.unlinkSync(envExamplePath);

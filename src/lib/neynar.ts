@@ -41,7 +41,7 @@ export async function sendNeynarFrameNotification({
     const notification = {
       title,
       body,
-      target_url: process.env.NEXT_PUBLIC_URL,
+      target_url: process.env.NEXT_PUBLIC_URL!,
     };
 
     const result = await client.publishFrameNotifications({ 
@@ -49,12 +49,12 @@ export async function sendNeynarFrameNotification({
       notification 
     });
 
-    if (result.success) {
+    if (result.notification_deliveries.length > 0) {
       return { state: "success" };
-    } else if (result.status === 429) {
-      return { state: "rate_limit" };
+    } else if (result.notification_deliveries.length === 0) {
+      return { state: "no_token" };
     } else {
-      return { state: "error", error: result.error || "Unknown error" };
+      return { state: "error", error: result || "Unknown error" };
     }
   } catch (error) {
     return { state: "error", error };

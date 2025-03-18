@@ -10,9 +10,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 dotenv.config({ path: '.env', override: true });
 
-// TODO: validate this file
-// TODO: add other stuff to .env necessary for prod deployment
-// TODO: update app to use saved manifest from .env if not running in dev mode
+// TODO: make sure rebuilding is supported
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -40,7 +38,7 @@ async function validateSeedPhrase(seedPhrase) {
   }
 }
 
-async function generateFarcasterMetadata(domain, accountAddress, seedPhrase) {
+async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, webhookUrl) {
   const header = {
     type: 'custody',
     key: accountAddress,
@@ -66,14 +64,14 @@ async function generateFarcasterMetadata(domain, accountAddress, seedPhrase) {
     },
     frame: {
       version: "1",
-      name: process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo",
+      name: process.env.NEXT_PUBLIC_FRAME_NAME,
       iconUrl: `${domain}/icon.png`,
       homeUrl: domain,
       imageUrl: `${domain}/opengraph-image`,
-      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || "Launch Frame",
+      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
       splashImageUrl: `${domain}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
-      webhookUrl: `${domain}/api/webhook`,
+      webhookUrl,
     },
   };
 }
@@ -118,7 +116,7 @@ async function main() {
       {
         type: 'input',
         name: 'buttonText',
-        message: 'Enter the text for your frame button (e.g., Launch Frame):',
+        message: 'Enter the text for your frame button:',
         default: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || 'Launch Frame',
         validate: (input) => {
           if (input.trim() === '') {
@@ -128,6 +126,50 @@ async function main() {
         }
       }
     ]);
+
+    // Get Neynar API key from user if not already in .env.local
+    let neynarApiKey = process.env.NEYNAR_API_KEY;
+    let neynarClientId = null;
+
+    if (!neynarApiKey) {
+      const { neynarApiKey: inputNeynarApiKey } = await inquirer.prompt([
+        {
+          type: 'password',
+          name: 'neynarApiKey',
+          message: 'Enter your Neynar API key (optional - leave blank to skip):',
+          default: null
+        }
+      ]);
+      neynarApiKey = inputNeynarApiKey;
+    } else {
+      console.log('Using existing Neynar API key from .env')
+    }
+
+    // Only ask for client ID if we have an API key
+    if (neynarApiKey) {
+      neynarClientId = process.env.NEYNAR_CLIENT_ID;
+      if (!neynarClientId) {
+        const { neynarClientId: inputNeynarClientId } = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'neynarClientId', 
+            message: 'Enter your Neynar client ID (required for Neynar webhook):',
+            validate: (input) => {
+              if (!input) {
+                return 'Client ID is required when using Neynar API key';
+              }
+              if (!/^[a-zA-Z0-9-]+$/.test(input)) {
+                return 'Invalid Neynar client ID format';
+              }
+              return true;
+            }
+          }
+        ]);
+        neynarClientId = inputNeynarClientId;
+      } else {
+        console.log('Using existing Neynar client ID from .env');
+      }
+    }
 
     // Get seed phrase from user if not already in .env.local
     let seedPhrase = process.env.SEED_PHRASE;
@@ -149,7 +191,7 @@ async function main() {
       ]);
       seedPhrase = inputSeedPhrase;
     } else {
-      console.log('Using existing seed phrase from .env.local');
+      console.log('Using existing seed phrase from .env');
     }
 
     // Validate seed phrase and get account address
@@ -158,7 +200,13 @@ async function main() {
 
     // Generate and sign manifest
     console.log('\n🔨 Generating frame manifest...');
-    const metadata = await generateFarcasterMetadata(domain, accountAddress, seedPhrase);
+    
+    // Determine webhook URL based on environment variables
+    const webhookUrl = neynarApiKey && neynarClientId 
+      ? `https://api.neynar.com/f/app/${neynarClientId}/event`
+      : `${domain}/api/webhook`;
+
+    const metadata = await generateFarcasterMetadata(domain, accountAddress, seedPhrase, webhookUrl);
     console.log('\n✅ Frame manifest generated' + (seedPhrase ? ' and signed' : ''));
 
     // Read existing .env file or create new one
@@ -184,8 +232,8 @@ async function main() {
       // Neynar configuration (if it exists in current env)
       ...(process.env.NEYNAR_API_KEY ? 
         [`NEYNAR_API_KEY="${process.env.NEYNAR_API_KEY}"`] : []),
-      ...(process.env.NEYNAR_CLIENT_ID ? 
-        [`NEYNAR_CLIENT_ID="${process.env.NEYNAR_CLIENT_ID}"`] : []),
+      ...(neynarClientId ? 
+        [`NEYNAR_CLIENT_ID="${neynarClientId}"`] : []),
 
       // FID (if it exists in current env)
       ...(process.env.FID ? [`FID="${process.env.FID}"`] : []),

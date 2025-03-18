@@ -13,7 +13,7 @@ npx create-neynar-farcaster-frame@latest
 
 To run the project:
 ```{bash}
-cd yourProjectName
+cd <PROJECT_NAME>
 npm run dev
 ```
 
