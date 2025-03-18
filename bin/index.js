@@ -329,6 +329,7 @@ async function init() {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "crypto": "^1.0.1",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "localtunnel": "^2.0.2",

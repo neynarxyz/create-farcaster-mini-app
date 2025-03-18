@@ -5,6 +5,7 @@ import { mnemonicToAccount } from 'viem/accounts';
 import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
@@ -237,6 +238,10 @@ async function main() {
 
       // FID (if it exists in current env)
       ...(process.env.FID ? [`FID="${process.env.FID}"`] : []),
+
+      // NextAuth configuration
+      `NEXTAUTH_SECRET="${process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('hex')}"`,
+      `NEXTAUTH_URL="https://${domain}"`,
 
       // Frame manifest with signature
       `FRAME_METADATA=${JSON.stringify(metadata)}`,
