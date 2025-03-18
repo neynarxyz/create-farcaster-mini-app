@@ -1,9 +1,28 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import { mnemonicToAccount } from 'viem/accounts';
 
+interface FrameMetadata {
+  accountAssociation?: {
+    header: string;
+    payload: string;
+    signature: string;
+  };
+  frame: {
+    version: string;
+    name: string;
+    iconUrl: string;
+    homeUrl: string;
+    imageUrl: string;
+    buttonTitle: string;
+    splashImageUrl: string;
+    splashBackgroundColor: string;
+    webhookUrl: string;
+  };
+}
+
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function getSecretEnvVars() {
@@ -17,7 +36,18 @@ export function getSecretEnvVars() {
   return { seedPhrase, fid };
 }
 
-export async function generateFarcasterMetadata() {
+export async function getFarcasterMetadata(): Promise<FrameMetadata> {
+  // First check for FRAME_METADATA in .env and use that if it exists
+  if (process.env.FRAME_METADATA) {
+    try {
+      const metadata = JSON.parse(process.env.FRAME_METADATA);
+      console.log('Using pre-signed frame metadata from environment');
+      return metadata;
+    } catch (error) {
+      console.warn('Failed to parse FRAME_METADATA from environment:', error);
+    }
+  }
+
   const appUrl = process.env.NEXT_PUBLIC_URL;
   if (!appUrl) {
     throw new Error('NEXT_PUBLIC_URL not configured');

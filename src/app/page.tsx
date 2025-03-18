@@ -4,16 +4,15 @@ import App from "./app";
 const appUrl = process.env.NEXT_PUBLIC_URL;
 
 // frame preview metadata
-// question: do we need metadata both in this file and in the .well-known/farcaster.json file?
-const appName = process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo";
+const appName = process.env.NEXT_PUBLIC_FRAME_NAME;
 const splashImageUrl = process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL || `${appUrl}/splash.png`;
 const iconUrl = process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL || `${appUrl}/icon.png`;
 
-const frame = {
+const framePreviewMetadata = {
   version: "next",
   imageUrl: `${appUrl}/opengraph-image`,
   button: {
-    title: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || "Launch Frame",
+    title: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
     action: {
       type: "launch_frame",
       name: appName,
@@ -32,10 +31,10 @@ export async function generateMetadata(): Promise<Metadata> {
     title: appName,
     openGraph: {
       title: appName,
-      description: process.env.NEXT_PUBLIC_FRAME_DESCRIPTION || "A Farcaster Frames v2 demo app.",
+      description: process.env.NEXT_PUBLIC_FRAME_DESCRIPTION,
     },
     other: {
-      "fc:frame": JSON.stringify(frame),
+      "fc:frame": JSON.stringify(framePreviewMetadata),
     },
   };
 }

@@ -129,22 +129,28 @@ async function main() {
       }
     ]);
 
-    // Get seed phrase from user
-    const { seedPhrase } = await inquirer.prompt([
-      {
-        type: 'password',
-        name: 'seedPhrase',
-        message: 'Enter your seed phrase (this will only be used to sign the frame manifest):',
-        validate: async (input) => {
-          try {
-            await validateSeedPhrase(input);
-            return true;
-          } catch (error) {
-            return error.message;
+    // Get seed phrase from user if not already in .env.local
+    let seedPhrase = process.env.SEED_PHRASE;
+    if (!seedPhrase) {
+      const { seedPhrase: inputSeedPhrase } = await inquirer.prompt([
+        {
+          type: 'password',
+          name: 'seedPhrase',
+          message: 'Enter your seed phrase (this will only be used to sign the frame manifest):',
+          validate: async (input) => {
+            try {
+              await validateSeedPhrase(input);
+              return true;
+            } catch (error) {
+              return error.message;
+            }
           }
         }
-      }
-    ]);
+      ]);
+      seedPhrase = inputSeedPhrase;
+    } else {
+      console.log('Using existing seed phrase from .env.local');
+    }
 
     // Validate seed phrase and get account address
     const accountAddress = await validateSeedPhrase(seedPhrase);
