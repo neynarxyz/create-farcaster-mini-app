@@ -42,7 +42,6 @@ async function queryNeynarApp(apiKey) {
       }
     );
     const data = await response.json();
-    console.log('Neynar app data:', data);
     return data;
   } catch (error) {
     console.error('Error querying Neynar app data:', error);

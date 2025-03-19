@@ -116,14 +116,14 @@ async function startDev() {
    1. Open Warpcast on your phone
    2. Go to Settings > Developer > Frames
    4. Enter this URL: ${tunnel.url}
-   5. Click "Launch" (note that it may take ~10 seconds to load)
+   5. Click "Preview" (note that it may take ~10 seconds to load)
 `);
   } else {
     frameUrl = 'https://localhost:3000';
     console.log(`
 💻 To test your frame:
    1. Open the Warpcast Frame Developer Tools: https://warpcast.com/~/developers/frames
-   2. Scroll down to the "Launch Frame" tool
+   2. Scroll down to the "Preview Frame" tool
    3. Enter this URL: ${frameUrl}
    4. Click "Preview" to test your frame
 
