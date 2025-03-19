@@ -36,6 +36,28 @@ Let's create your Frame! 🚀
 `);
 }
 
+async function queryNeynarApp(apiKey) {
+  if (!apiKey) {
+    return null;
+  }
+  try {
+    const response = await fetch(
+      `https://api.neynar.com/portal/app_by_api_key`,
+      {
+        headers: {
+          'x-api-key': apiKey
+        }
+      }
+    );
+    const data = await response.json();
+    console.log('Neynar app data:', data);
+    return data;
+  } catch (error) {
+    console.error('Error querying Neynar app data:', error);
+    return null;
+  }
+}
+
 async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
   if (!apiKey) {
     throw new Error('Neynar API key is required');
@@ -66,11 +88,101 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
 async function init() {
   printWelcomeMessage();
 
+  // Ask about Neynar usage
+  let useNeynar = true;
+  let neynarApiKey = null;
+  let neynarClientId = null;
+  let neynarAppName = null;
+  let neynarAppLogoUrl = null;
+
+  while (useNeynar) {
+    const neynarAnswers = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'useNeynar',
+        message: '🪐 Neynar is an API that makes it easy to build on Farcaster.\n\nBenefits of using Neynar in your frame:\n- Pre-configured webhook handling (no setup required)\n- Automatic frame analytics in your dev portal\n- Send manual notifications from dev.neynar.com\n- Built-in rate limiting and error handling\n\nWould you like to use Neynar in your frame?',
+        default: true
+      }
+    ]);
+
+    if (!neynarAnswers.useNeynar) {
+      useNeynar = false;
+      break;
+    }
+
+    const neynarKeyAnswer = await inquirer.prompt([
+      {
+        type: 'password',
+        name: 'neynarApiKey',
+        message: 'Enter your Neynar API key (or press enter to skip):',
+        default: null
+      }
+    ]);
+
+    if (neynarKeyAnswer.neynarApiKey) {
+      neynarApiKey = neynarKeyAnswer.neynarApiKey;
+    } else {
+      const useDemoKey = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'useDemo',
+          message: 'Would you like to try the demo Neynar API key?',
+          default: true
+        }
+      ]);
+      neynarApiKey = useDemoKey.useDemo ? 'FARCASTER_V2_FRAMES_DEMO' : null;
+    }
+
+    if (!neynarApiKey) {
+      console.log('\n⚠️  No valid API key provided. Would you like to try again?');
+      const { retry } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'retry',
+          message: 'Try configuring Neynar again?',
+          default: true
+        }
+      ]);
+      if (!retry) {
+        useNeynar = false;
+        break;
+      }
+      continue;
+    }
+
+    const appInfo = await queryNeynarApp(neynarApiKey);
+    if (appInfo) {
+      neynarClientId = appInfo.app_uuid;
+      neynarAppName = appInfo.app_name;
+      neynarAppLogoUrl = appInfo.logo_url;
+    }
+
+    if (!neynarClientId) {
+      const { retry } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'retry',
+          message: '⚠️  Could not find a client ID for this API key. Would you like to try configuring Neynar again?',
+          default: true
+        }
+      ]);
+      if (!retry) {
+        useNeynar = false;
+        break;
+      }
+      continue;
+    }
+
+    // If we get here, we have both API key and client ID
+    break;
+  }
+
   const answers = await inquirer.prompt([
     {
       type: 'input',
       name: 'projectName',
       message: 'What is the name of your frame?',
+      default: neynarAppName || undefined,
       validate: (input) => {
         if (input.trim() === '') {
           return 'Project name cannot be empty';
@@ -105,75 +217,15 @@ async function init() {
       type: 'input',
       name: 'splashImageUrl',
       message: 'Enter the URL for your splash image\n(optional -- leave blank to use the default public/splash.png image or replace public/splash.png with your own)\n\nExternal splash image URL:',
-      default: null
+      default: neynarAppLogoUrl || undefined
     },
     {
       type: 'input',
       name: 'iconImageUrl',
       message: 'Enter the URL for your app icon\n(optional -- leave blank to use the default public/icon.png image or replace public/icon.png with your own)\n\nExternal app icon URL:',
-      default: null
+      default: neynarAppLogoUrl || undefined
     }
   ]);
-
-  // Handle Neynar API key
-  const neynarFlow = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'useNeynar',
-      message: '🪐 Neynar is an API that makes it easy to build on Farcaster.\n\nBenefits of using Neynar in your frame:\n- Pre-configured webhook handling (no setup required)\n- Automatic frame analytics in your dev portal\n- Send manual notifications from dev.neynar.com\n- Built-in rate limiting and error handling\n\nWould you like to use Neynar in your frame?',
-      default: true
-    }
-  ]);
-
-  if (neynarFlow.useNeynar) {
-    const neynarKeyAnswer = await inquirer.prompt([
-      {
-        type: 'password',
-        name: 'neynarApiKey',
-        message: 'Enter your Neynar API key (or press enter to skip):',
-        default: null
-      }
-    ]);
-
-    if (!neynarKeyAnswer.neynarApiKey) {
-      const useDemoKey = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'useDemo',
-          message: 'Would you like to try the demo Neynar API key?',
-          default: true
-        }
-      ]);
-      
-      answers.useNeynar = useDemoKey.useDemo;
-      answers.neynarApiKey = useDemoKey.useDemo ? 'FARCASTER_V2_FRAMES_DEMO' : null;
-    } else {
-      answers.useNeynar = true;
-      answers.neynarApiKey = neynarKeyAnswer.neynarApiKey;
-
-      // Get Neynar client ID if using Neynar
-      if (answers.useNeynar) {
-        const neynarClientIdAnswer = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'neynarClientId',
-            message: 'Enter your Neynar client ID:',
-            validate: (input) => {
-              if (input && !/^[a-zA-Z0-9-]+$/.test(input)) {
-                return 'Invalid Neynar client ID format';
-              }
-              return true;
-            }
-          }
-        ]);
-        answers.neynarClientId = neynarClientIdAnswer.neynarClientId;
-      }
-    }
-  } else {
-    answers.useNeynar = false;
-    answers.neynarApiKey = null;
-    answers.neynarClientId = null;
-  }
 
   // Ask about localhost vs tunnel
   const hostingAnswer = await inquirer.prompt([
@@ -221,8 +273,7 @@ async function init() {
 
         // Look up FID using custody address
         console.log('\nUsing seed phrase to look up FID by custody address...');
-        const neynarApiKey = answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO';
-        fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey);
+        fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey ?? 'FARCASTER_V2_FRAMES_DEMO');
         
         if (!fid) {
           throw new Error('No FID found for this custody address');
@@ -339,7 +390,7 @@ async function init() {
   };
 
   // Add Neynar dependencies if selected
-  if (answers.useNeynar) {
+  if (useNeynar) {
     packageJson.dependencies['@neynar/nodejs-sdk'] = '^2.19.0';
     packageJson.dependencies['@neynar/react'] = '^0.9.7';
   }
@@ -364,8 +415,7 @@ async function init() {
       // Look up FID using custody address
       if (!fid) {
         console.log('\nLooking up FID...');
-        const neynarApiKey = answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO';
-        fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey);
+        fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey ?? 'FARCASTER_V2_FRAMES_DEMO');
       }
 
       // Write seed phrase and FID to .env.local for manifest signature generation
@@ -385,9 +435,9 @@ async function init() {
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
-    fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${answers.useNeynar ? answers.neynarApiKey : 'FARCASTER_V2_FRAMES_DEMO'}"`);
-    if (answers.neynarClientId) {
-      fs.appendFileSync(envPath, `\nNEYNAR_CLIENT_ID="${answers.neynarClientId}"`);
+    if (useNeynar) {
+      fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${neynarApiKey}"`);
+      fs.appendFileSync(envPath, `\nNEYNAR_CLIENT_ID="${neynarClientId}"`);
     }
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
     

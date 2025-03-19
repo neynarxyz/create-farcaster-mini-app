@@ -28,11 +28,32 @@ async function validateDomain(domain) {
   return cleanDomain;
 }
 
+async function queryNeynarApp(apiKey) {
+  if (!apiKey) {
+    return null;
+  }
+  try {
+    const response = await fetch(
+      `https://api.neynar.com/portal/app_by_api_key`,
+      {
+        headers: {
+          'x-api-key': apiKey
+        }
+      }
+    );
+    const data = await response.json();
+    console.log('Neynar app data:', data);
+    return data;
+  } catch (error) {
+    console.error('Error querying Neynar app data:', error);
+    return null;
+  }
+}
+
 async function validateSeedPhrase(seedPhrase) {
   try {
     // Try to create an account from the seed phrase
     const account = mnemonicToAccount(seedPhrase);
-    console.log('✅ Seed phrase validated successfully');
     return account.address;
   } catch (error) {
     throw new Error('Invalid seed phrase');
@@ -102,7 +123,7 @@ async function main() {
         type: 'input',
         name: 'frameName',
         message: 'Enter the name for your frame (e.g., My Cool Frame):',
-        default: process.env.NEXT_PUBLIC_FRAME_NAME || 'Frames v2 Demo',
+        default: process.env.NEXT_PUBLIC_FRAME_NAME,
         validate: (input) => {
           if (input.trim() === '') {
             return 'Frame name cannot be empty';
@@ -128,47 +149,57 @@ async function main() {
       }
     ]);
 
-    // Get Neynar API key from user if not already in .env.local
+    // Get Neynar configuration
     let neynarApiKey = process.env.NEYNAR_API_KEY;
-    let neynarClientId = null;
+    let neynarClientId = process.env.NEYNAR_CLIENT_ID;
+    let useNeynar = true;
 
-    if (!neynarApiKey) {
-      const { neynarApiKey: inputNeynarApiKey } = await inquirer.prompt([
-        {
-          type: 'password',
-          name: 'neynarApiKey',
-          message: 'Enter your Neynar API key (optional - leave blank to skip):',
-          default: null
-        }
-      ]);
-      neynarApiKey = inputNeynarApiKey;
-    } else {
-      console.log('Using existing Neynar API key from .env')
-    }
-
-    // Only ask for client ID if we have an API key
-    if (neynarApiKey) {
-      neynarClientId = process.env.NEYNAR_CLIENT_ID;
-      if (!neynarClientId) {
-        const { neynarClientId: inputNeynarClientId } = await inquirer.prompt([
+    while (useNeynar) {
+      if (!neynarApiKey) {
+        const { neynarApiKey: inputNeynarApiKey } = await inquirer.prompt([
           {
-            type: 'input',
-            name: 'neynarClientId', 
-            message: 'Enter your Neynar client ID (required for Neynar webhook):',
-            validate: (input) => {
-              if (!input) {
-                return 'Client ID is required when using Neynar API key';
-              }
-              if (!/^[a-zA-Z0-9-]+$/.test(input)) {
-                return 'Invalid Neynar client ID format';
-              }
-              return true;
-            }
+            type: 'password',
+            name: 'neynarApiKey',
+            message: 'Enter your Neynar API key (optional - leave blank to skip):',
+            default: null
           }
         ]);
-        neynarClientId = inputNeynarClientId;
+        neynarApiKey = inputNeynarApiKey;
       } else {
-        console.log('Using existing Neynar client ID from .env');
+        console.log('Using existing Neynar API key from .env');
+      }
+
+      if (!neynarApiKey) {
+        useNeynar = false;
+        break;
+      }
+
+      // Try to get client ID from API
+      const appInfo = await queryNeynarApp(neynarApiKey);
+      if (appInfo) {
+        neynarClientId = appInfo.app_uuid;
+        console.log('✅ Fetched Neynar app client ID');
+        break;
+      }
+
+      // If we get here, the API key was invalid
+      console.log('\n⚠️  Could not find Neynar app information. The API key may be incorrect.');
+      const { retry } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'retry',
+          message: 'Would you like to try a different API key?',
+          default: true
+        }
+      ]);
+
+      // Reset for retry
+      neynarApiKey = null;
+      neynarClientId = null;
+
+      if (!retry) {
+        useNeynar = false;
+        break;
       }
     }
 
@@ -197,7 +228,7 @@ async function main() {
 
     // Validate seed phrase and get account address
     const accountAddress = await validateSeedPhrase(seedPhrase);
-    console.log('✅ Seed phrase validated successfully');
+    console.log('✅ Generated account address from seed phrase');
 
     // Generate and sign manifest
     console.log('\n🔨 Generating frame manifest...');
