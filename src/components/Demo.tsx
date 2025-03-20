@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useCallback, useState, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Input } from "../components/ui/input";
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, {
-  AddFrame,
-  FrameNotificationDetails,
   SignIn as SignInCore,
-  type Context,
 } from "@farcaster/frame-sdk";
 import {
   useAccount,
@@ -27,29 +24,17 @@ import { truncateAddress } from "~/lib/truncateAddress";
 import { base, degen, mainnet, optimism, unichain } from "wagmi/chains";
 import { BaseError, UserRejectedRequestError } from "viem";
 import { useSession } from "next-auth/react";
-import { createStore } from "mipd";
 import { Label } from "~/components/ui/label";
+import { useFrame } from "~/components/providers/FrameProvider";
 
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
 ) {
-  const [isSDKLoaded, setIsSDKLoaded] = useState(false);
-  const [context, setContext] = useState<Context.FrameContext>();
+  const { isSDKLoaded, context, added, notificationDetails, lastEvent, addFrame, addFrameResult } = useFrame();
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
 
-  const [added, setAdded] = useState(false);
-  const [notificationDetails, setNotificationDetails] =
-    useState<FrameNotificationDetails | null>(null);
-
-  const [lastEvent, setLastEvent] = useState("");
-
-  const [addFrameResult, setAddFrameResult] = useState("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
-
-  useEffect(() => {
-    setNotificationDetails(context?.client.notificationDetails ?? null);
-  }, [context]);
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
@@ -101,68 +86,6 @@ export default function Demo(
     switchChain({ chainId: nextChain.id });
   }, [switchChain, nextChain.id]);
 
-  useEffect(() => {
-    const load = async () => {
-      const context = await sdk.context;
-      setContext(context);
-      setAdded(context.client.added);
-
-      sdk.on("frameAdded", ({ notificationDetails }) => {
-        setLastEvent(
-          `frameAdded${!!notificationDetails ? ", notifications enabled" : ""}`
-        );
-
-        setAdded(true);
-        if (notificationDetails) {
-          setNotificationDetails(notificationDetails);
-        }
-      });
-
-      sdk.on("frameAddRejected", ({ reason }) => {
-        setLastEvent(`frameAddRejected, reason ${reason}`);
-      });
-
-      sdk.on("frameRemoved", () => {
-        setLastEvent("frameRemoved");
-        setAdded(false);
-        setNotificationDetails(null);
-      });
-
-      sdk.on("notificationsEnabled", ({ notificationDetails }) => {
-        setLastEvent("notificationsEnabled");
-        setNotificationDetails(notificationDetails);
-      });
-      sdk.on("notificationsDisabled", () => {
-        setLastEvent("notificationsDisabled");
-        setNotificationDetails(null);
-      });
-
-      sdk.on("primaryButtonClicked", () => {
-        console.log("primaryButtonClicked");
-      });
-
-      console.log("Calling ready");
-      sdk.actions.ready({});
-
-      // Set up a MIPD Store, and request Providers.
-      const store = createStore();
-
-      // Subscribe to the MIPD Store.
-      store.subscribe((providerDetails) => {
-        console.log("PROVIDER DETAILS", providerDetails);
-        // => [EIP6963ProviderDetail, EIP6963ProviderDetail, ...]
-      });
-    };
-    if (sdk && !isSDKLoaded) {
-      console.log("Calling load");
-      setIsSDKLoaded(true);
-      load();
-      return () => {
-        sdk.removeAllListeners();
-      };
-    }
-  }, [isSDKLoaded]);
-
   const openUrl = useCallback(() => {
     sdk.actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
   }, []);
@@ -173,33 +96,6 @@ export default function Demo(
 
   const close = useCallback(() => {
     sdk.actions.close();
-  }, []);
-
-  const addFrame = useCallback(async () => {
-    try {
-      setNotificationDetails(null);
-
-      const result = await sdk.actions.addFrame();
-
-      if (result.notificationDetails) {
-        setNotificationDetails(result.notificationDetails);
-      }
-      setAddFrameResult(
-        result.notificationDetails
-          ? `Added, got notificaton token ${result.notificationDetails.token} and url ${result.notificationDetails.url}`
-          : "Added, got no notification details"
-      );
-    } catch (error) {
-      if (error instanceof AddFrame.RejectedByUser) {
-        setAddFrameResult(`Not added: ${error.message}`);
-      }
-
-      if (error instanceof AddFrame.InvalidDomainManifest) {
-        setAddFrameResult(`Not added: ${error.message}`);
-      }
-
-      setAddFrameResult(`Error: ${error}`);
-    }
   }, []);
 
   const sendNotification = useCallback(async () => {
@@ -713,7 +609,6 @@ function ViewProfile() {
     </>
   );
 }
-
 const renderError = (error: Error | null) => {
   if (!error) return null;
   if (error instanceof BaseError) {
@@ -728,3 +623,4 @@ const renderError = (error: Error | null) => {
 
   return <div className="text-red-500 text-xs mt-1">{error.message}</div>;
 };
+
