@@ -17,6 +17,12 @@ cd <PROJECT_NAME>
 npm run dev
 ```
 
+## Deploy to Vercel
+For projects that have made minimal changes to the quickstart template, deploy to vercel by running:
+```{bash}
+npm run deploy:vercel
+```
+
 ## Building for Production
 
 To create a production build, run:

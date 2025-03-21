@@ -373,13 +373,7 @@ async function deployToVercel(useGitHub = false) {
       ...(process.env.NEYNAR_API_KEY && { NEYNAR_API_KEY: process.env.NEYNAR_API_KEY }),
       ...(process.env.NEYNAR_CLIENT_ID && { NEYNAR_CLIENT_ID: process.env.NEYNAR_CLIENT_ID }),
       
-      // Frame metadata and images
-      ...(process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL && { 
-        NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL: process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL 
-      }),
-      ...(process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL && { 
-        NEXT_PUBLIC_FRAME_ICON_IMAGE_URL: process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL 
-      }),
+      // Frame metadata
       ...(frameMetadata && { FRAME_METADATA: frameMetadata }),
       
       // Public vars
@@ -388,8 +382,6 @@ async function deployToVercel(useGitHub = false) {
           .filter(([key]) => key.startsWith('NEXT_PUBLIC_'))
       )
     };
-    console.log('vercelEnv');
-    console.log(vercelEnv);
 
     // Add or update env vars in Vercel project
     console.log('\n📝 Setting up environment variables...');
@@ -439,88 +431,133 @@ async function deployToVercel(useGitHub = false) {
     // Verify the actual domain after deployment
     
     console.log('\n🔍 Verifying deployment domain...');
-    const projectOutput = execSync('vercel project ls', { 
-      cwd: projectRoot,
-      encoding: 'utf8',
-      stdio: ['inherit', 'pipe', 'inherit'] // Capture stdout but show stderr
-    });
     
-    const projectLines = projectOutput.split('\n');
-    console.log('Project lines:', projectLines);
-    
-    // Find the line containing our project name
-    const currentProject = projectLines.find(line => 
-      line.includes(projectName) && line.includes('https://')
-    );
-    
-    console.log('Current project line:', currentProject);
-    
-    if (currentProject) {
-      // Extract the domain from the line
-      const domainMatch = currentProject.match(/https:\/\/([^\s]+)/);
-      if (domainMatch) {
-        const actualDomain = domainMatch[1];
-        if (actualDomain !== domain) {
-          console.log(`⚠️  Actual domain (${actualDomain}) differs from assumed domain (${domain})`);
-          console.log('🔄 Updating environment variables with correct domain...');
-          
-          // Update domain-dependent environment variables
-          const webhookUrl = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
-            ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
-            : `https://${actualDomain}/api/webhook`;
+    // Create a temporary file path
+    const tempOutputFile = path.join(projectRoot, 'vercel_output.txt');
 
-          if (frameMetadata) {
-            frameMetadata = await generateFarcasterMetadata(actualDomain, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
-            // Update FRAME_METADATA env var
+    try {
+      // Redirect output to a file
+      execSync(`vercel project ls > "${tempOutputFile}" 2>&1`, {
+        cwd: projectRoot,
+        shell: true
+      });
+      
+      // Read the output file
+      const projectOutput = fs.readFileSync(tempOutputFile, 'utf8');
+      console.log('Raw project output:', projectOutput);
+      
+      // Process the output
+      const projectLines = projectOutput
+        .split('\n')
+        .filter(line => line.includes('https://'));
+      
+      console.log('Project lines:', projectLines);
+      
+      // Find the line containing our project name
+      const currentProject = projectLines.find(line => 
+        line.includes(projectName)
+      );
+      
+      console.log('Current project line:', currentProject);
+      
+      if (currentProject) {
+        // Extract the domain from the line
+        const domainMatch = currentProject.match(/https:\/\/([^\s]+)/);
+        if (domainMatch) {
+          const actualDomain = domainMatch[1];
+          if (actualDomain !== domain) {
+            console.log(`⚠️  Actual domain (${actualDomain}) differs from assumed domain (${domain})`);
+            console.log('🔄 Updating environment variables with correct domain...');
+            
+            // Update domain-dependent environment variables
+            const webhookUrl = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
+              ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
+              : `https://${actualDomain}/api/webhook`;
+
+            if (frameMetadata) {
+              frameMetadata = await generateFarcasterMetadata(actualDomain, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
+              // Update FRAME_METADATA env var
+              try {
+                execSync(`vercel env rm FRAME_METADATA production -y`, {
+                  cwd: projectRoot,
+                  stdio: 'ignore',
+                  env: process.env
+                });
+                execSync(`printf "%s" "${frameMetadata}" | vercel env add FRAME_METADATA production`, {
+                  cwd: projectRoot,
+                  stdio: 'inherit',
+                  env: process.env
+                });
+              } catch (error) {
+                console.warn('⚠️  Warning: Failed to update FRAME_METADATA with correct domain');
+              }
+            }
+
+            // Update NEXTAUTH_URL
             try {
-              execSync(`vercel env rm FRAME_METADATA production -y`, {
+              execSync(`vercel env rm NEXTAUTH_URL production -y`, {
                 cwd: projectRoot,
                 stdio: 'ignore',
                 env: process.env
               });
-              execSync(`printf "%s" "${frameMetadata}" | vercel env add FRAME_METADATA production`, {
+              execSync(`printf "%s" "https://${actualDomain}" | vercel env add NEXTAUTH_URL production`, {
                 cwd: projectRoot,
                 stdio: 'inherit',
                 env: process.env
               });
             } catch (error) {
-              console.warn('⚠️  Warning: Failed to update FRAME_METADATA with correct domain');
+              console.warn('⚠️  Warning: Failed to update NEXTAUTH_URL with correct domain');
             }
-          }
 
-          // Update NEXTAUTH_URL
-          try {
-            execSync(`vercel env rm NEXTAUTH_URL production -y`, {
-              cwd: projectRoot,
-              stdio: 'ignore',
-              env: process.env
-            });
-            execSync(`printf "%s" "https://${actualDomain}" | vercel env add NEXTAUTH_URL production`, {
+            // Update NEXT_PUBLIC_URL
+            try {
+              execSync(`vercel env rm NEXT_PUBLIC_URL production -y`, {
+                cwd: projectRoot,
+                stdio: 'ignore',
+                env: process.env
+              });
+              execSync(`printf "%s" "https://${actualDomain}" | vercel env add NEXT_PUBLIC_URL production`, {
+                cwd: projectRoot,
+                stdio: 'inherit',
+                env: process.env
+              });
+            } catch (error) {
+              console.warn('⚠️  Warning: Failed to update NEXT_PUBLIC_URL with correct domain');
+            }
+
+            // Redeploy with updated environment variables
+            console.log('\n📦 Redeploying with correct domain...');
+            execSync('vercel deploy --prod', { 
               cwd: projectRoot,
               stdio: 'inherit',
               env: process.env
             });
-          } catch (error) {
-            console.warn('⚠️  Warning: Failed to update NEXTAUTH_URL with correct domain');
+            
+            domain = actualDomain;
           }
-
-          // Redeploy with updated environment variables
-          console.log('\n📦 Redeploying with correct domain...');
-          execSync('vercel deploy --prod', { 
-            cwd: projectRoot,
-            stdio: 'inherit',
-            env: process.env
-          });
-          
-          domain = actualDomain;
+        } else {
+          console.warn('⚠️  Could not extract domain from project line');
         }
       } else {
-        console.warn('⚠️  Could not extract domain from project line');
+        console.warn('⚠️  Could not find project in Vercel project list');
       }
-    } else {
-      console.warn('⚠️  Could not find project in Vercel project list');
+      
+      // Clean up the temporary file
+      fs.unlinkSync(tempOutputFile);
+    } catch (error) {
+      console.error('Error:', error);
+      
+      // Try to read the output file even if there was an error
+      try {
+        if (fs.existsSync(tempOutputFile)) {
+          const errorOutput = fs.readFileSync(tempOutputFile, 'utf8');
+          console.log('Error output file contents:', errorOutput);
+          fs.unlinkSync(tempOutputFile);
+        }
+      } catch (readError) {
+        console.error('Error reading output file:', readError);
+      }
     }
-    
     
     console.log('\n✨ Deployment complete! Your frame is now live at:');
     console.log(`🌐 https://${domain}`);
