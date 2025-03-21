@@ -104,11 +104,11 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
     frame: {
       version: "1",
       name: process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo",
-      iconUrl: process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL || `${appUrl}/icon.png`,
+      iconUrl: `${appUrl}/icon.png`,
       homeUrl: appUrl,
       imageUrl: `${appUrl}/opengraph-image`,
       buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || "Launch Frame",
-      splashImageUrl: process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL || `${appUrl}/splash.png`,
+      splashImageUrl: `${appUrl}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
       webhookUrl,
     },
