@@ -238,7 +238,7 @@ async function init() {
         '- Possible to test on mobile devices\n\n' +
         'Using localhost:\n' +
         '- Requires sudo privileges to enable HTTPS\n' +
-        '- Only works with the "Launch Frame" Warpcast tool\n' +
+        '- Only works with the "Preview Frame" Warpcast tool\n' +
         '- Cannot test frame embeds or mobile devices\n\n' +
         'Note: You can always switch between localhost and tunnel by editing the USE_TUNNEL environment variable in .env.local\n\n' +
         'Use tunnel?',
@@ -307,7 +307,8 @@ async function init() {
   }
 
   const projectName = answers.projectName;
-  const projectPath = path.join(process.cwd(), projectName);
+  const projectDirName = projectName.replace(/\s+/g, '-').toLowerCase();
+  const projectPath = path.join(process.cwd(), projectDirName);
 
   console.log(`\nCreating a new Frames v2 app in ${projectPath}`);
 

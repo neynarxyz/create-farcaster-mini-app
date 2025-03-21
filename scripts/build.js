@@ -7,9 +7,59 @@ import inquirer from 'inquirer';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 
-// Load environment variables
-dotenv.config({ path: '.env.local' });
-dotenv.config({ path: '.env', override: true });
+// Load environment variables in specific order
+// First load .env for main config
+dotenv.config({ path: '.env' });
+
+async function loadEnvLocal() {
+  try {
+    if (fs.existsSync('.env.local')) {
+      const { loadLocal } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'loadLocal',
+          message: 'Found .env.local - would you like to load its values? (except for SEED_PHRASE, values will be written to .env)',
+          default: false
+        }
+      ]);
+
+      if (loadLocal) {
+        console.log('Loading values from .env.local...');
+        const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
+        
+        // Copy all values except SEED_PHRASE to .env
+        const envContent = fs.existsSync('.env') ? fs.readFileSync('.env', 'utf8') + '\n' : '';
+        let newEnvContent = envContent;
+        
+        for (const [key, value] of Object.entries(localEnv)) {
+          if (key !== 'SEED_PHRASE') {
+            // Update process.env
+            process.env[key] = value;
+            // Add to .env content if not already there
+            if (!envContent.includes(`${key}=`)) {
+              newEnvContent += `${key}="${value}"\n`;
+            }
+          }
+        }
+        
+        // Write updated content to .env
+        fs.writeFileSync('.env', newEnvContent);
+        console.log('✅ Values from .env.local have been written to .env');
+      }
+    }
+
+    // Always try to load SEED_PHRASE from .env.local
+    if (fs.existsSync('.env.local')) {
+      const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
+      if (localEnv.SEED_PHRASE) {
+        process.env.SEED_PHRASE = localEnv.SEED_PHRASE;
+      }
+    }
+  } catch (error) {
+    // Error reading .env.local, which is fine
+    console.log('Note: No .env.local file found');
+  }
+}
 
 // TODO: make sure rebuilding is supported
 
@@ -99,6 +149,12 @@ async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, web
 
 async function main() {
   try {
+    console.log('\n📝 Checking environment variables...');
+    console.log('Loading values from .env...');
+    
+    // Load .env.local if user wants to
+    await loadEnvLocal();
+
     // Get domain from user
     const { domain } = await inquirer.prompt([
       {
