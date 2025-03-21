@@ -310,12 +310,6 @@ async function main() {
       `NEXT_PUBLIC_FRAME_DESCRIPTION="${process.env.NEXT_PUBLIC_FRAME_DESCRIPTION || ''}"`,
       `NEXT_PUBLIC_FRAME_BUTTON_TEXT="${buttonText}"`,
 
-      // Image URLs (if they exist in current env)
-      ...(process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL ? 
-        [`NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL="${process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL}"`] : []),
-      ...(process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL ? 
-        [`NEXT_PUBLIC_FRAME_ICON_IMAGE_URL="${process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL}"`] : []),
-
       // Neynar configuration (if it exists in current env)
       ...(process.env.NEYNAR_API_KEY ? 
         [`NEYNAR_API_KEY="${process.env.NEYNAR_API_KEY}"`] : []),

@@ -43,7 +43,7 @@ async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, web
   });
   const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
 
-  return {
+  const metadata = {
     accountAssociation: {
       header: encodedHeader,
       payload: encodedPayload,
@@ -61,6 +61,9 @@ async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, web
       webhookUrl,
     },
   };
+
+  // Return stringified metadata to ensure proper JSON formatting
+  return JSON.stringify(metadata);
 }
 
 async function loadEnvLocal() {
@@ -377,7 +380,7 @@ async function deployToVercel(useGitHub = false) {
       ...(process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL && { 
         NEXT_PUBLIC_FRAME_ICON_IMAGE_URL: process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL 
       }),
-      ...(frameMetadata && { FRAME_METADATA: JSON.stringify(frameMetadata) }),
+      ...(frameMetadata && { FRAME_METADATA: frameMetadata }),
       
       // Public vars
       ...Object.fromEntries(
@@ -385,6 +388,8 @@ async function deployToVercel(useGitHub = false) {
           .filter(([key]) => key.startsWith('NEXT_PUBLIC_'))
       )
     };
+    console.log('vercelEnv');
+    console.log(vercelEnv);
 
     // Add or update env vars in Vercel project
     console.log('\n📝 Setting up environment variables...');
@@ -402,8 +407,8 @@ async function deployToVercel(useGitHub = false) {
             // Ignore errors from removal (var might not exist)
           }
           
-          // Add the new env var
-          execSync(`echo "${value}" | vercel env add ${key} production`, {
+          // Add the new env var without newline
+          execSync(`printf "%s" "${value}" | vercel env add ${key} production`, {
             cwd: projectRoot,
             stdio: 'inherit',
             env: process.env
@@ -440,7 +445,9 @@ async function deployToVercel(useGitHub = false) {
     });
     
     const projectLines = projectOutput.split('\n');
-    const currentProject = projectLines.find(line => line.includes('(current)'));
+    const currentProject = projectLines.find(line => line.includes(projectName));
+    console.log('currentProject');
+    console.log(currentProject);
     if (currentProject) {
       const actualDomain = currentProject.split(/\s+/)[1]?.replace('https://', '');
       if (actualDomain && actualDomain !== domain) {
@@ -461,7 +468,7 @@ async function deployToVercel(useGitHub = false) {
               stdio: 'ignore',
               env: process.env
             });
-            execSync(`echo "${JSON.stringify(frameMetadata)}" | vercel env add FRAME_METADATA production`, {
+            execSync(`printf "%s" "${frameMetadata}" | vercel env add FRAME_METADATA production`, {
               cwd: projectRoot,
               stdio: 'inherit',
               env: process.env
@@ -478,7 +485,7 @@ async function deployToVercel(useGitHub = false) {
             stdio: 'ignore',
             env: process.env
           });
-          execSync(`echo "https://${actualDomain}" | vercel env add NEXTAUTH_URL production`, {
+          execSync(`printf "%s" "https://${actualDomain}" | vercel env add NEXTAUTH_URL production`, {
             cwd: projectRoot,
             stdio: 'inherit',
             env: process.env
