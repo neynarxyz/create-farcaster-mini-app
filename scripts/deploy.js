@@ -53,7 +53,7 @@ async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, web
       version: "1",
       name: process.env.NEXT_PUBLIC_FRAME_NAME?.trim(),
       iconUrl: `https://${trimmedDomain}/icon.png`,
-      homeUrl: trimmedDomain,
+      homeUrl: `https://${trimmedDomain}`,
       imageUrl: `https://${trimmedDomain}/opengraph-image`,
       buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT?.trim(),
       splashImageUrl: `https://${trimmedDomain}/splash.png`,
