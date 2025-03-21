@@ -11,6 +11,33 @@ import crypto from 'crypto';
 // First load .env for main config
 dotenv.config({ path: '.env' });
 
+async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
+  if (!apiKey) {
+    throw new Error('Neynar API key is required');
+  }
+
+  const response = await fetch(
+    `https://api.neynar.com/v2/farcaster/user/custody-address?custody_address=${custodyAddress}`,
+    {
+      headers: {
+        'accept': 'application/json',
+        'x-api-key': apiKey
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to lookup FID: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  if (!data.user?.fid) {
+    throw new Error('No FID found for this custody address');
+  }
+
+  return data.user.fid;
+}
+
 async function loadEnvLocal() {
   try {
     if (fs.existsSync('.env.local')) {
@@ -109,10 +136,11 @@ async function validateSeedPhrase(seedPhrase) {
   }
 }
 
-async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, webhookUrl) {
+async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase, webhookUrl) {
   const header = {
     type: 'custody',
     key: accountAddress,
+    fid,
   };
   const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString('base64');
 
@@ -285,6 +313,8 @@ async function main() {
     const accountAddress = await validateSeedPhrase(seedPhrase);
     console.log('✅ Generated account address from seed phrase');
 
+    const fid = await lookupFidByCustodyAddress(accountAddress, neynarApiKey ?? 'FARCASTER_V2_FRAMES_DEMO');
+
     // Generate and sign manifest
     console.log('\n🔨 Generating frame manifest...');
     
@@ -293,7 +323,7 @@ async function main() {
       ? `https://api.neynar.com/f/app/${neynarClientId}/event`
       : `${domain}/api/webhook`;
 
-    const metadata = await generateFarcasterMetadata(domain, accountAddress, seedPhrase, webhookUrl);
+    const metadata = await generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase, webhookUrl);
     console.log('\n✅ Frame manifest generated' + (seedPhrase ? ' and signed' : ''));
 
     // Read existing .env file or create new one

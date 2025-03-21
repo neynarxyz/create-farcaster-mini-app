@@ -24,11 +24,39 @@ async function validateSeedPhrase(seedPhrase) {
   }
 }
 
-async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, webhookUrl) {
+async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
+  if (!apiKey) {
+    throw new Error('Neynar API key is required');
+  }
+
+  const response = await fetch(
+    `https://api.neynar.com/v2/farcaster/user/custody-address?custody_address=${custodyAddress}`,
+    {
+      headers: {
+        'accept': 'application/json',
+        'x-api-key': apiKey
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to lookup FID: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  if (!data.user?.fid) {
+    throw new Error('No FID found for this custody address');
+  }
+
+  return data.user.fid;
+}
+
+async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase, webhookUrl) {
   const trimmedDomain = domain.trim();
   const header = {
     type: 'custody',
     key: accountAddress,
+    fid,
   };
   const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString('base64');
 
@@ -390,16 +418,18 @@ async function deployToVercel(useGitHub = false) {
 
     // Generate frame metadata if we have a seed phrase
     let frameMetadata;
+    let fid;
     if (process.env.SEED_PHRASE) {
       console.log('\n🔨 Generating frame metadata...');
       const accountAddress = await validateSeedPhrase(process.env.SEED_PHRASE);
+      fid = await lookupFidByCustodyAddress(accountAddress, process.env.NEYNAR_API_KEY ?? 'FARCASTER_V2_FRAMES_DEMO');
       
       // Determine webhook URL based on Neynar configuration
       const webhookUrl = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
         ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
         : `https://${domain}/api/webhook`;
 
-      frameMetadata = await generateFarcasterMetadata(domain, accountAddress, process.env.SEED_PHRASE, webhookUrl);
+      frameMetadata = await generateFarcasterMetadata(domain, fid, accountAddress, process.env.SEED_PHRASE, webhookUrl);
       console.log('✅ Frame metadata generated and signed');
     }
 
@@ -493,7 +523,7 @@ async function deployToVercel(useGitHub = false) {
               : `https://${actualDomain}/api/webhook`;
 
             if (frameMetadata) {
-              frameMetadata = await generateFarcasterMetadata(actualDomain, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
+              frameMetadata = await generateFarcasterMetadata(actualDomain, fid, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
               // Update FRAME_METADATA env var using the new function
               await setVercelEnvVar('FRAME_METADATA', frameMetadata, projectRoot);
             }
