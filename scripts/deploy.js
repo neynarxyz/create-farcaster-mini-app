@@ -43,7 +43,7 @@ async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, web
   });
   const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
 
-  const metadata = {
+  return {
     accountAssociation: {
       header: encodedHeader,
       payload: encodedPayload,
@@ -51,19 +51,16 @@ async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, web
     },
     frame: {
       version: "1",
-      name: process.env.NEXT_PUBLIC_FRAME_NAME,
+      name: process.env.NEXT_PUBLIC_FRAME_NAME?.trim(),
       iconUrl: `https://${trimmedDomain}/icon.png`,
       homeUrl: trimmedDomain,
       imageUrl: `https://${trimmedDomain}/opengraph-image`,
-      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
+      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT?.trim(),
       splashImageUrl: `https://${trimmedDomain}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
-      webhookUrl,
+      webhookUrl: webhookUrl?.trim(),
     },
   };
-
-  // Return stringified metadata to ensure proper JSON formatting
-  return JSON.stringify(metadata);
 }
 
 async function loadEnvLocal() {
@@ -287,6 +284,54 @@ async function loginToVercel() {
   return false;
 }
 
+async function setVercelEnvVar(key, value, projectRoot) {
+  try {
+    // First try to remove the existing env var if it exists
+    try {
+      execSync(`vercel env rm ${key} production -y`, {
+        cwd: projectRoot,
+        stdio: 'ignore',
+        env: process.env
+      });
+    } catch (error) {
+      // Ignore errors from removal (var might not exist)
+    }
+    
+    // For complex objects like frameMetadata, use a temporary file approach
+    if (typeof value === 'object') {
+      const tempFilePath = path.join(projectRoot, `${key}_temp.json`);
+      // Write the value to a temporary file with proper JSON formatting
+      fs.writeFileSync(tempFilePath, JSON.stringify(value));
+      
+      // Use the file to add the environment variable
+      execSync(`vercel env add ${key} production < "${tempFilePath}"`, {
+        cwd: projectRoot,
+        stdio: 'inherit',
+        env: process.env
+      });
+      
+      // Clean up the temporary file
+      fs.unlinkSync(tempFilePath);
+    } else {
+      // For simple string values, use a different approach to avoid shell interpretation issues
+      const tempFilePath = path.join(projectRoot, `${key}_temp.txt`);
+      fs.writeFileSync(tempFilePath, value.toString());
+      
+      execSync(`vercel env add ${key} production < "${tempFilePath}"`, {
+        cwd: projectRoot,
+        stdio: 'inherit',
+        env: process.env
+      });
+      
+      fs.unlinkSync(tempFilePath);
+    }
+    return true;
+  } catch (error) {
+    console.warn(`⚠️  Warning: Failed to set environment variable ${key}:`, error.message);
+    return false;
+  }
+}
+
 async function deployToVercel(useGitHub = false) {
   try {
     console.log('\n🚀 Deploying to Vercel...');
@@ -371,7 +416,7 @@ async function deployToVercel(useGitHub = false) {
       ...(process.env.NEYNAR_API_KEY && { NEYNAR_API_KEY: process.env.NEYNAR_API_KEY }),
       ...(process.env.NEYNAR_CLIENT_ID && { NEYNAR_CLIENT_ID: process.env.NEYNAR_CLIENT_ID }),
       
-      // Frame metadata
+      // Frame metadata - don't stringify here
       ...(frameMetadata && { FRAME_METADATA: frameMetadata }),
       
       // Public vars
@@ -385,27 +430,7 @@ async function deployToVercel(useGitHub = false) {
     console.log('\n📝 Setting up environment variables...');
     for (const [key, value] of Object.entries(vercelEnv)) {
       if (value) {
-        try {
-          // First try to remove the existing env var if it exists
-          try {
-            execSync(`vercel env rm ${key} production -y`, {
-              cwd: projectRoot,
-              stdio: 'ignore',
-              env: process.env
-            });
-          } catch (error) {
-            // Ignore errors from removal (var might not exist)
-          }
-          
-          // Add the new env var without newline
-          execSync(`printf "%s" "${value}" | vercel env add ${key} production`, {
-            cwd: projectRoot,
-            stdio: 'inherit',
-            env: process.env
-          });
-        } catch (error) {
-          console.warn(`⚠️  Warning: Failed to set environment variable ${key}`);
-        }
+        await setVercelEnvVar(key, value, projectRoot);
       }
     }
 
@@ -442,8 +467,7 @@ async function deployToVercel(useGitHub = false) {
       
       // Read the output file
       const projectOutput = fs.readFileSync(tempOutputFile, 'utf8');
-      console.log('Raw project output:', projectOutput);
-      
+
       // Process the output
       const projectLines = projectOutput
         .split('\n')
@@ -453,8 +477,6 @@ async function deployToVercel(useGitHub = false) {
       const currentProject = projectLines.find(line => 
         line.includes(projectName)
       );
-      
-      console.log('Current project line:', currentProject);
       
       if (currentProject) {
         // Extract the domain from the line
@@ -472,54 +494,15 @@ async function deployToVercel(useGitHub = false) {
 
             if (frameMetadata) {
               frameMetadata = await generateFarcasterMetadata(actualDomain, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
-              // Update FRAME_METADATA env var
-              try {
-                execSync(`vercel env rm FRAME_METADATA production -y`, {
-                  cwd: projectRoot,
-                  stdio: 'ignore',
-                  env: process.env
-                });
-                execSync(`printf "%s" "${frameMetadata}" | vercel env add FRAME_METADATA production`, {
-                  cwd: projectRoot,
-                  stdio: 'inherit',
-                  env: process.env
-                });
-              } catch (error) {
-                console.warn('⚠️  Warning: Failed to update FRAME_METADATA with correct domain');
-              }
+              // Update FRAME_METADATA env var using the new function
+              await setVercelEnvVar('FRAME_METADATA', frameMetadata, projectRoot);
             }
 
             // Update NEXTAUTH_URL
-            try {
-              execSync(`vercel env rm NEXTAUTH_URL production -y`, {
-                cwd: projectRoot,
-                stdio: 'ignore',
-                env: process.env
-              });
-              execSync(`printf "%s" "https://${actualDomain}" | vercel env add NEXTAUTH_URL production`, {
-                cwd: projectRoot,
-                stdio: 'inherit',
-                env: process.env
-              });
-            } catch (error) {
-              console.warn('⚠️  Warning: Failed to update NEXTAUTH_URL with correct domain');
-            }
+            await setVercelEnvVar('NEXTAUTH_URL', `https://${actualDomain}`, projectRoot);
 
             // Update NEXT_PUBLIC_URL
-            try {
-              execSync(`vercel env rm NEXT_PUBLIC_URL production -y`, {
-                cwd: projectRoot,
-                stdio: 'ignore',
-                env: process.env
-              });
-              execSync(`printf "%s" "https://${actualDomain}" | vercel env add NEXT_PUBLIC_URL production`, {
-                cwd: projectRoot,
-                stdio: 'inherit',
-                env: process.env
-              });
-            } catch (error) {
-              console.warn('⚠️  Warning: Failed to update NEXT_PUBLIC_URL with correct domain');
-            }
+            await setVercelEnvVar('NEXT_PUBLIC_URL', `https://${actualDomain}`, projectRoot);
 
             // Redeploy with updated environment variables
             console.log('\n📦 Redeploying with correct domain...');
