@@ -176,12 +176,14 @@ async function init() {
     break;
   }
 
+  const defaultFrameName = neynarAppName.toLowerCase().includes('demo') ? undefined : neynarAppName;
+
   const answers = await inquirer.prompt([
     {
       type: 'input',
       name: 'projectName',
-      message: 'What is the name of your frame?',
-      default: neynarAppName || undefined,
+      message: '⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\nWhat is the name of your frame?',
+      default: defaultFrameName,
       validate: (input) => {
         if (input.trim() === '') {
           return 'Project name cannot be empty';
@@ -211,18 +213,6 @@ async function init() {
         }
         return true;
       }
-    },
-    {
-      type: 'input',
-      name: 'splashImageUrl',
-      message: 'Enter the URL for your splash image\n(optional -- leave blank to use the default public/splash.png image or replace public/splash.png with your own)\n\nExternal splash image URL:',
-      default: neynarAppLogoUrl || undefined
-    },
-    {
-      type: 'input',
-      name: 'iconImageUrl',
-      message: 'Enter the URL for your app icon\n(optional -- leave blank to use the default public/icon.png image or replace public/icon.png with your own)\n\nExternal app icon URL:',
-      default: neynarAppLogoUrl || undefined
     }
   ]);
 
@@ -242,7 +232,7 @@ async function init() {
         '- Cannot test frame embeds or mobile devices\n\n' +
         'Note: You can always switch between localhost and tunnel by editing the USE_TUNNEL environment variable in .env.local\n\n' +
         'Use tunnel?',
-      default: true
+      default: false
     }
   ]);
   answers.useTunnel = hostingAnswer.useTunnel;
@@ -421,14 +411,6 @@ async function init() {
       // Write seed phrase and FID to .env.local for manifest signature generation
       fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
       fs.appendFileSync(envPath, `\nFID="${fid}"`);
-    }
-
-    if (answers.splashImageUrl) {
-      fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL="${answers.splashImageUrl}"`);
-    }
-
-    if (answers.iconImageUrl) {
-      fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_ICON_IMAGE_URL="${answers.iconImageUrl}"`);
     }
 
     // Append all remaining environment variables

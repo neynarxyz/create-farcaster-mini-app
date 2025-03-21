@@ -25,6 +25,7 @@ async function validateSeedPhrase(seedPhrase) {
 }
 
 async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, webhookUrl) {
+  const trimmedDomain = domain.trim();
   const header = {
     type: 'custody',
     key: accountAddress,
@@ -32,7 +33,7 @@ async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, web
   const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString('base64');
 
   const payload = {
-    domain
+    domain: trimmedDomain
   };
   const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf-8').toString('base64url');
 
@@ -51,11 +52,11 @@ async function generateFarcasterMetadata(domain, accountAddress, seedPhrase, web
     frame: {
       version: "1",
       name: process.env.NEXT_PUBLIC_FRAME_NAME,
-      iconUrl: process.env.NEXT_PUBLIC_FRAME_ICON_IMAGE_URL || `https://${domain}/icon.png`,
-      homeUrl: domain,
-      imageUrl: `https://${domain}/opengraph-image`,
+      iconUrl: `https://${trimmedDomain}/icon.png`,
+      homeUrl: trimmedDomain,
+      imageUrl: `https://${trimmedDomain}/opengraph-image`,
       buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
-      splashImageUrl: process.env.NEXT_PUBLIC_FRAME_SPLASH_IMAGE_URL || `https://${domain}/splash.png`,
+      splashImageUrl: `https://${trimmedDomain}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
       webhookUrl,
     },
@@ -78,16 +79,26 @@ async function loadEnvLocal() {
         console.log('Loading values from .env.local...');
         const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
         
-        // Copy all values except SEED_PHRASE to .env
+        // Define allowed variables to load from .env.local
+        const allowedVars = [
+          'SEED_PHRASE',
+          'NEXT_PUBLIC_FRAME_NAME',
+          'NEXT_PUBLIC_FRAME_DESCRIPTION',
+          'NEXT_PUBLIC_FRAME_BUTTON_TEXT',
+          'NEYNAR_API_KEY',
+          'NEYNAR_CLIENT_ID'
+        ];
+        
+        // Copy allowed values except SEED_PHRASE to .env
         const envContent = fs.existsSync('.env') ? fs.readFileSync('.env', 'utf8') + '\n' : '';
         let newEnvContent = envContent;
         
         for (const [key, value] of Object.entries(localEnv)) {
-          if (key !== 'SEED_PHRASE') {
+          if (allowedVars.includes(key)) {
             // Update process.env
             process.env[key] = value;
-            // Add to .env content if not already there
-            if (!envContent.includes(`${key}=`)) {
+            // Add to .env content if not already there (except for SEED_PHRASE)
+            if (key !== 'SEED_PHRASE' && !envContent.includes(`${key}=`)) {
               newEnvContent += `${key}="${value}"\n`;
             }
           }
@@ -96,14 +107,6 @@ async function loadEnvLocal() {
         // Write updated content to .env
         fs.writeFileSync('.env', newEnvContent);
         console.log('✅ Values from .env.local have been written to .env');
-      }
-    }
-
-    // Always try to load SEED_PHRASE from .env.local
-    if (fs.existsSync('.env.local')) {
-      const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
-      if (localEnv.SEED_PHRASE) {
-        process.env.SEED_PHRASE = localEnv.SEED_PHRASE;
       }
     }
   } catch (error) {
@@ -156,8 +159,9 @@ async function checkRequiredEnvVars() {
       
       // Check if the variable already exists in .env
       if (!envContent.includes(`${varConfig.name}=`)) {
-        // Append the new variable to .env
-        fs.appendFileSync('.env', `\n${varConfig.name}="${value}"`);
+        // Append the new variable to .env without extra newlines
+        const newLine = envContent ? '\n' : '';
+        fs.appendFileSync('.env', `${newLine}${varConfig.name}="${value.trim()}"`);
       }
     }
   }
@@ -294,51 +298,49 @@ async function deployToVercel(useGitHub = false) {
       }, null, 2));
     }
 
-    // First try to link to an existing project
-    console.log('\n🔗 Checking for existing Vercel projects...');
-    let isNewProject = false;
-    let projectName = '';
-    let domain = '';
+    // TODO: check if project already exists here
 
-    try {
-      execSync('vercel link', { 
-        cwd: projectRoot,
-        stdio: 'inherit'
-      });
-      
-      // Get project info after linking
-      // question: do these lines do anything?
-      const projectOutput = execSync('vercel project ls', { 
-        cwd: projectRoot,
-        encoding: 'utf8'
-      });
-      
-      // Extract domain from project output
-      const projectLines = projectOutput.split('\n');
-      const currentProject = projectLines.find(line => line.includes('(current)'));
-      if (currentProject) {
-        const parts = currentProject.split(/\s+/);
-        projectName = parts[0];
-        domain = parts[1]?.replace('https://', '') || '';
-        console.log('🌐 Found existing project domain:', domain);
-      } else {
-        throw new Error('No existing project found');
-      }
-    } catch (error) {
-      // If linking fails (user declines to link), create a new project
-      console.log('\n📦 Creating new Vercel project...');
-      execSync('vercel', { 
-        cwd: projectRoot,
-        stdio: 'inherit'
-      });
-      
-      // Use NEXT_PUBLIC_FRAME_NAME for domain, replacing spaces with dashes
-      projectName = process.env.NEXT_PUBLIC_FRAME_NAME.toLowerCase().replace(/\s+/g, '-');
+    // Set up Vercel project
+    console.log('\n📦 Setting up Vercel project...');
+    console.log(' An initial deployment is required to get an assigned domain that can be used in the frame manifest\n');
+    console.log('\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n');
+    execSync('vercel', { 
+      cwd: projectRoot,
+      stdio: 'inherit'
+    });
+
+    // Load project info from .vercel/project.json
+    const projectJson = JSON.parse(fs.readFileSync('.vercel/project.json', 'utf8'));
+    const projectId = projectJson.projectId;
+
+    // Get project details using project inspect
+    console.log('\n🔍 Getting project details...');
+    const inspectOutput = execSync(`vercel project inspect ${projectId} 2>&1`, {
+      cwd: projectRoot,
+      encoding: 'utf8'
+    });
+    console.log('inspectOutput');
+    console.log(inspectOutput);
+
+    // Extract project name from inspect output
+    let projectName;
+    let domain;
+    const nameMatch = inspectOutput.match(/Name\s+([^\n]+)/);
+    if (nameMatch) {
+      projectName = nameMatch[1].trim();
       domain = `${projectName}.vercel.app`;
-      isNewProject = true;
+      console.log('🌐 Using project name for domain:', domain);
+    } else {
+      // Try alternative format
+      const altMatch = inspectOutput.match(/Found Project [^/]+\/([^\n]+)/);
+      if (altMatch) {
+        projectName = altMatch[1].trim();
+        domain = `${projectName}.vercel.app`;
+        console.log('🌐 Using project name for domain:', domain);
+      } else {
+        throw new Error('Could not determine project name from inspection output');
+      }
     }
-
-    console.log('🌐 Using frame name for domain:', domain);
 
     // Generate frame metadata if we have a seed phrase
     let frameMetadata;
@@ -362,6 +364,7 @@ async function deployToVercel(useGitHub = false) {
       NEXTAUTH_SECRET: nextAuthSecret,
       AUTH_SECRET: nextAuthSecret, // Fallback for some NextAuth versions
       NEXTAUTH_URL: `https://${domain}`, // Add the deployment URL
+      NEXT_PUBLIC_URL: `https://${domain}`,
       
       // Optional vars that should be set if they exist
       ...(process.env.NEYNAR_API_KEY && { NEYNAR_API_KEY: process.env.NEYNAR_API_KEY }),
@@ -428,74 +431,74 @@ async function deployToVercel(useGitHub = false) {
       });
     }
 
-    // For new projects, verify the actual domain after deployment
-    if (isNewProject) {
-      console.log('\n🔍 Verifying deployment domain...');
-      const projectOutput = execSync('vercel project ls', { 
-        cwd: projectRoot,
-        encoding: 'utf8'
-      });
-      
-      const projectLines = projectOutput.split('\n');
-      const currentProject = projectLines.find(line => line.includes('(current)'));
-      if (currentProject) {
-        const actualDomain = currentProject.split(/\s+/)[1]?.replace('https://', '');
-        if (actualDomain && actualDomain !== domain) {
-          console.log(`⚠️  Actual domain (${actualDomain}) differs from assumed domain (${domain})`);
-          console.log('🔄 Updating environment variables with correct domain...');
-          
-          // Update domain-dependent environment variables
-          const webhookUrl = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
-            ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
-            : `https://${actualDomain}/api/webhook`;
+    // Verify the actual domain after deployment
+    
+    console.log('\n🔍 Verifying deployment domain...');
+    const projectOutput = execSync('vercel project ls', { 
+      cwd: projectRoot,
+      encoding: 'utf8'
+    });
+    
+    const projectLines = projectOutput.split('\n');
+    const currentProject = projectLines.find(line => line.includes('(current)'));
+    if (currentProject) {
+      const actualDomain = currentProject.split(/\s+/)[1]?.replace('https://', '');
+      if (actualDomain && actualDomain !== domain) {
+        console.log(`⚠️  Actual domain (${actualDomain}) differs from assumed domain (${domain})`);
+        console.log('🔄 Updating environment variables with correct domain...');
+        
+        // Update domain-dependent environment variables
+        const webhookUrl = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
+          ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
+          : `https://${actualDomain}/api/webhook`;
 
-          if (frameMetadata) {
-            frameMetadata = await generateFarcasterMetadata(actualDomain, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
-            // Update FRAME_METADATA env var
-            try {
-              execSync(`vercel env rm FRAME_METADATA production -y`, {
-                cwd: projectRoot,
-                stdio: 'ignore',
-                env: process.env
-              });
-              execSync(`echo "${JSON.stringify(frameMetadata)}" | vercel env add FRAME_METADATA production`, {
-                cwd: projectRoot,
-                stdio: 'inherit',
-                env: process.env
-              });
-            } catch (error) {
-              console.warn('⚠️  Warning: Failed to update FRAME_METADATA with correct domain');
-            }
-          }
-
-          // Update NEXTAUTH_URL
+        if (frameMetadata) {
+          frameMetadata = await generateFarcasterMetadata(actualDomain, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
+          // Update FRAME_METADATA env var
           try {
-            execSync(`vercel env rm NEXTAUTH_URL production -y`, {
+            execSync(`vercel env rm FRAME_METADATA production -y`, {
               cwd: projectRoot,
               stdio: 'ignore',
               env: process.env
             });
-            execSync(`echo "https://${actualDomain}" | vercel env add NEXTAUTH_URL production`, {
+            execSync(`echo "${JSON.stringify(frameMetadata)}" | vercel env add FRAME_METADATA production`, {
               cwd: projectRoot,
               stdio: 'inherit',
               env: process.env
             });
           } catch (error) {
-            console.warn('⚠️  Warning: Failed to update NEXTAUTH_URL with correct domain');
+            console.warn('⚠️  Warning: Failed to update FRAME_METADATA with correct domain');
           }
+        }
 
-          // Redeploy with updated environment variables
-          console.log('\n📦 Redeploying with correct domain...');
-          execSync('vercel deploy --prod', { 
+        // Update NEXTAUTH_URL
+        try {
+          execSync(`vercel env rm NEXTAUTH_URL production -y`, {
+            cwd: projectRoot,
+            stdio: 'ignore',
+            env: process.env
+          });
+          execSync(`echo "https://${actualDomain}" | vercel env add NEXTAUTH_URL production`, {
             cwd: projectRoot,
             stdio: 'inherit',
             env: process.env
           });
-          
-          domain = actualDomain;
+        } catch (error) {
+          console.warn('⚠️  Warning: Failed to update NEXTAUTH_URL with correct domain');
         }
+
+        // Redeploy with updated environment variables
+        console.log('\n📦 Redeploying with correct domain...');
+        execSync('vercel deploy --prod', { 
+          cwd: projectRoot,
+          stdio: 'inherit',
+          env: process.env
+        });
+        
+        domain = actualDomain;
       }
     }
+    
     
     console.log('\n✨ Deployment complete! Your frame is now live at:');
     console.log(`🌐 https://${domain}`);
