@@ -322,8 +322,6 @@ async function deployToVercel(useGitHub = false) {
       cwd: projectRoot,
       encoding: 'utf8'
     });
-    console.log('inspectOutput');
-    console.log(inspectOutput);
 
     // Extract project name from inspect output
     let projectName;
@@ -450,8 +448,6 @@ async function deployToVercel(useGitHub = false) {
       const projectLines = projectOutput
         .split('\n')
         .filter(line => line.includes('https://'));
-      
-      console.log('Project lines:', projectLines);
       
       // Find the line containing our project name
       const currentProject = projectLines.find(line => 
