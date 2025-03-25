@@ -176,7 +176,7 @@ async function init() {
     break;
   }
 
-  const defaultFrameName = neynarAppName.toLowerCase().includes('demo') ? undefined : neynarAppName;
+  const defaultFrameName = (neynarAppName && !neynarAppName.toLowerCase().includes('demo')) ? neynarAppName : undefined;
 
   const answers = await inquirer.prompt([
     {
@@ -417,9 +417,11 @@ async function init() {
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
-    if (useNeynar) {
+    if (useNeynar && neynarApiKey && neynarClientId) {
       fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${neynarApiKey}"`);
       fs.appendFileSync(envPath, `\nNEYNAR_CLIENT_ID="${neynarClientId}"`);
+    } else if (useNeynar) {
+      console.log('\n⚠️  Could not find a Neynar client ID and/or API key. Please configure Neynar manually in .env.local with NEYNAR_API_KEY and NEYNAR_CLIENT_ID');
     }
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
     
