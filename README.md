@@ -8,7 +8,7 @@ This is a [NextJS](https://nextjs.org/) + TypeScript + React app.
 
 To create a new frames project, run:
 ```{bash}
-npx create-neynar-farcaster-frame@latest
+npx @neynar/create-farcaster-mini-app@latest
 ```
 
 To run the project:
@@ -20,7 +20,7 @@ npm run dev
 ### Importing the CLI
 To invoke the CLI directly in JavaScript, add the npm package to your project and use the following import statement:
 ```{javascript}
-import { init } from 'create-neynar-farcaster-frame';
+import { init } from '@neynar/create-farcaster-mini-app';
 ```
 
 ## Deploying to Vercel
