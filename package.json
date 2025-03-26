@@ -1,15 +1,17 @@
 {
   "name": "@neynar/create-farcaster-mini-app",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "type": "module",
   "private": false,
   "access": "public",
   "exports": {
     ".": "./bin/init.js"
   },
+  "types": "./index.d.ts",
   "files": [
     "bin/index.js",
-    "bin/init.js"
+    "bin/init.js",
+    "index.d.ts"
   ],
   "keywords": [
     "farcaster",
