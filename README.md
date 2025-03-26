@@ -17,7 +17,13 @@ cd <PROJECT_NAME>
 npm run dev
 ```
 
-## Deploy to Vercel
+### Importing the CLI
+To invoke the CLI directly in JavaScript, add the npm package to your project and use the following import statement:
+```{javascript}
+import { init } from 'create-neynar-farcaster-frame';
+```
+
+## Deploying to Vercel
 For projects that have made minimal changes to the quickstart template, deploy to vercel by running:
 ```{bash}
 npm run deploy:vercel

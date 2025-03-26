@@ -1,7 +1,10 @@
 {
   "name": "create-neynar-farcaster-frame",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "type": "module",
+  "exports": {
+    ".": "./bin/index.js"
+  },
   "files": [
     "bin/index.js"
   ],

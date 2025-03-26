@@ -63,7 +63,7 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
   }
 
   const response = await fetch(
-    `https://api.neynar.com/v2/farcaster/user/custody-address?custody_address=${custodyAddress}`,
+    `https://api.neynar.com/v2/farcaster/user/bulk-by-address?addresses=${custodyAddress}&address_types=custody_address`,
     {
       headers: {
         'accept': 'application/json',
@@ -84,7 +84,8 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
   return data.user.fid;
 }
 
-async function init() {
+// Export the main CLI function for programmatic use
+export async function init() {
   printWelcomeMessage();
 
   // Ask about Neynar usage
@@ -475,7 +476,10 @@ async function init() {
   console.log('  npm run dev\n');
 }
 
-init().catch((err) => {
-  console.error('Error:', err);
-  process.exit(1);
-});
+// Only run the CLI automatically if this file is being run directly
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  init().catch((err) => {
+    console.error('Error:', err);
+    process.exit(1);
+  });
+}
