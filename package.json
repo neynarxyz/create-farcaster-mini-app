@@ -1,5 +1,5 @@
 {
-  "name": "create-neynar-farcaster-frame",
+  "name": "@neynar/create-farcaster-mini-app",
   "version": "1.2.5",
   "type": "module",
   "exports": {
@@ -15,6 +15,8 @@
     "frame",
     "frames-v2",
     "farcaster-frames",
+    "mini-app",
+    "neynar",
     "web3"
   ],
   "scripts": {
@@ -25,7 +27,8 @@
     "deploy:vercel": "node scripts/deploy.js"
   },
   "bin": {
-    "create-neynar-farcaster-frame": "./bin/index.js"
+    "@neynar/create-farcaster-mini-app": "./bin/index.js",
+    "create-farcaster-mini-app": "./bin/index.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
