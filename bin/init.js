@@ -77,11 +77,13 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
   }
 
   const data = await response.json();
-  if (!data.user?.fid) {
+  console.log('got address data:');
+  console.log(data);
+  if (!data[custodyAddress]?.length && !data[custodyAddress][0].custody_address) {
     throw new Error('No FID found for this custody address');
   }
 
-  return data.user.fid;
+  return data[custodyAddress][0].fid;
 }
 
 // Export the main CLI function for programmatic use
@@ -130,7 +132,13 @@ export async function init() {
           default: true
         }
       ]);
-      neynarApiKey = useDemoKey.useDemo ? 'FARCASTER_V2_FRAMES_DEMO' : null;
+
+      if (useDemoKey.useDemo) {
+        console.warn('\n⚠️ Note: the demo key is for development purposes only and is aggressively rate limited.');
+        console.log('For production, please sign up for a Neynar account at https://neynar.com/ and configure the API key in your .env or .env.local file with NEYNAR_API_KEY.');
+        console.log('Neynar now has a free tier! See https://neynar.com/#pricing for details.');
+        neynarApiKey = 'FARCASTER_V2_FRAMES_DEMO';
+      }
     }
 
     if (!neynarApiKey) {
@@ -195,13 +203,8 @@ export async function init() {
     {
       type: 'input',
       name: 'description',
-      message: 'Give a one-line description of your frame:',
-      validate: (input) => {
-        if (input.trim() === '') {
-          return 'Description cannot be empty';
-        }
-        return true;
-      }
+      message: 'Give a one-line description of your frame (optional):',
+      default: 'A Farcaster mini-app created with @neynar/create-farcaster-mini-app'
     },
     {
       type: 'input',

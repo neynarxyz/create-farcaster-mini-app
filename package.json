@@ -1,6 +1,6 @@
 {
   "name": "@neynar/create-farcaster-mini-app",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "type": "module",
   "private": false,
   "access": "public",
@@ -34,8 +34,7 @@
     "deploy:vercel": "node scripts/deploy.js"
   },
   "bin": {
-    "@neynar/create-farcaster-mini-app": "./bin/index.js",
-    "create-farcaster-mini-app": "./bin/index.js"
+    "@neynar/create-farcaster-mini-app": "./bin/index.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
