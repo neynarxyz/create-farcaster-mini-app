@@ -14,13 +14,16 @@ const __dirname = dirname(__filename);
 const REPO_URL = 'https://github.com/neynarxyz/create-farcaster-mini-app.git';
 const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
 
-function printWelcomeMessage() {
-  const purple = '\x1b[35m';
-  const blue = '\x1b[34m';
-  const reset = '\x1b[0m';
-  const dim = '\x1b[2m';
-  const bright = '\x1b[1m';
+// ANSI color codes
+const purple = '\x1b[35m';
+const blue = '\x1b[34m';
+const reset = '\x1b[0m';
+const dim = '\x1b[2m';
+const bright = '\x1b[1m';
+const yellow = '\x1b[33m';
+const italic = '\x1b[3m';
 
+function printWelcomeMessage() {
   console.log(`
 ${purple}╔═══════════════════════════════════════════════════╗${reset}
 ${purple}║                                                   ║${reset}
@@ -245,7 +248,7 @@ export async function init() {
     {
       type: 'password',
       name: 'seedPhrase',
-      message: 'Enter your Farcaster custody account seed phrase to generate a signed manifest for your frame\n(optional -- leave blank to create an unsigned frame)\n(seed phrase is only ever stored in .env.local)\n\nSeed phrase:',
+      message: `Enter your Farcaster custody account seed phrase to generate a signed manifest for your frame\n(optional -- leave blank to create an unsigned frame)\n⚠️ ${yellow}${italic}seed phrase is only ever stored in .env.local${reset} ⚠️\nSeed phrase:`,
       default: null
     }
   ]);
