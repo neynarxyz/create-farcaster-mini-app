@@ -20,8 +20,6 @@ const blue = '\x1b[34m';
 const reset = '\x1b[0m';
 const dim = '\x1b[2m';
 const bright = '\x1b[1m';
-const yellow = '\x1b[33m';
-const italic = '\x1b[3m';
 
 function printWelcomeMessage() {
   console.log(`
@@ -193,7 +191,7 @@ export async function init() {
     {
       type: 'input',
       name: 'projectName',
-      message: '⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\nWhat is the name of your frame?',
+      message: 'What is the name of your frame?',
       default: defaultFrameName,
       validate: (input) => {
         if (input.trim() === '') {
@@ -206,7 +204,7 @@ export async function init() {
       type: 'input',
       name: 'description',
       message: 'Give a one-line description of your frame (optional):',
-      default: 'A Farcaster mini-app created with @neynar/create-farcaster-mini-app'
+      default: 'A Farcaster mini-app created with Neynar'
     },
     {
       type: 'input',
@@ -227,80 +225,13 @@ export async function init() {
     {
       type: 'confirm',
       name: 'useTunnel',
-      message: 'Would you like to use a tunnel for development?\n\n' +
-        'Using a tunnel:\n' +
-        '- No sudo privileges required\n' +
-        '- Works with all Warpcast Frame Developer Tools\n' +
-        '- Possible to test on mobile devices\n\n' +
-        'Using localhost:\n' +
-        '- Requires sudo privileges to enable HTTPS\n' +
-        '- Only works with the "Preview Frame" Warpcast tool\n' +
-        '- Cannot test frame embeds or mobile devices\n\n' +
-        'Note: You can always switch between localhost and tunnel by editing the USE_TUNNEL environment variable in .env.local\n\n' +
-        'Use tunnel?',
+      message: 'Would you like to test on mobile, or through a desktop browser?\n' +
+        'Mobile testing requires setting up a tunnel to serve your app from localhost to the broader internet.\n' +
+        'Configure mobile testing?',
       default: false
     }
   ]);
   answers.useTunnel = hostingAnswer.useTunnel;
-
-  // Ask for seed phrase last
-  const seedPhraseAnswer = await inquirer.prompt([
-    {
-      type: 'password',
-      name: 'seedPhrase',
-      message: `Enter your Farcaster custody account seed phrase to generate a signed manifest for your frame\n(optional -- leave blank to create an unsigned frame)\n⚠️ ${yellow}${italic}seed phrase is only ever stored in .env.local${reset} ⚠️\nSeed phrase:`,
-      default: null
-    }
-  ]);
-  answers.seedPhrase = seedPhraseAnswer.seedPhrase;
-
-  let account;
-  let custodyAddress;
-  let fid;
-
-  if (answers.seedPhrase) {
-    let fidLookupSuccessful = false;
-    while (!fidLookupSuccessful) {
-      try {
-        // Generate custody address from seed phrase
-        account = mnemonicToAccount(answers.seedPhrase);
-        custodyAddress = account.address;
-
-        // Look up FID using custody address
-        console.log('\nUsing seed phrase to look up FID by custody address...');
-        fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey ?? 'FARCASTER_V2_FRAMES_DEMO');
-        
-        if (!fid) {
-          throw new Error('No FID found for this custody address');
-        }
-        
-        fidLookupSuccessful = true;
-        console.log(`\n✅ Successfully found FID ${fid} for custody address ${custodyAddress}`);
-      } catch (error) {
-        console.error('\n❌ Error:', error.message);
-        console.log('\n⚠️  Could not find an FID for this seed phrase. This usually means:');
-        console.log('1. The seed phrase might be incorrect');
-        console.log('2. The account might not be registered on Farcaster');
-        console.log('3. The custody address might not be linked to a Farcaster account\n');
-
-        // Ask for seed phrase again
-        const retryAnswer = await inquirer.prompt([
-          {
-            type: 'password',
-            name: 'seedPhrase',
-            message: 'Please enter your seed phrase again (or leave empty to continue without signing):\n',
-            default: null
-          }
-        ]);
-
-        if (!retryAnswer.seedPhrase) {
-          console.log('\n⚠️  Continuing without frame signing...');
-          break;
-        }
-        answers.seedPhrase = retryAnswer.seedPhrase;
-      }
-    }
-  }
 
   const projectName = answers.projectName;
   const projectDirName = projectName.replace(/\s+/g, '-').toLowerCase();
@@ -402,22 +333,6 @@ export async function init() {
     const envExampleContent = fs.readFileSync(envExamplePath, 'utf8');
     // Write it to .env.local
     fs.writeFileSync(envPath, envExampleContent);
-    
-    // Generate custody address from seed phrase
-    if (answers.seedPhrase) {
-      const account = mnemonicToAccount(answers.seedPhrase);
-      const custodyAddress = account.address;
-
-      // Look up FID using custody address
-      if (!fid) {
-        console.log('\nLooking up FID...');
-        fid = await lookupFidByCustodyAddress(custodyAddress, neynarApiKey ?? 'FARCASTER_V2_FRAMES_DEMO');
-      }
-
-      // Write seed phrase and FID to .env.local for manifest signature generation
-      fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
-      fs.appendFileSync(envPath, `\nFID="${fid}"`);
-    }
 
     // Append all remaining environment variables
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);

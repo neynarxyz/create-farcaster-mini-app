@@ -7,6 +7,11 @@ import inquirer from 'inquirer';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 
+// ANSI color codes
+const yellow = '\x1b[33m';
+const italic = '\x1b[3m';
+const reset = '\x1b[0m';
+
 // Load environment variables in specific order
 // First load .env for main config
 dotenv.config({ path: '.env' });
@@ -45,7 +50,7 @@ async function loadEnvLocal() {
         {
           type: 'confirm',
           name: 'loadLocal',
-          message: 'Found .env.local - would you like to load its values? (except for SEED_PHRASE, values will be written to .env)',
+          message: 'Found .env.local, likely created by the install script - would you like to load its values?',
           default: false
         }
       ]);
@@ -286,14 +291,16 @@ async function main() {
       }
     }
 
-    // Get seed phrase from user if not already in .env.local
+    // Get seed phrase from user
     let seedPhrase = process.env.SEED_PHRASE;
     if (!seedPhrase) {
       const { seedPhrase: inputSeedPhrase } = await inquirer.prompt([
         {
           type: 'password',
           name: 'seedPhrase',
-          message: 'Enter your seed phrase (this will only be used to sign the frame manifest):',
+          message: 'Your farcaster custody account seed phrase is required to create a signature proving this app was created by you.\n' +
+          `⚠️ ${yellow}${italic}seed phrase is only used to sign the frame manifest, then discarded${reset} ⚠️\n` +
+          'Seed phrase:',
           validate: async (input) => {
             try {
               await validateSeedPhrase(input);

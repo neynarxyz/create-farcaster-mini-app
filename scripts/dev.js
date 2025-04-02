@@ -119,7 +119,7 @@ async function startDev() {
    5. Click "Preview" (note that it may take ~10 seconds to load)
 `);
   } else {
-    frameUrl = 'https://localhost:3000';
+    frameUrl = 'http://localhost:3000';
     console.log(`
 💻 To test your frame:
    1. Open the Warpcast Frame Developer Tools: https://warpcast.com/~/developers/frames
@@ -136,7 +136,7 @@ Note: You may need to accept the self-signed certificate in your browser when fi
     ? path.join(projectRoot, 'node_modules', '.bin', 'next.cmd')
     : path.join(projectRoot, 'node_modules', '.bin', 'next');
 
-  nextDev = spawn(nextBin, ['dev', ...(useTunnel ? [] : ['--experimental-https'])], {
+  nextDev = spawn(nextBin, ['dev'], {
     stdio: 'inherit',
     env: { ...process.env, NEXT_PUBLIC_URL: frameUrl, NEXTAUTH_URL: frameUrl },
     cwd: projectRoot
