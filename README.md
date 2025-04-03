@@ -1,4 +1,4 @@
-# Frames v2 Quickstart by Neynar 🪐
+# Farcaster mini apps (formerly frames) Quickstart by Neynar 🪐
 
 A Farcaster Frames v2 quickstart npx script.
 
