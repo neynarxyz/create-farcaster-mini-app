@@ -466,21 +466,22 @@ async function deployToVercel(useGitHub = false) {
 
     // Deploy the project
     if (useGitHub) {
-      console.log('\n📦 Deploying with GitHub integration...');
-      execSync('vercel deploy --prod --git', { 
+      console.log('\nSetting up GitHub integration...');
+      execSync('vercel link', { 
         cwd: projectRoot,
         stdio: 'inherit',
         env: process.env
       });
+      console.log('\n📦 Deploying with GitHub integration...');
     } else {
       console.log('\n📦 Deploying local code directly...');
-      execSync('vercel deploy --prod', { 
-        cwd: projectRoot,
-        stdio: 'inherit',
-        env: process.env
-      });
     }
 
+    execSync('vercel deploy --prod', { 
+      cwd: projectRoot,
+      stdio: 'inherit',
+      env: process.env
+    });
     // Verify the actual domain after deployment
     
     console.log('\n🔍 Verifying deployment domain...');
