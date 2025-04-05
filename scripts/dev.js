@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: '.env.local' });
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -125,9 +125,7 @@ async function startDev() {
    1. Open the Warpcast Frame Developer Tools: https://warpcast.com/~/developers/frames
    2. Scroll down to the "Preview Frame" tool
    3. Enter this URL: ${frameUrl}
-   4. Click "Preview" to test your frame
-
-Note: You may need to accept the self-signed certificate in your browser when first visiting ${frameUrl}
+   4. Click "Preview" to test your frame (note that it may take ~5 seconds to load the first time)
 `);
   }
   

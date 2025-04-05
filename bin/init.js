@@ -281,6 +281,7 @@ export async function init() {
 
   // Add dependencies
   packageJson.dependencies = {
+    "@farcaster/auth-client": "^0.3.0",
     "@farcaster/auth-kit": "^0.6.0",
     "@farcaster/frame-core": "^0.0.29", 
     "@farcaster/frame-node": "^0.0.18",
@@ -293,6 +294,7 @@ export async function init() {
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",
     "lucide-react": "^0.469.0",
+    "mipd": "^0.0.7",
     "next": "15.0.3",
     "next-auth": "^4.24.11",
     "react": "^18",
@@ -300,7 +302,8 @@ export async function init() {
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "viem": "^2.23.6",
-    "wagmi": "^2.14.12"
+    "wagmi": "^2.14.12",
+    "zod": "^3.24.2"
   };
 
   packageJson.devDependencies = {
