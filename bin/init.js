@@ -193,7 +193,7 @@ export async function init() {
     {
       type: 'input',
       name: 'projectName',
-      message: '⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\nWhat is the name of your frame?',
+      message: 'What is the name of your frame?',
       default: defaultFrameName,
       validate: (input) => {
         if (input.trim() === '') {
@@ -206,7 +206,7 @@ export async function init() {
       type: 'input',
       name: 'description',
       message: 'Give a one-line description of your frame (optional):',
-      default: 'A Farcaster mini-app created with @neynar/create-farcaster-mini-app'
+      default: 'A Farcaster mini-app created with Neynar'
     },
     {
       type: 'input',
@@ -227,17 +227,9 @@ export async function init() {
     {
       type: 'confirm',
       name: 'useTunnel',
-      message: 'Would you like to use a tunnel for development?\n\n' +
-        'Using a tunnel:\n' +
-        '- No sudo privileges required\n' +
-        '- Works with all Warpcast Frame Developer Tools\n' +
-        '- Possible to test on mobile devices\n\n' +
-        'Using localhost:\n' +
-        '- Requires sudo privileges to enable HTTPS\n' +
-        '- Only works with the "Preview Frame" Warpcast tool\n' +
-        '- Cannot test frame embeds or mobile devices\n\n' +
-        'Note: You can always switch between localhost and tunnel by editing the USE_TUNNEL environment variable in .env.local\n\n' +
-        'Use tunnel?',
+      message: 'Would you like to test on mobile, or through a desktop browser?\n' +
+        'Mobile testing requires setting up a tunnel to serve your app from localhost to the broader internet.\n' +
+        'Configure mobile testing?',
       default: false
     }
   ]);
