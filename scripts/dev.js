@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 dotenv.config({ path: '.env.local' });
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.join(__dirname, '..');
+const projectRoot = path.resolve(path.normalize(path.join(__dirname, '..')));
 
 let tunnel;
 let nextDev;

@@ -58,6 +58,11 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials, req) {
         const csrfToken = req?.body?.csrfToken;
+        if (!csrfToken) {
+          console.error('CSRF token is missing from request');
+          return null;
+        }
+
         const appClient = createAppClient({
           ethereum: viemConnector(),
         });
@@ -120,4 +125,11 @@ export const authOptions: AuthOptions = {
   }
 }
 
-export const getSession = () => getServerSession(authOptions)
+export const getSession = async () => {
+  try {
+    return await getServerSession(authOptions);
+  } catch (error) {
+    console.error('Error getting server session:', error);
+    return null;
+  }
+}
