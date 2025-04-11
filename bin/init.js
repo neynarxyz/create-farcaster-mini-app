@@ -281,12 +281,12 @@ export async function init() {
 
   // Add dependencies
   packageJson.dependencies = {
-    "@farcaster/auth-client": "^0.3.0",
-    "@farcaster/auth-kit": "^0.6.0",
-    "@farcaster/frame-core": "^0.0.29", 
-    "@farcaster/frame-node": "^0.0.18",
-    "@farcaster/frame-sdk": "^0.0.31",
-    "@farcaster/frame-wagmi-connector": "^0.0.19",
+    "@farcaster/auth-client": "latest",
+    "@farcaster/auth-kit": "latest",
+    "@farcaster/frame-core": "latest", 
+    "@farcaster/frame-node": "latest",
+    "@farcaster/frame-sdk": "latest",
+    "@farcaster/frame-wagmi-connector": "latest",
     "@radix-ui/react-label": "^2.1.1",
     "@tanstack/react-query": "^5.61.0",
     "@upstash/redis": "^1.34.3",
