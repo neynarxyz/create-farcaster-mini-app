@@ -109,7 +109,7 @@ export async function init() {
         '- Automatic frame analytics in your dev portal\n' +
         '- Send manual notifications from dev.neynar.com\n' +
         '- Built-in rate limiting and error handling\n\n' +
-        `${purple}${bright}${italic}A demo API key is included if you would like to try out Neynar before signing up!${reset}` +
+        `${purple}${bright}${italic}A demo API key is included if you would like to try out Neynar before signing up!${reset}\n` +
         'Would you like to use Neynar in your frame?',
         default: true
       }
