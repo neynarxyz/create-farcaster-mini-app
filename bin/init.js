@@ -16,6 +16,7 @@ const SCRIPT_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'pa
 
 // ANSI color codes
 const purple = '\x1b[35m';
+const yellow = '\x1b[33m';
 const blue = '\x1b[34m';
 const reset = '\x1b[0m';
 const dim = '\x1b[2m';
@@ -109,7 +110,7 @@ export async function init() {
         '- Automatic frame analytics in your dev portal\n' +
         '- Send manual notifications from dev.neynar.com\n' +
         '- Built-in rate limiting and error handling\n\n' +
-        `${purple}${bright}${italic}A demo API key is included if you would like to try out Neynar before signing up!${reset}\n` +
+        `${purple}${bright}${italic}A demo API key is included if you would like to try out Neynar before signing up!${reset}\n\n` +
         'Would you like to use Neynar in your frame?',
         default: true
       }
@@ -144,7 +145,7 @@ export async function init() {
       if (useDemoKey.useDemo) {
         console.warn('\n⚠️ Note: the demo key is for development purposes only and is aggressively rate limited.');
         console.log('For production, please sign up for a Neynar account at https://neynar.com/ and configure the API key in your .env or .env.local file with NEYNAR_API_KEY.');
-        console.log('Neynar now has a free tier! See https://neynar.com/#pricing for details.');
+        console.log(`\n${purple}${bright}${italic}Neynar now has a free tier! See https://neynar.com/#pricing for details.\n${reset}`);
         neynarApiKey = 'FARCASTER_V2_FRAMES_DEMO';
       }
     }
@@ -234,7 +235,7 @@ export async function init() {
       type: 'confirm',
       name: 'useTunnel',
       message: 'Would you like to test on mobile and/or test the app with Warpcast developer tools?\n' +
-        'Both mobile testing and the Warpcast debugger require setting up a tunnel to serve your app from localhost to the broader internet.\n' +
+        `⚠️ ${yellow}${italic}Both mobile testing and the Warpcast debugger require setting up a tunnel to serve your app from localhost to the broader internet.\n${reset}` +
         'Configure a tunnel for mobile testing and/or Warpcast developer tools?',
       default: true
     }
