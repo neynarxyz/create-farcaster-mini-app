@@ -20,6 +20,7 @@ const blue = '\x1b[34m';
 const reset = '\x1b[0m';
 const dim = '\x1b[2m';
 const bright = '\x1b[1m';
+const italic = '\x1b[3m';
 
 function printWelcomeMessage() {
   console.log(`
@@ -102,7 +103,14 @@ export async function init() {
       {
         type: 'confirm',
         name: 'useNeynar',
-        message: '🪐 Neynar is an API that makes it easy to build on Farcaster.\n\nBenefits of using Neynar in your frame:\n- Pre-configured webhook handling (no setup required)\n- Automatic frame analytics in your dev portal\n- Send manual notifications from dev.neynar.com\n- Built-in rate limiting and error handling\n\nWould you like to use Neynar in your frame?',
+        message: '🪐 Neynar is an API that makes it easy to build on Farcaster.\n\n' +
+        'Benefits of using Neynar in your frame:\n' +
+        '- Pre-configured webhook handling (no setup required)\n' +
+        '- Automatic frame analytics in your dev portal\n' +
+        '- Send manual notifications from dev.neynar.com\n' +
+        '- Built-in rate limiting and error handling\n\n' +
+        `${purple}${bright}${italic}A demo API key is included if you would like to try out Neynar before signing up!${reset}` +
+        'Would you like to use Neynar in your frame?',
         default: true
       }
     ]);
@@ -225,10 +233,10 @@ export async function init() {
     {
       type: 'confirm',
       name: 'useTunnel',
-      message: 'Would you like to test on mobile, or through a desktop browser?\n' +
-        'Mobile testing requires setting up a tunnel to serve your app from localhost to the broader internet.\n' +
-        'Configure mobile testing?',
-      default: false
+      message: 'Would you like to test on mobile and/or test the app with Warpcast developer tools?\n' +
+        'Both mobile testing and the Warpcast debugger require setting up a tunnel to serve your app from localhost to the broader internet.\n' +
+        'Configure a tunnel for mobile testing and/or Warpcast developer tools?',
+      default: true
     }
   ]);
   answers.useTunnel = hostingAnswer.useTunnel;
