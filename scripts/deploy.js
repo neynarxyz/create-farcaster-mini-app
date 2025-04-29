@@ -28,9 +28,10 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
   if (!apiKey) {
     throw new Error('Neynar API key is required');
   }
+  const lowerCasedCustodyAddress = custodyAddress.toLowerCase();
 
   const response = await fetch(
-    `https://api.neynar.com/v2/farcaster/user/custody-address?custody_address=${custodyAddress}`,
+    `https://api.neynar.com/v2/farcaster/user/bulk-by-address?addresses=${lowerCasedCustodyAddress}&address_types=custody_address`,
     {
       headers: {
         'accept': 'application/json',
@@ -44,11 +45,11 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
   }
 
   const data = await response.json();
-  if (!data.user?.fid) {
+  if (!data[lowerCasedCustodyAddress]?.length || !data[lowerCasedCustodyAddress][0].custody_address) {
     throw new Error('No FID found for this custody address');
   }
 
-  return data.user.fid;
+  return data[lowerCasedCustodyAddress][0].fid;
 }
 
 async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase, webhookUrl) {

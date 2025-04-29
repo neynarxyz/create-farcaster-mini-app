@@ -60,34 +60,6 @@ async function queryNeynarApp(apiKey) {
   }
 }
 
-async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
-  if (!apiKey) {
-    throw new Error('Neynar API key is required');
-  }
-  const lowerCasedCustodyAddress = custodyAddress.toLowerCase();
-
-  const response = await fetch(
-    `https://api.neynar.com/v2/farcaster/user/bulk-by-address?addresses=${lowerCasedCustodyAddress}&address_types=custody_address`,
-    {
-      headers: {
-        'accept': 'application/json',
-        'x-api-key': apiKey
-      }
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to lookup FID: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  if (!data[lowerCasedCustodyAddress]?.length && !data[lowerCasedCustodyAddress][0].custody_address) {
-    throw new Error('No FID found for this custody address');
-  }
-
-  return data[lowerCasedCustodyAddress][0].fid;
-}
-
 // Export the main CLI function for programmatic use
 export async function init() {
   printWelcomeMessage();
