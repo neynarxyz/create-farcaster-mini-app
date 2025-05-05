@@ -59,7 +59,22 @@ export default function Demo(
   } = useSignTypedData();
 
   const { disconnect } = useDisconnect();
-  const { connect } = useConnect();
+  const { connect, connectors } = useConnect();
+
+  const handleConnect = useCallback(async () => {
+    if (context) {
+      // If we're in a frame client, use the frame connector
+      await connect({ connector: connectors[0] });
+    } else {
+      try {
+        // Try Coinbase Wallet first
+        await connect({ connector: connectors[1] });
+      } catch (error) {
+        // If Coinbase Wallet fails, try MetaMask
+        await connect({ connector: connectors[2] });
+      }
+    }
+  }, [connect, connectors, context]);
 
   const {
     switchChain,
@@ -321,15 +336,21 @@ export default function Demo(
           )}
 
           <div className="mb-4">
-            <Button
-              onClick={() =>
-                isConnected
-                  ? disconnect()
-                  : connect({ connector: config.connectors[0] })
-              }
-            >
-              {isConnected ? "Disconnect" : "Connect"}
-            </Button>
+            {isConnected ? (
+              <Button
+                onClick={() => disconnect()}
+                className="w-full"
+              >
+                Disconnect
+              </Button>
+            ) : (
+              <Button
+                onClick={handleConnect}
+                className="w-full"
+              >
+                Connect
+              </Button>
+            )}
           </div>
 
           <div className="mb-4">
