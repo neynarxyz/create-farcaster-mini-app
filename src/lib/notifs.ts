@@ -3,8 +3,7 @@ import {
   sendNotificationResponseSchema,
 } from "@farcaster/frame-sdk";
 import { getUserNotificationDetails } from "~/lib/kv";
-
-const appUrl = process.env.NEXT_PUBLIC_URL || "";
+import { APP_URL } from "./constants";
 
 type SendFrameNotificationResult =
   | {
@@ -38,7 +37,7 @@ export async function sendFrameNotification({
       notificationId: crypto.randomUUID(),
       title,
       body,
-      targetUrl: appUrl,
+      targetUrl: APP_URL,
       tokens: [notificationDetails.token],
     } satisfies SendNotificationRequest),
   });

@@ -1,4 +1,5 @@
 import { NeynarAPIClient, Configuration } from '@neynar/nodejs-sdk';
+import { APP_URL } from './constants';
 
 let neynarClient: NeynarAPIClient | null = null;
 
@@ -41,7 +42,7 @@ export async function sendNeynarFrameNotification({
     const notification = {
       title,
       body,
-      target_url: process.env.NEXT_PUBLIC_URL!,
+      target_url: APP_URL,
     };
 
     const result = await client.publishFrameNotifications({ 

@@ -6,7 +6,7 @@ import { dirname } from 'path';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { mnemonicToAccount } from 'viem/accounts';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -295,6 +295,7 @@ export async function init() {
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "localtunnel": "^2.0.2",
+    "pino-pretty": "^13.0.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
@@ -322,6 +323,7 @@ export async function init() {
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
+    fs.appendFileSync(envPath, `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`);
     if (useNeynar && neynarApiKey && neynarClientId) {
       fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${neynarApiKey}"`);
       fs.appendFileSync(envPath, `\nNEYNAR_CLIENT_ID="${neynarClientId}"`);

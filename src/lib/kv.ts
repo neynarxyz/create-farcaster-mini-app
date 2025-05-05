@@ -1,5 +1,6 @@
 import { FrameNotificationDetails } from "@farcaster/frame-sdk";
 import { Redis } from "@upstash/redis";
+import { APP_NAME } from "./constants";
 
 // In-memory fallback storage
 const localStore = new Map<string, FrameNotificationDetails>();
@@ -12,7 +13,7 @@ const redis = useRedis ? new Redis({
 }) : null;
 
 function getUserNotificationDetailsKey(fid: number): string {
-  return `${process.env.NEXT_PUBLIC_FRAME_NAME}:user:${fid}`;
+  return `${APP_NAME}:user:${fid}`;
 }
 
 export async function getUserNotificationDetails(

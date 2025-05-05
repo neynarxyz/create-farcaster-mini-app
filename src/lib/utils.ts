@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { mnemonicToAccount } from 'viem/accounts';
+import { APP_BUTTON_TEXT, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_SPLASH_BACKGROUND_COLOR, APP_URL } from './constants';
+import { APP_SPLASH_URL } from './constants';
 
 interface FrameMetadata {
   accountAssociation?: {
@@ -48,13 +50,12 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
     }
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_URL;
-  if (!appUrl) {
+  if (!APP_URL) {
     throw new Error('NEXT_PUBLIC_URL not configured');
   }
 
   // Get the domain from the URL (without https:// prefix)
-  const domain = new URL(appUrl).hostname;
+  const domain = new URL(APP_URL).hostname;
   console.log('Using domain for manifest:', domain);
 
   const secretEnvVars = getSecretEnvVars();
@@ -97,19 +98,19 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
   const neynarClientId = process.env.NEYNAR_CLIENT_ID;
   const webhookUrl = neynarApiKey && neynarClientId 
     ? `https://api.neynar.com/f/app/${neynarClientId}/event`
-    : `${appUrl}/api/webhook`;
+    : `${APP_URL}/api/webhook`;
 
   return {
     accountAssociation,
     frame: {
       version: "1",
-      name: process.env.NEXT_PUBLIC_FRAME_NAME || "Frames v2 Demo",
-      iconUrl: `${appUrl}/icon.png`,
-      homeUrl: appUrl,
-      imageUrl: `${appUrl}/opengraph-image`,
-      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || "Launch Frame",
-      splashImageUrl: `${appUrl}/splash.png`,
-      splashBackgroundColor: "#f7f7f7",
+      name: APP_NAME ?? "Frames v2 Demo",
+      iconUrl: APP_ICON_URL,
+      homeUrl: APP_URL,
+      imageUrl: APP_OG_IMAGE_URL,
+      buttonTitle: APP_BUTTON_TEXT ?? "Launch Frame",
+      splashImageUrl: APP_SPLASH_URL,
+      splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
       webhookUrl,
     },
   };

@@ -1,25 +1,19 @@
 import { Metadata } from "next";
 import App from "./app";
-
-const appUrl = process.env.NEXT_PUBLIC_URL;
-
-// frame preview metadata
-const appName = process.env.NEXT_PUBLIC_FRAME_NAME;
-const splashImageUrl = `${appUrl}/splash.png`;
-const iconUrl = `${appUrl}/icon.png`;
+import { APP_URL, APP_NAME, APP_DESCRIPTION, APP_OG_IMAGE_URL, APP_ICON_URL, APP_SPLASH_URL, APP_SPLASH_BACKGROUND_COLOR, APP_BUTTON_TEXT } from "~/lib/constants";
 
 const framePreviewMetadata = {
   version: "next",
-  imageUrl: `${appUrl}/opengraph-image`,
+  imageUrl: APP_OG_IMAGE_URL,
   button: {
-    title: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
+    title: APP_BUTTON_TEXT,
     action: {
       type: "launch_frame",
-      name: appName,
-      url: appUrl,
-      splashImageUrl,
-      iconUrl,
-      splashBackgroundColor: "#f7f7f7",
+      name: APP_NAME,
+      url: APP_URL,
+      splashImageUrl: APP_SPLASH_URL,
+      iconUrl: APP_ICON_URL,
+      splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
     },
   },
 };
@@ -28,10 +22,10 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: appName,
+    title: APP_NAME,
     openGraph: {
-      title: appName,
-      description: process.env.NEXT_PUBLIC_FRAME_DESCRIPTION,
+      title: APP_NAME,
+      description: APP_DESCRIPTION,
     },
     other: {
       "fc:frame": JSON.stringify(framePreviewMetadata),
