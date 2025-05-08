@@ -224,9 +224,20 @@ export async function init() {
   try {
     console.log(`\nCloning repository from ${REPO_URL}...`);
     // Use separate commands for better cross-platform compatibility
-    execSync(`git clone ${REPO_URL} "${projectPath}"`, { stdio: 'inherit' });
-    execSync('git fetch origin main', { cwd: projectPath, stdio: 'inherit' });
-    execSync('git reset --hard origin/main', { cwd: projectPath, stdio: 'inherit' });
+    execSync(`git clone ${REPO_URL} "${projectPath}"`, { 
+      stdio: 'inherit',
+      shell: process.platform === 'win32'
+    });
+    execSync('git fetch origin main', { 
+      cwd: projectPath, 
+      stdio: 'inherit',
+      shell: process.platform === 'win32'
+    });
+    execSync('git reset --hard origin/main', { 
+      cwd: projectPath, 
+      stdio: 'inherit',
+      shell: process.platform === 'win32'
+    });
   } catch (error) {
     console.error('\n❌ Error: Failed to create project directory.');
     console.error('Please make sure you have write permissions and try again.');
@@ -353,8 +364,16 @@ export async function init() {
   // Install dependencies
   console.log('\nInstalling dependencies...');
 
-  execSync('npm cache clean --force', { cwd: projectPath, stdio: 'inherit' });
-  execSync('npm install', { cwd: projectPath, stdio: 'inherit' });
+  execSync('npm cache clean --force', { 
+    cwd: projectPath, 
+    stdio: 'inherit',
+    shell: process.platform === 'win32'
+  });
+  execSync('npm install', { 
+    cwd: projectPath, 
+    stdio: 'inherit',
+    shell: process.platform === 'win32'
+  });
 
   // Remove the bin directory
   console.log('\nRemoving bin directory...');

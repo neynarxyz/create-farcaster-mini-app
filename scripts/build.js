@@ -388,7 +388,12 @@ async function main() {
 
     // Run next build
     console.log('\nBuilding Next.js application...');
-    execSync('next build', { cwd: projectRoot, stdio: 'inherit' });
+    const nextBin = path.normalize(path.join(projectRoot, 'node_modules', '.bin', 'next'));
+    execSync(`"${nextBin}" build`, { 
+      cwd: projectRoot, 
+      stdio: 'inherit',
+      shell: process.platform === 'win32'
+    });
 
     console.log('\n✨ Build complete! Your frame is ready for deployment. 🪐');
     console.log('📝 Make sure to configure the environment variables from .env in your hosting provider');

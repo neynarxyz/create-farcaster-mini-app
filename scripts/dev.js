@@ -128,14 +128,13 @@ async function startDev() {
   }
   
   // Start next dev with appropriate configuration
-  const nextBin = process.platform === 'win32' 
-    ? path.join(projectRoot, 'node_modules', '.bin', 'next.cmd')
-    : path.join(projectRoot, 'node_modules', '.bin', 'next');
+  const nextBin = path.normalize(path.join(projectRoot, 'node_modules', '.bin', 'next'));
 
   nextDev = spawn(nextBin, ['dev'], {
     stdio: 'inherit',
     env: { ...process.env, NEXT_PUBLIC_URL: frameUrl, NEXTAUTH_URL: frameUrl },
-    cwd: projectRoot
+    cwd: projectRoot,
+    shell: process.platform === 'win32' // Add shell option for Windows
   });
 
   // Handle cleanup

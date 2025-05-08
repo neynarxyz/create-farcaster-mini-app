@@ -245,7 +245,10 @@ async function getGitRemote() {
 
 async function checkVercelCLI() {
   try {
-    execSync('vercel --version', { stdio: 'ignore' });
+    execSync('vercel --version', { 
+      stdio: 'ignore',
+      shell: process.platform === 'win32'
+    });
     return true;
   } catch (error) {
     return false;
@@ -254,7 +257,10 @@ async function checkVercelCLI() {
 
 async function installVercelCLI() {
   console.log('Installing Vercel CLI...');
-  execSync('npm install -g vercel', { stdio: 'inherit' });
+  execSync('npm install -g vercel', { 
+    stdio: 'inherit',
+    shell: process.platform === 'win32'
+  });
 }
 
 async function loginToVercel() {
@@ -383,7 +389,8 @@ async function deployToVercel(useGitHub = false) {
     console.log('\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n');
     execSync('vercel', { 
       cwd: projectRoot,
-      stdio: 'inherit'
+      stdio: 'inherit',
+      shell: process.platform === 'win32'
     });
 
     // Load project info from .vercel/project.json
