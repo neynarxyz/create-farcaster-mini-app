@@ -4,6 +4,10 @@ A Farcaster Mini Apps quickstart npx script.
 
 This is a [NextJS](https://nextjs.org/) + TypeScript + React app.
 
+## Guide
+
+Check out [this Neynar docs page](https://docs.neynar.com/docs/create-v2-farcaster-frame-in-60s) for a simple guide on how to create a Farcaster Mini App in less than 60 seconds!
+
 ## Getting Started
 
 To create a new frames project, run:

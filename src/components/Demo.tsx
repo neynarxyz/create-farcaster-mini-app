@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Input } from "../components/ui/input";
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, {
@@ -30,14 +30,21 @@ import { useFrame } from "~/components/providers/FrameProvider";
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
 ) {
-  const { isSDKLoaded, context, added, notificationDetails, lastEvent, addFrame, addFrameResult } = useFrame();
+  const { isSDKLoaded, context, added, notificationDetails, lastEvent, addFrame, addFrameResult, openUrl, close } = useFrame();
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
-
   const [sendNotificationResult, setSendNotificationResult] = useState("");
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
+
+  useEffect(() => {
+    console.log("isSDKLoaded", isSDKLoaded);
+    console.log("context", context);
+    console.log("address", address);
+    console.log("isConnected", isConnected);
+    console.log("chainId", chainId);
+  }, [context, address, isConnected, chainId, isSDKLoaded]);
 
   const {
     sendTransaction,
@@ -60,21 +67,6 @@ export default function Demo(
 
   const { disconnect } = useDisconnect();
   const { connect, connectors } = useConnect();
-
-  const handleConnect = useCallback(async () => {
-    if (context) {
-      // If we're in a frame client, use the frame connector
-      await connect({ connector: connectors[0] });
-    } else {
-      try {
-        // Try Coinbase Wallet first
-        await connect({ connector: connectors[1] });
-      } catch (error) {
-        // If Coinbase Wallet fails, try MetaMask
-        await connect({ connector: connectors[2] });
-      }
-    }
-  }, [connect, connectors, context]);
 
   const {
     switchChain,
@@ -100,18 +92,6 @@ export default function Demo(
   const handleSwitchChain = useCallback(() => {
     switchChain({ chainId: nextChain.id });
   }, [switchChain, nextChain.id]);
-
-  const openUrl = useCallback(() => {
-    sdk.actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-  }, []);
-
-  const openWarpcastUrl = useCallback(() => {
-    sdk.actions.openUrl("https://warpcast.com/~/compose");
-  }, []);
-
-  const close = useCallback(() => {
-    sdk.actions.close();
-  }, []);
 
   const sendNotification = useCallback(async () => {
     setSendNotificationResult("");
@@ -240,16 +220,7 @@ export default function Demo(
                 sdk.actions.openUrl
               </pre>
             </div>
-            <Button onClick={openUrl}>Open Link</Button>
-          </div>
-
-          <div className="mb-4">
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
-                sdk.actions.openUrl
-              </pre>
-            </div>
-            <Button onClick={openWarpcastUrl}>Open Warpcast Link</Button>
+            <Button onClick={() => openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}>Open Link</Button>
           </div>
 
           <div className="mb-4">
@@ -343,13 +314,30 @@ export default function Demo(
               >
                 Disconnect
               </Button>
-            ) : (
+            ) : context ? (
+              /* if context is not null, mini app is running in frame client */
               <Button
-                onClick={handleConnect}
+                onClick={() => connect({ connector: connectors[0] })}
                 className="w-full"
               >
                 Connect
               </Button>
+            ) : (
+              /* if context is null, mini app is running in browser */
+              <div className="space-y-2">
+                <Button
+                  onClick={() => connect({ connector: connectors[1] })}
+                  className="w-full"
+                >
+                  Connect Coinbase Wallet
+                </Button>
+                <Button
+                  onClick={() => connect({ connector: connectors[2] })}
+                  className="w-full"
+                >
+                  Connect MetaMask
+                </Button>
+              </div>
             )}
           </div>
 
@@ -630,6 +618,7 @@ function ViewProfile() {
     </>
   );
 }
+
 const renderError = (error: Error | null) => {
   if (!error) return null;
   if (error instanceof BaseError) {

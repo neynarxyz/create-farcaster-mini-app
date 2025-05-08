@@ -75,9 +75,7 @@ async function startDev() {
         ? '1. Run: netstat -ano | findstr :3000\n' +
           '2. Note the PID (Process ID) from the output\n' +
           '3. Run: taskkill /PID <PID> /F\n'
-        : '1. On macOS/Linux, run: lsof -i :3000\n' +
-          '2. Note the PID (Process ID) from the output\n' +
-          '3. Run: kill -9 <PID>\n') +
+        : `On macOS/Linux, run:\nnpm run cleanup\n`) +
       '\nThen try running this command again.');
     process.exit(1);
   }
