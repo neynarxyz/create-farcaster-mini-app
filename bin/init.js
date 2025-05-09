@@ -192,6 +192,9 @@ export async function init() {
       name: 'primaryCategory',
       message: 'It is strongly recommended to choose a primary category and tags to help users discover your mini app.\n\nSelect a primary category:',
       choices: [
+        new inquirer.Separator(),
+        { name: 'Skip (not recommended)', value: null },
+        new inquirer.Separator(),
         { name: 'Games', value: 'games' },
         { name: 'Social', value: 'social' },
         { name: 'Finance', value: 'finance' },
@@ -204,11 +207,9 @@ export async function init() {
         { name: 'Education', value: 'education' },
         { name: 'Developer Tools', value: 'developer-tools' },
         { name: 'Entertainment', value: 'entertainment' },
-        { name: 'Art & Creativity', value: 'art-creativity' },
-        new inquirer.Separator(),
-        { name: 'Skip (not recommended)', value: null }
+        { name: 'Art & Creativity', value: 'art-creativity' }
       ],
-      default: 'social'
+      default: null
     },
     {
       type: 'input',
