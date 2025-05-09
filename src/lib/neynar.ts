@@ -1,4 +1,4 @@
-import { NeynarAPIClient, Configuration } from '@neynar/nodejs-sdk';
+import { NeynarAPIClient, Configuration, WebhookUserCreated } from '@neynar/nodejs-sdk';
 import { APP_URL } from './constants';
 
 let neynarClient: NeynarAPIClient | null = null;
@@ -16,6 +16,19 @@ export function getNeynarClient() {
     neynarClient = new NeynarAPIClient(config);
   }
   return neynarClient;
+}
+
+type User = WebhookUserCreated['data'];
+
+export async function getNeynarUser(fid: number): Promise<User | null> {
+  try {
+    const client = getNeynarClient();
+    const usersResponse = await client.fetchBulkUsers({ fids: [fid] });
+    return usersResponse.users[0];
+  } catch (error) {
+    console.error('Error getting Neynar user:', error);
+    return null;
+  }
 }
 
 type SendFrameNotificationResult =
