@@ -6,3 +6,6 @@ export const APP_OG_IMAGE_URL = `${APP_URL}/api/opengraph-image`;
 export const APP_SPLASH_URL = `${APP_URL}/splash.png`;
 export const APP_SPLASH_BACKGROUND_COLOR = "#f7f7f7";
 export const APP_BUTTON_TEXT = process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT;
+export const APP_WEBHOOK_URL = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
+    ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
+    : `${APP_URL}/api/webhook`;

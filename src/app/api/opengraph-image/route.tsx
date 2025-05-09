@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const fid = searchParams.get('fid');
 
-  const user = await getNeynarUser(Number(fid));
+  const user = fid ? await getNeynarUser(Number(fid)) : null;
 
   return new ImageResponse(
     (

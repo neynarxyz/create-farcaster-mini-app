@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { mnemonicToAccount } from 'viem/accounts';
-import { APP_BUTTON_TEXT, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_SPLASH_BACKGROUND_COLOR, APP_URL } from './constants';
+import { APP_BUTTON_TEXT, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_SPLASH_BACKGROUND_COLOR, APP_URL, APP_WEBHOOK_URL } from './constants';
 import { APP_SPLASH_URL } from './constants';
 
 interface FrameMetadata {
@@ -36,6 +36,24 @@ export function getSecretEnvVars() {
   }
 
   return { seedPhrase, fid };
+}
+
+export function getFrameEmbedMetadata(ogImageUrl?: string) {
+  return {
+    version: "next",
+    imageUrl: ogImageUrl ?? APP_OG_IMAGE_URL,
+    button: {
+      title: APP_BUTTON_TEXT,
+      action: {
+        type: "launch_frame",
+        name: APP_NAME,
+        url: APP_URL,
+        splashImageUrl: APP_SPLASH_URL,
+        iconUrl: APP_ICON_URL,
+        splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
+      },
+    },
+  };
 }
 
 export async function getFarcasterMetadata(): Promise<FrameMetadata> {
@@ -93,13 +111,6 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
     };
   }
 
-  // Determine webhook URL based on whether Neynar is enabled
-  const neynarApiKey = process.env.NEYNAR_API_KEY;
-  const neynarClientId = process.env.NEYNAR_CLIENT_ID;
-  const webhookUrl = neynarApiKey && neynarClientId 
-    ? `https://api.neynar.com/f/app/${neynarClientId}/event`
-    : `${APP_URL}/api/webhook`;
-
   return {
     accountAssociation,
     frame: {
@@ -111,7 +122,7 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
       buttonTitle: APP_BUTTON_TEXT ?? "Launch Frame",
       splashImageUrl: APP_SPLASH_URL,
       splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
-      webhookUrl,
+      webhookUrl: APP_WEBHOOK_URL,
     },
   };
 }
