@@ -34,6 +34,7 @@ export default function Demo(
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [sendNotificationResult, setSendNotificationResult] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
@@ -287,6 +288,22 @@ export default function Demo(
           <div className="mb-4">
             <Button onClick={sendNotification} disabled={!notificationDetails}>
               Send notification
+            </Button>
+          </div>
+
+          <div className="mb-4">
+            <Button 
+              onClick={async () => {
+                if (context?.user?.fid) {
+                  const shareUrl = `${process.env.NEXT_PUBLIC_URL}/share/${context.user.fid}`;
+                  await navigator.clipboard.writeText(shareUrl);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }
+              }}
+              disabled={!context?.user?.fid}
+            >
+              {copied ? "Copied!" : "Copy share URL"}
             </Button>
           </div>
         </div>

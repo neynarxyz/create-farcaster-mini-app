@@ -27,15 +27,15 @@ function printWelcomeMessage() {
   console.log(`
 ${purple}╔═══════════════════════════════════════════════════╗${reset}
 ${purple}║                                                   ║${reset}
-${purple}║${reset}     ${bright}Welcome to Frames v2 Quickstart by Neynar${reset}     ${purple}║${reset}
-${purple}║${reset}     ${dim}The fastest way to build Farcaster Frames${reset}     ${purple}║${reset}
+${purple}║${reset}     ${bright}Welcome to Mini Apps Quickstart by Neynar${reset}     ${purple}║${reset}
+${purple}║${reset}   ${dim}the quickest way to build Farcaster mini apps${reset}   ${purple}║${reset}
 ${purple}║                                                   ║${reset}
 ${purple}╚═══════════════════════════════════════════════════╝${reset}
 
 ${blue}Version:${reset} ${SCRIPT_VERSION}
 ${blue}Repository:${reset} ${dim}${REPO_URL}${reset}
 
-Let's create your Frame! 🚀
+Let's create your mini app! 🚀
 `);
 }
 
@@ -77,13 +77,13 @@ export async function init() {
         type: 'confirm',
         name: 'useNeynar',
         message: '🪐 Neynar is an API that makes it easy to build on Farcaster.\n\n' +
-        'Benefits of using Neynar in your frame:\n' +
+        'Benefits of using Neynar in your mini app:\n' +
         '- Pre-configured webhook handling (no setup required)\n' +
-        '- Automatic frame analytics in your dev portal\n' +
+        '- Automatic mini app analytics in your dev portal\n' +
         '- Send manual notifications from dev.neynar.com\n' +
         '- Built-in rate limiting and error handling\n\n' +
         `${purple}${bright}${italic}A demo API key is included if you would like to try out Neynar before signing up!${reset}\n\n` +
-        'Would you like to use Neynar in your frame?',
+        'Would you like to use Neynar in your mini app?',
         default: true
       }
     ]);
@@ -172,7 +172,7 @@ export async function init() {
     {
       type: 'input',
       name: 'projectName',
-      message: 'What is the name of your frame?',
+      message: 'What is the name of your mini app?',
       default: defaultFrameName,
       validate: (input) => {
         if (input.trim() === '') {
@@ -184,14 +184,14 @@ export async function init() {
     {
       type: 'input',
       name: 'description',
-      message: 'Give a one-line description of your frame (optional):',
+      message: 'Give a one-line description of your mini app (optional):',
       default: 'A Farcaster mini-app created with Neynar'
     },
     {
       type: 'input',
       name: 'buttonText',
-      message: 'Enter the button text for your frame:',
-      default: 'Launch Frame',
+      message: 'Enter the button text for your mini app:',
+      default: 'Launch Mini App',
       validate: (input) => {
         if (input.trim() === '') {
           return 'Button text cannot be empty';
@@ -218,7 +218,7 @@ export async function init() {
   const projectDirName = projectName.replace(/\s+/g, '-').toLowerCase();
   const projectPath = path.join(process.cwd(), projectDirName);
 
-  console.log(`\nCreating a new Frames v2 app in ${projectPath}`);
+  console.log(`\nCreating a new mini app in ${projectPath}`);
 
   // Clone the repository
   try {

@@ -154,14 +154,14 @@ async function checkRequiredEnvVars() {
   const requiredVars = [
     {
       name: 'NEXT_PUBLIC_FRAME_NAME',
-      message: 'Enter the name for your frame (e.g., My Cool Frame):',
+      message: 'Enter the name for your frame (e.g., My Cool Mini App):',
       default: process.env.NEXT_PUBLIC_FRAME_NAME,
-      validate: input => input.trim() !== '' || 'Frame name cannot be empty'
+      validate: input => input.trim() !== '' || 'Mini app name cannot be empty'
     },
     {
       name: 'NEXT_PUBLIC_FRAME_BUTTON_TEXT',
       message: 'Enter the text for your frame button:',
-      default: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT ?? 'Launch Frame',
+      default: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT ?? 'Launch Mini App',
       validate: input => input.trim() !== '' || 'Button text cannot be empty'
     }
   ];
@@ -197,13 +197,13 @@ async function checkRequiredEnvVars() {
 
   // Check for seed phrase
   if (!process.env.SEED_PHRASE) {
-    console.log('\n🔑 Frame Manifest Signing');
-    console.log('A signed manifest helps users trust your frame.');
+    console.log('\n🔑 Mini App Manifest Signing');
+    console.log('A signed manifest helps users trust your mini app.');
     const { seedPhrase } = await inquirer.prompt([
       {
         type: 'password',
         name: 'seedPhrase',
-        message: 'Enter your Farcaster custody account seed phrase to sign the frame manifest\n(optional -- leave blank to create an unsigned frame)\n\nSeed phrase:',
+        message: 'Enter your Farcaster custody account seed phrase to sign the mini app manifest\n(optional -- leave blank to create an unsigned mini app)\n\nSeed phrase:',
         default: null
       }
     ]);
@@ -385,7 +385,7 @@ async function deployToVercel(useGitHub = false) {
 
     // Set up Vercel project
     console.log('\n📦 Setting up Vercel project...');
-    console.log(' An initial deployment is required to get an assigned domain that can be used in the frame manifest\n');
+    console.log(' An initial deployment is required to get an assigned domain that can be used in the mini app manifest\n');
     console.log('\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n');
     execSync('vercel', { 
       cwd: projectRoot,
@@ -577,7 +577,7 @@ async function deployToVercel(useGitHub = false) {
       }
     }
     
-    console.log('\n✨ Deployment complete! Your frame is now live at:');
+    console.log('\n✨ Deployment complete! Your mini app is now live at:');
     console.log(`🌐 https://${domain}`);
     console.log('\n📝 You can manage your project at https://vercel.com/dashboard');
 
@@ -590,13 +590,13 @@ async function deployToVercel(useGitHub = false) {
 async function main() {
   try {
     // Print welcome message
-    console.log('🚀 Vercel Frame Deployment');
-    console.log('This script will deploy your frame to Vercel.');
+    console.log('🚀 Vercel Mini App Deployment');
+    console.log('This script will deploy your mini app to Vercel.');
     console.log('\nThe script will:');
     console.log('1. Check for required environment variables');
     console.log('2. Set up a Vercel project (new or existing)');
     console.log('3. Configure environment variables in Vercel');
-    console.log('4. Deploy and build your frame (Vercel will run the build automatically)\n');
+    console.log('4. Deploy and build your mini app (Vercel will run the build automatically)\n');
 
     // Check for required environment variables
     await checkRequiredEnvVars();

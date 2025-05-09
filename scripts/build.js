@@ -194,7 +194,7 @@ async function main() {
       {
         type: 'input',
         name: 'domain',
-        message: 'Enter the domain where your frame will be deployed (e.g., example.com):',
+        message: 'Enter the domain where your mini app will be deployed (e.g., example.com):',
         validate: async (input) => {
           try {
             await validateDomain(input);
@@ -211,11 +211,11 @@ async function main() {
       {
         type: 'input',
         name: 'frameName',
-        message: 'Enter the name for your frame (e.g., My Cool Frame):',
+        message: 'Enter the name for your mini app (e.g., My Cool Mini App):',
         default: process.env.NEXT_PUBLIC_FRAME_NAME,
         validate: (input) => {
           if (input.trim() === '') {
-            return 'Frame name cannot be empty';
+            return 'Mini app name cannot be empty';
           }
           return true;
         }
@@ -227,8 +227,8 @@ async function main() {
       {
         type: 'input',
         name: 'buttonText',
-        message: 'Enter the text for your frame button:',
-        default: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || 'Launch Frame',
+        message: 'Enter the text for your mini app button:',
+        default: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || 'Launch Mini App',
         validate: (input) => {
           if (input.trim() === '') {
             return 'Button text cannot be empty';
@@ -300,7 +300,7 @@ async function main() {
           type: 'password',
           name: 'seedPhrase',
           message: 'Your farcaster custody account seed phrase is required to create a signature proving this app was created by you.\n' +
-          `⚠️ ${yellow}${italic}seed phrase is only used to sign the frame manifest, then discarded${reset} ⚠️\n` +
+          `⚠️ ${yellow}${italic}seed phrase is only used to sign the mini app manifest, then discarded${reset} ⚠️\n` +
           'Seed phrase:',
           validate: async (input) => {
             try {
@@ -324,7 +324,7 @@ async function main() {
     const fid = await lookupFidByCustodyAddress(accountAddress, neynarApiKey ?? 'FARCASTER_V2_FRAMES_DEMO');
 
     // Generate and sign manifest
-    console.log('\n🔨 Generating frame manifest...');
+    console.log('\n🔨 Generating mini app manifest...');
     
     // Determine webhook URL based on environment variables
     const webhookUrl = neynarApiKey && neynarClientId 
@@ -332,7 +332,7 @@ async function main() {
       : `${domain}/api/webhook`;
 
     const metadata = await generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase, webhookUrl);
-    console.log('\n✅ Frame manifest generated' + (seedPhrase ? ' and signed' : ''));
+    console.log('\n✅ Mini app manifest generated' + (seedPhrase ? ' and signed' : ''));
 
     // Read existing .env file or create new one
     const envPath = path.join(projectRoot, '.env');
@@ -395,7 +395,7 @@ async function main() {
       shell: process.platform === 'win32'
     });
 
-    console.log('\n✨ Build complete! Your frame is ready for deployment. 🪐');
+    console.log('\n✨ Build complete! Your mini app is ready for deployment. 🪐');
     console.log('📝 Make sure to configure the environment variables from .env in your hosting provider');
 
   } catch (error) {

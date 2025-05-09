@@ -100,30 +100,30 @@ async function startDev() {
 💻 To test on desktop:
    1. Open the localtunnel URL in your browser: ${tunnel.url}
    2. Enter your IP address in the password field${ip ? `: ${ip}` : ''} (note that this IP may be incorrect if you are using a VPN)
-   3. Click "Click to Submit" -- your frame should now load in the browser
-   4. Navigate to the Warpcast Frame Developer Tools: https://warpcast.com/~/developers/frames
-   5. Enter your frame URL: ${tunnel.url}
-   6. Click "Preview" to launch your frame within Warpcast (note that it may take ~10 seconds to load)
+   3. Click "Click to Submit" -- your mini app should now load in the browser
+   4. Navigate to the Warpcast Mini App Developer Tools: https://warpcast.com/~/developers/mini-apps
+   5. Enter your mini app URL: ${tunnel.url}
+   6. Click "Preview" to launch your mini app within Warpcast (note that it may take ~10 seconds to load)
 
 
-❗️ You will not be able to load your frame in Warpcast until    ❗️
+❗️ You will not be able to load your mini app in Warpcast until    ❗️
 ❗️ you submit your IP address in the localtunnel password field ❗️
 
 
 📱 To test in Warpcast mobile app:
    1. Open Warpcast on your phone
-   2. Go to Settings > Developer > Frames
+   2. Go to Settings > Developer > Mini Apps
    4. Enter this URL: ${tunnel.url}
    5. Click "Preview" (note that it may take ~10 seconds to load)
 `);
   } else {
     frameUrl = 'http://localhost:3000';
     console.log(`
-💻 To test your frame:
-   1. Open the Warpcast Frame Developer Tools: https://warpcast.com/~/developers/frames
-   2. Scroll down to the "Preview Frame" tool
+💻 To test your mini app:
+   1. Open the Warpcast Mini App Developer Tools: https://warpcast.com/~/developers/mini-apps
+   2. Scroll down to the "Preview Mini App" tool
    3. Enter this URL: ${frameUrl}
-   4. Click "Preview" to test your frame (note that it may take ~5 seconds to load the first time)
+   4. Click "Preview" to test your mini app (note that it may take ~5 seconds to load the first time)
 `);
   }
   
