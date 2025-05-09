@@ -185,7 +185,44 @@ export async function init() {
       type: 'input',
       name: 'description',
       message: 'Give a one-line description of your mini app (optional):',
-      default: 'A Farcaster mini-app created with Neynar'
+      default: 'A Farcaster mini app created with Neynar'
+    },
+    {
+      type: 'list',
+      name: 'primaryCategory',
+      message: 'It is strongly recommended to choose a primary category and tags to help users discover your mini app.\n\nSelect a primary category:',
+      choices: [
+        { name: 'Games', value: 'games' },
+        { name: 'Social', value: 'social' },
+        { name: 'Finance', value: 'finance' },
+        { name: 'Utility', value: 'utility' },
+        { name: 'Productivity', value: 'productivity' },
+        { name: 'Health & Fitness', value: 'health-fitness' },
+        { name: 'News & Media', value: 'news-media' },
+        { name: 'Music', value: 'music' },
+        { name: 'Shopping', value: 'shopping' },
+        { name: 'Education', value: 'education' },
+        { name: 'Developer Tools', value: 'developer-tools' },
+        { name: 'Entertainment', value: 'entertainment' },
+        { name: 'Art & Creativity', value: 'art-creativity' },
+        new inquirer.Separator(),
+        { name: 'Skip (not recommended)', value: null }
+      ],
+      default: 'social'
+    },
+    {
+      type: 'input',
+      name: 'tags',
+      message: 'Enter tags for your mini app (separate with spaces or commas, optional):',
+      default: '',
+      filter: (input) => {
+        if (!input.trim()) return [];
+        // Split by both spaces and commas, trim whitespace, and filter out empty strings
+        return input
+          .split(/[,\s]+/)
+          .map(tag => tag.trim())
+          .filter(tag => tag.length > 0);
+      }
     },
     {
       type: 'input',
@@ -333,6 +370,8 @@ export async function init() {
     // Append all remaining environment variables
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_PRIMARY_CATEGORY="${answers.primaryCategory}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_TAGS="${answers.tags.join(',')}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
     fs.appendFileSync(envPath, `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`);
     if (useNeynar && neynarApiKey && neynarClientId) {

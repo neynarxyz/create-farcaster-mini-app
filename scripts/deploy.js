@@ -72,6 +72,8 @@ async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase
   });
   const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
 
+  const tags = process.env.NEXT_PUBLIC_FRAME_TAGS?.split(',');
+
   return {
     accountAssociation: {
       header: encodedHeader,
@@ -80,14 +82,17 @@ async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase
     },
     frame: {
       version: "1",
-      name: process.env.NEXT_PUBLIC_FRAME_NAME?.trim(),
+      name: process.env.NEXT_PUBLIC_FRAME_NAME,
       iconUrl: `https://${trimmedDomain}/icon.png`,
       homeUrl: `https://${trimmedDomain}`,
       imageUrl: `https://${trimmedDomain}/api/opengraph-image`,
-      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT?.trim(),
+      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
       splashImageUrl: `https://${trimmedDomain}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
       webhookUrl: webhookUrl?.trim(),
+      description: process.env.NEXT_PUBLIC_FRAME_DESCRIPTION,
+      primaryCategory: process.env.NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY,
+      tags,
     },
   };
 }
@@ -113,6 +118,8 @@ async function loadEnvLocal() {
           'SEED_PHRASE',
           'NEXT_PUBLIC_FRAME_NAME',
           'NEXT_PUBLIC_FRAME_DESCRIPTION',
+          'NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY',
+          'NEXT_PUBLIC_FRAME_TAGS',
           'NEXT_PUBLIC_FRAME_BUTTON_TEXT',
           'NEYNAR_API_KEY',
           'NEYNAR_CLIENT_ID'

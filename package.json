@@ -1,6 +1,6 @@
 {
   "name": "@neynar/create-farcaster-mini-app",
-  "version": "1.2.24",
+  "version": "1.2.25",
   "type": "module",
   "private": false,
   "access": "public",
@@ -22,6 +22,9 @@
     "frame",
     "frames-v2",
     "farcaster-frames",
+    "miniapps",
+    "miniapp",
+    "mini-apps",
     "mini-app",
     "neynar",
     "web3"

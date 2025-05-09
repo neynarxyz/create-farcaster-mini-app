@@ -161,6 +161,8 @@ async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase
   });
   const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
 
+  const tags = process.env.NEXT_PUBLIC_FRAME_TAGS?.split(',');
+
   return {
     accountAssociation: {
       header: encodedHeader,
@@ -177,6 +179,9 @@ async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase
       splashImageUrl: `https://${domain}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
       webhookUrl,
+      description: process.env.NEXT_PUBLIC_FRAME_DESCRIPTION,
+      primaryCategory: process.env.NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY,
+      tags,
     },
   };
 }
@@ -346,6 +351,8 @@ async function main() {
       // Frame metadata
       `NEXT_PUBLIC_FRAME_NAME="${frameName}"`,
       `NEXT_PUBLIC_FRAME_DESCRIPTION="${process.env.NEXT_PUBLIC_FRAME_DESCRIPTION || ''}"`,
+      `NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY="${process.env.NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY || ''}"`,
+      `NEXT_PUBLIC_FRAME_TAGS="${process.env.NEXT_PUBLIC_FRAME_TAGS || ''}"`,
       `NEXT_PUBLIC_FRAME_BUTTON_TEXT="${buttonText}"`,
 
       // Neynar configuration (if it exists in current env)

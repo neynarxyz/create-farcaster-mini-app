@@ -101,7 +101,7 @@ async function startDev() {
    1. Open the localtunnel URL in your browser: ${tunnel.url}
    2. Enter your IP address in the password field${ip ? `: ${ip}` : ''} (note that this IP may be incorrect if you are using a VPN)
    3. Click "Click to Submit" -- your mini app should now load in the browser
-   4. Navigate to the Warpcast Mini App Developer Tools: https://warpcast.com/~/developers/mini-apps
+   4. Navigate to the Warpcast Mini App Developer Tools: https://warpcast.com/~/developers
    5. Enter your mini app URL: ${tunnel.url}
    6. Click "Preview" to launch your mini app within Warpcast (note that it may take ~10 seconds to load)
 
@@ -120,7 +120,7 @@ async function startDev() {
     frameUrl = 'http://localhost:3000';
     console.log(`
 💻 To test your mini app:
-   1. Open the Warpcast Mini App Developer Tools: https://warpcast.com/~/developers/mini-apps
+   1. Open the Warpcast Mini App Developer Tools: https://warpcast.com/~/developers
    2. Scroll down to the "Preview Mini App" tool
    3. Enter this URL: ${frameUrl}
    4. Click "Preview" to test your mini app (note that it may take ~5 seconds to load the first time)

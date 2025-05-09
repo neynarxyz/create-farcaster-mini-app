@@ -1,26 +1,31 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { mnemonicToAccount } from 'viem/accounts';
-import { APP_BUTTON_TEXT, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_SPLASH_BACKGROUND_COLOR, APP_URL, APP_WEBHOOK_URL } from './constants';
+import { APP_BUTTON_TEXT, APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_PRIMARY_CATEGORY, APP_SPLASH_BACKGROUND_COLOR, APP_TAGS, APP_URL, APP_WEBHOOK_URL } from './constants';
 import { APP_SPLASH_URL } from './constants';
 
 interface FrameMetadata {
+  version: string;
+  name: string;
+  iconUrl: string;
+  homeUrl: string;
+  imageUrl?: string;
+  buttonTitle?: string;
+  splashImageUrl?: string;
+  splashBackgroundColor?: string;
+  webhookUrl?: string;
+  description?: string;
+  primaryCategory?: string;
+  tags?: string[];
+};
+
+interface FrameManifest {
   accountAssociation?: {
     header: string;
     payload: string;
     signature: string;
   };
-  frame: {
-    version: string;
-    name: string;
-    iconUrl: string;
-    homeUrl: string;
-    imageUrl: string;
-    buttonTitle: string;
-    splashImageUrl: string;
-    splashBackgroundColor: string;
-    webhookUrl: string;
-  };
+  frame: FrameMetadata;
 }
 
 export function cn(...inputs: ClassValue[]) {
@@ -51,12 +56,15 @@ export function getFrameEmbedMetadata(ogImageUrl?: string) {
         splashImageUrl: APP_SPLASH_URL,
         iconUrl: APP_ICON_URL,
         splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
+        description: APP_DESCRIPTION,
+        primaryCategory: APP_PRIMARY_CATEGORY,
+        tags: APP_TAGS,
       },
     },
   };
 }
 
-export async function getFarcasterMetadata(): Promise<FrameMetadata> {
+export async function getFarcasterMetadata(): Promise<FrameManifest> {
   // First check for FRAME_METADATA in .env and use that if it exists
   if (process.env.FRAME_METADATA) {
     try {
@@ -123,6 +131,9 @@ export async function getFarcasterMetadata(): Promise<FrameMetadata> {
       splashImageUrl: APP_SPLASH_URL,
       splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
       webhookUrl: APP_WEBHOOK_URL,
+      description: APP_DESCRIPTION,
+      primaryCategory: APP_PRIMARY_CATEGORY,
+      tags: APP_TAGS,
     },
   };
 }
