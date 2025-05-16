@@ -45,7 +45,7 @@ async function queryNeynarApp(apiKey) {
   }
   try {
     const response = await fetch(
-      `https://api.neynar.com/portal/app_by_api_key`,
+      `https://api.neynar.com/portal/app_by_api_key?starter_kit=true`,
       {
         headers: {
           'x-api-key': apiKey
