@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import dynamic from "next/dynamic";
 import type { Session } from "next-auth"
 import { SessionProvider } from "next-auth/react"
