@@ -457,9 +457,9 @@ function SignSolanaMessage({ signMessage }: { signMessage?: (message: Uint8Array
       if (!signMessage) {
         throw new Error('no Solana signMessage');
       }
-      const input = Buffer.from("Hello from Solana!", "utf8");
+      const input = new TextEncoder().encode("Hello from Solana!");
       const signatureBytes = await signMessage(input);
-      const signature = Buffer.from(signatureBytes).toString("base64");
+      const signature = btoa(String.fromCharCode(...signatureBytes));
       setSignature(signature);
       setSignError(undefined);
     } catch (e) {
