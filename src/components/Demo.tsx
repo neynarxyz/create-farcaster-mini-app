@@ -17,6 +17,11 @@ import {
   useSwitchChain,
   useChainId,
 } from "wagmi";
+import {
+  useConnection as useSolanaConnection,
+  useWallet as useSolanaWallet,
+} from '@solana/wallet-adapter-react';
+import { useHasSolanaProvider } from "./providers/SafeFarcasterSolanaProvider";
 
 import { config } from "~/components/providers/WagmiProvider";
 import { Button } from "~/components/ui/Button";
@@ -38,6 +43,13 @@ export default function Demo(
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
+  const hasSolanaProvider = useHasSolanaProvider();
+  let solanaWallet, solanaPublicKey, solanaSignMessage, solanaAddress;
+  if (hasSolanaProvider) {
+    solanaWallet = useSolanaWallet();
+    ({ publicKey: solanaPublicKey, signMessage: solanaSignMessage } = solanaWallet);
+    solanaAddress = solanaPublicKey?.toBase58();
+  }
 
   useEffect(() => {
     console.log("isSDKLoaded", isSDKLoaded);
@@ -413,8 +425,62 @@ export default function Demo(
             </>
           )}
         </div>
+
+        {solanaAddress && (
+          <div>
+            <h2 className="font-2xl font-bold">Solana</h2>
+            <div className="my-2 text-xs">
+              Address: <pre className="inline">{truncateAddress(solanaAddress)}</pre>
+            </div>
+            <SignSolanaMessage signMessage={solanaSignMessage} />
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function SignSolanaMessage({ signMessage }: { signMessage?: (message: Uint8Array) => Promise<Uint8Array> }) {
+  const [signature, setSignature] = useState<string | undefined>();
+  const [signError, setSignError] = useState<Error | undefined>();
+  const [signPending, setSignPending] = useState(false);
+
+  const handleSignMessage = useCallback(async () => {
+    setSignPending(true);
+    try {
+      if (!signMessage) {
+        throw new Error('no Solana signMessage');
+      }
+      const input = Buffer.from("Hello from Solana!", "utf8");
+      const signatureBytes = await signMessage(input);
+      const signature = Buffer.from(signatureBytes).toString("base64");
+      setSignature(signature);
+      setSignError(undefined);
+    } catch (e) {
+      if (e instanceof Error) {
+        setSignError(e);
+      }
+    } finally {
+      setSignPending(false);
+    }
+  }, [signMessage]);
+
+  return (
+    <>
+      <Button
+        onClick={handleSignMessage}
+        disabled={signPending}
+        isLoading={signPending}
+      >
+        Sign Message
+      </Button>
+      {signError && renderError(signError)}
+      {signature && (
+        <div className="mt-2 text-xs">
+          <div>Signature: {signature}</div>
+        </div>
+      )}
+    </>
   );
 }
 
