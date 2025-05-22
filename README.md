@@ -41,3 +41,13 @@ npm run build
 ```
 
 The above command will generate a `.env` file based on the `.env.local` file and user input. Be sure to configure those environment variables on your hosting platform.
+
+## Developing Script Locally
+
+This section is only for working on the script and template, if you simply want to create a mini-app and _use_ the template this section is not for you.
+
+To run the script locally just run:
+```
+node ./bin/index.js
+```
+
