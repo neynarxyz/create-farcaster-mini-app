@@ -355,6 +355,9 @@ async function main() {
       `NEXT_PUBLIC_FRAME_TAGS="${process.env.NEXT_PUBLIC_FRAME_TAGS || ''}"`,
       `NEXT_PUBLIC_FRAME_BUTTON_TEXT="${buttonText}"`,
 
+      // Analytics
+      `NEXT_PUBLIC_ANALYTICS_ENABLED="${process.env.NEXT_PUBLIC_ANALYTICS_ENABLED || 'false'}"`,
+
       // Neynar configuration (if it exists in current env)
       ...(process.env.NEYNAR_API_KEY ? 
         [`NEYNAR_API_KEY="${process.env.NEYNAR_API_KEY}"`] : []),

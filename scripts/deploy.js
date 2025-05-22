@@ -121,6 +121,7 @@ async function loadEnvLocal() {
           'NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY',
           'NEXT_PUBLIC_FRAME_TAGS',
           'NEXT_PUBLIC_FRAME_BUTTON_TEXT',
+          'NEXT_PUBLIC_ANALYTICS_ENABLED',
           'NEYNAR_API_KEY',
           'NEYNAR_CLIENT_ID'
         ];

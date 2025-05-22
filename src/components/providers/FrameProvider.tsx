@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import sdk, { type Context, type FrameNotificationDetails, AddMiniApp } from "@farcaster/frame-sdk";
 import { createStore } from "mipd";
 import React from "react";
+import { logEvent } from "../../lib/amplitude";
 
 interface FrameContextType {
   isSDKLoaded: boolean;
@@ -72,36 +73,54 @@ export function useFrame() {
       setContext(context);
       setIsSDKLoaded(true);
 
+      const amplitudeBaseEvent = {
+        fid: context.user.fid,
+        username: context.user.username,
+        clientFid: context.client.clientFid,
+      };
+      const amplitudeUserId = `${context.user.fid}-${context.client.clientFid}`;
+
+      logEvent("Frame Opened", {
+        ...amplitudeBaseEvent,
+        location: context.location,
+        added: context.client.added,
+      }, amplitudeUserId);
+
       // Set up event listeners
       sdk.on("frameAdded", ({ notificationDetails }) => {
         console.log("Frame added", notificationDetails);
         setAdded(true);
         setNotificationDetails(notificationDetails ?? null);
         setLastEvent("Frame added");
+        logEvent("Frame Added", amplitudeBaseEvent, amplitudeUserId);
       });
 
       sdk.on("frameAddRejected", ({ reason }) => {
         console.log("Frame add rejected", reason);
         setAdded(false);
         setLastEvent(`Frame add rejected: ${reason}`);
+        logEvent("Frame Add Rejected", amplitudeBaseEvent, amplitudeUserId);
       });
 
       sdk.on("frameRemoved", () => {
         console.log("Frame removed");
         setAdded(false);
         setLastEvent("Frame removed");
+        logEvent("Frame Removed", amplitudeBaseEvent, amplitudeUserId);
       });
 
       sdk.on("notificationsEnabled", ({ notificationDetails }) => {
         console.log("Notifications enabled", notificationDetails);
         setNotificationDetails(notificationDetails ?? null);
         setLastEvent("Notifications enabled");
+        logEvent("Notifications Enabled", amplitudeBaseEvent, amplitudeUserId);
       });
 
       sdk.on("notificationsDisabled", () => {
         console.log("Notifications disabled");
         setNotificationDetails(null);
         setLastEvent("Notifications disabled");
+        logEvent("Notifications Disabled", amplitudeBaseEvent, amplitudeUserId);
       });
 
       sdk.on("primaryButtonClicked", () => {

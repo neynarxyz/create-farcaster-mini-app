@@ -76,7 +76,7 @@ export async function init() {
       {
         type: 'confirm',
         name: 'useNeynar',
-        message: '🪐 Neynar is an API that makes it easy to build on Farcaster.\n\n' +
+        message: `🪐 ${purple}${bright}${italic}Neynar is an API that makes it easy to build on Farcaster.${reset}\n\n` +
         'Benefits of using Neynar in your mini app:\n' +
         '- Pre-configured webhook handling (no setup required)\n' +
         '- Automatic mini app analytics in your dev portal\n' +
@@ -252,6 +252,17 @@ export async function init() {
   ]);
   answers.useTunnel = hostingAnswer.useTunnel;
 
+  // Ask about analytics opt-out
+  const analyticsAnswer = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'enableAnalytics',
+      message: 'Would you like to help improve Neynar products by sharing usage data from your mini app?',
+      default: true
+    }
+  ]);
+  answers.enableAnalytics = analyticsAnswer.enableAnalytics;
+
   const projectName = answers.projectName;
   const projectDirName = projectName.replace(/\s+/g, '-').toLowerCase();
   const projectPath = path.join(process.cwd(), projectDirName);
@@ -374,6 +385,8 @@ export async function init() {
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_PRIMARY_CATEGORY="${answers.primaryCategory}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_TAGS="${answers.tags.join(',')}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_ANALYTICS_ENABLED="${answers.enableAnalytics}"`);
+
     fs.appendFileSync(envPath, `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`);
     if (useNeynar && neynarApiKey && neynarClientId) {
       fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${neynarApiKey}"`);
