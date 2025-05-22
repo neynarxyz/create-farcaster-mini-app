@@ -31,6 +31,7 @@ import { BaseError, UserRejectedRequestError } from "viem";
 import { useSession } from "next-auth/react";
 import { Label } from "~/components/ui/label";
 import { useFrame } from "~/components/providers/FrameProvider";
+import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
@@ -443,6 +444,8 @@ export default function Demo(
   );
 }
 
+// Solana functions inspired by farcaster demo
+// https://github.com/farcasterxyz/frames-v2-demo/blob/main/src/components/Demo.tsx
 function SignSolanaMessage({ signMessage }: { signMessage?: (message: Uint8Array) => Promise<Uint8Array> }) {
   const [signature, setSignature] = useState<string | undefined>();
   const [signError, setSignError] = useState<Error | undefined>();
@@ -474,6 +477,7 @@ function SignSolanaMessage({ signMessage }: { signMessage?: (message: Uint8Array
         onClick={handleSignMessage}
         disabled={signPending}
         isLoading={signPending}
+        className="mb-4"
       >
         Sign Message
       </Button>
@@ -498,6 +502,8 @@ function SendSolana() {
   const { connection: solanaConnection } = useSolanaConnection();
   const { sendTransaction, publicKey } = useSolanaWallet();
 
+  // This should be replaced but including it from the original demo
+  // https://github.com/farcasterxyz/frames-v2-demo/blob/main/src/components/Demo.tsx#L718
   const ashoatsPhantomSolanaWallet = 'Ao3gLNZAsbrmnusWVqQCPMrcqNi6jdYgu8T6NCoXXQu1';
 
   const handleSend = useCallback(async () => {
@@ -512,20 +518,18 @@ function SendSolana() {
         throw new Error('failed to fetch latest Solana blockhash');
       }
 
-      // Set both fromPubkey and toPubkey to constants for debugging
-      const fromPubkeyStr = publicKey;
-      const toPubkeyStr = new (await import('@solana/web3.js')).PublicKey(ashoatsPhantomSolanaWallet); // TODO: Replace with a real base58 pubkey string
-      console.error('Debug Solana transfer:', { fromPubkeyStr, toPubkeyStr });
-      const transaction = new (await import('@solana/web3.js')).Transaction();
+      const fromPubkeyStr = publicKey.toBase58();
+      const toPubkeyStr = ashoatsPhantomSolanaWallet;
+      const transaction = new Transaction();
       transaction.add(
-        (await import('@solana/web3.js')).SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: toPubkeyStr,
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(fromPubkeyStr),
+          toPubkey: new PublicKey(toPubkeyStr),
           lamports: 0n,
         }),
       );
       transaction.recentBlockhash = blockhash;
-      transaction.feePayer = new (await import('@solana/web3.js')).PublicKey(fromPubkeyStr);
+      transaction.feePayer = new PublicKey(fromPubkeyStr);
 
       const simulation = await solanaConnection.simulateTransaction(transaction);
       if (simulation.value.err) {
@@ -551,8 +555,9 @@ function SendSolana() {
         onClick={handleSend}
         disabled={state.status === 'pending'}
         isLoading={state.status === 'pending'}
+        className="mb-4"
       >
-        Send Transaction (1 lamport)
+        Send Transaction (sol)
       </Button>
       {state.status === 'error' && renderError(state.error)}
       {state.status === 'success' && (
