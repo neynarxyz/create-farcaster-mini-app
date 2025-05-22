@@ -20,7 +20,7 @@ const FarcasterSolanaProvider = dynamic(
 );
 
 export function Providers({ session, children }: { session: Session | null, children: React.ReactNode }) {
-  const solanaEndpoint = process.env.NEXT_PUBLIC_SOLANA_ENDPOINT || "https://mainnet.helius-rpc.com/?api-key=YOUR_API_KEY";
+  const solanaEndpoint = process.env.SOLANA_RPC_ENDPOINT || "https://solana-rpc.publicnode.com";
   return (
     <SessionProvider session={session}>
       <WagmiProvider>
