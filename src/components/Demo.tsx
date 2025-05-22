@@ -372,7 +372,7 @@ export default function Demo(
           </div>
 
           <div className="mb-4">
-            <SignMessage />
+            <SignEvmMessage />
           </div>
 
           {isConnected && (
@@ -569,7 +569,7 @@ function SendSolana() {
   );
 }
 
-function SignMessage() {
+function SignEvmMessage() {
   const { isConnected } = useAccount();
   const { connectAsync } = useConnect();
   const {
