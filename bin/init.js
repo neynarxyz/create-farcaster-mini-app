@@ -317,7 +317,9 @@ export async function init() {
     "@farcaster/frame-node": ">=0.0.18 <1.0.0",
     "@farcaster/frame-sdk": ">=0.0.31 <1.0.0",
     "@farcaster/frame-wagmi-connector": ">=0.0.19 <1.0.0",
+    "@farcaster/mini-app-solana": "^0.0.5",
     "@radix-ui/react-label": "^2.1.1",
+    "@solana/wallet-adapter-react": "^0.15.38",
     "@tanstack/react-query": "^5.61.0",
     "@upstash/redis": "^1.34.3",
     "class-variance-authority": "^0.7.1",
@@ -333,9 +335,7 @@ export async function init() {
     "tailwindcss-animate": "^1.0.7",
     "viem": "^2.23.6",
     "wagmi": "^2.14.12",
-    "zod": "^3.24.2",
-    "@farcaster/mini-app-solana": "^0.0.5",
-    "@solana/wallet-adapter-react": "^0.15.38"
+    "zod": "^3.24.2"
   };
 
   packageJson.devDependencies = {
