@@ -333,7 +333,9 @@ export async function init() {
     "tailwindcss-animate": "^1.0.7",
     "viem": "^2.23.6",
     "wagmi": "^2.14.12",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "@farcaster/mini-app-solana": "^0.0.5",
+    "@solana/wallet-adapter-react": "^0.15.38"
   };
 
   packageJson.devDependencies = {
