@@ -6,11 +6,11 @@ This is a [NextJS](https://nextjs.org/) + TypeScript + React app.
 
 ## Guide
 
-Check out [this Neynar docs page](https://docs.neynar.com/docs/create-farcaster-miniapp-in-60s) for a simple guide on how to create a Farcaster Mini-App in less than 60 seconds!
+Check out [this Neynar docs page](https://docs.neynar.com/docs/create-farcaster-miniapp-in-60s) for a simple guide on how to create a Farcaster Mini App in less than 60 seconds!
 
 ## Getting Started
 
-To create a new mini-app project, run:
+To create a new mini app project, run:
 ```{bash}
 npx @neynar/create-farcaster-mini-app@latest
 ```
@@ -44,7 +44,7 @@ The above command will generate a `.env` file based on the `.env.local` file and
 
 ## Developing Script Locally
 
-This section is only for working on the script and template. If you simply want to create a mini-app and _use_ the template, this section is not for you.
+This section is only for working on the script and template. If you simply want to create a mini app and _use_ the template, this section is not for you.
 
 ### Recommended: Using `npm link` for Local Development
 
