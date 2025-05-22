@@ -44,10 +44,36 @@ The above command will generate a `.env` file based on the `.env.local` file and
 
 ## Developing Script Locally
 
-This section is only for working on the script and template, if you simply want to create a mini-app and _use_ the template this section is not for you.
+This section is only for working on the script and template. If you simply want to create a mini-app and _use_ the template, this section is not for you.
 
-To run the script locally just run:
-```
+### Recommended: Using `npm link` for Local Development
+
+To iterate on the CLI and test changes in a generated app without publishing to npm:
+
+1. In your installer/template repo (this repo), run:
+   ```bash
+   npm link
+   ```
+   This makes your local version globally available as a symlinked package.
+
+
+1. Now, when you run:
+   ```bash
+   npx @neynar/create-farcaster-mini-app
+   ```
+   ...it will use your local changes (including any edits to `init.js` or other files) instead of the published npm version.
+
+### Alternative: Running the Script Directly
+
+You can also run the script directly for quick iteration:
+
+```bash
 node ./bin/index.js
 ```
+
+However, this does not fully replicate the npx install flow and may not catch all issues that would occur in a real user environment.
+
+### Environment Variables and Scripts
+
+If you update environment variable handling, remember to replicate any changes in the `dev`, `build`, and `deploy` scripts as needed. The `build` and `deploy` scripts may need further updates and are less critical for most development workflows.
 
