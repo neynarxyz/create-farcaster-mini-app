@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import type { Session } from "next-auth"
 import { SessionProvider } from "next-auth/react"
 import { FrameProvider } from "~/components/providers/FrameProvider";
-import { SolanaWalletDemo } from "../components/SolanaWalletDemo";
+import { SafeFarcasterSolanaProvider } from "~/components/providers/SafeFarcasterSolanaProvider";
 
 const WagmiProvider = dynamic(
   () => import("~/components/providers/WagmiProvider"),
@@ -14,21 +14,15 @@ const WagmiProvider = dynamic(
   }
 );
 
-const FarcasterSolanaProvider = dynamic(
-  () => import('@farcaster/mini-app-solana').then(mod => mod.FarcasterSolanaProvider),
-  { ssr: false }
-);
-
 export function Providers({ session, children }: { session: Session | null, children: React.ReactNode }) {
   const solanaEndpoint = process.env.SOLANA_RPC_ENDPOINT || "https://solana-rpc.publicnode.com";
   return (
     <SessionProvider session={session}>
       <WagmiProvider>
         <FrameProvider>
-          <FarcasterSolanaProvider endpoint={solanaEndpoint}>
-            <SolanaWalletDemo />
+          <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
             {children}
-          </FarcasterSolanaProvider>
+          </SafeFarcasterSolanaProvider>
         </FrameProvider>
       </WagmiProvider>
     </SessionProvider>
