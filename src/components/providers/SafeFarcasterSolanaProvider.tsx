@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { createContext, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { sdk } from '@farcaster/frame-sdk';
 
@@ -12,14 +12,14 @@ type SafeFarcasterSolanaProviderProps = {
   children: React.ReactNode;
 };
 
-const SolanaProviderContext = React.createContext<{ hasSolanaProvider: boolean }>({ hasSolanaProvider: false });
+const SolanaProviderContext = createContext<{ hasSolanaProvider: boolean }>({ hasSolanaProvider: false });
 
 export function SafeFarcasterSolanaProvider({ endpoint, children }: SafeFarcasterSolanaProviderProps) {
   const isClient = typeof window !== "undefined";
-  const [hasSolanaProvider, setHasSolanaProvider] = React.useState<boolean>(false);
-  const [checked, setChecked] = React.useState<boolean>(false);
+  const [hasSolanaProvider, setHasSolanaProvider] = useState<boolean>(false);
+  const [checked, setChecked] = useState<boolean>(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isClient) return;
     let cancelled = false;
     (async () => {
@@ -43,7 +43,7 @@ export function SafeFarcasterSolanaProvider({ endpoint, children }: SafeFarcaste
     };
   }, [isClient]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let errorShown = false;
     const origError = console.error;
     console.error = (...args) => {
