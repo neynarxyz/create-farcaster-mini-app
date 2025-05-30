@@ -329,6 +329,7 @@ export async function init() {
     "@farcaster/frame-sdk": ">=0.0.31 <1.0.0",
     "@farcaster/frame-wagmi-connector": ">=0.0.19 <1.0.0",
     "@farcaster/mini-app-solana": "^0.0.5",
+    "@neynar/react": "^0.9.7",
     "@radix-ui/react-label": "^2.1.1",
     "@solana/wallet-adapter-react": "^0.15.38",
     "@tanstack/react-query": "^5.61.0",
@@ -363,10 +364,9 @@ export async function init() {
     "typescript": "^5"
   };
 
-  // Add Neynar dependencies if selected
+  // Add Neynar SDK if selected
   if (useNeynar) {
     packageJson.dependencies['@neynar/nodejs-sdk'] = '^2.19.0';
-    packageJson.dependencies['@neynar/react'] = '^0.9.7';
   }
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
