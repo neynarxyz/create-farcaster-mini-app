@@ -329,6 +329,7 @@ export async function init() {
     "@farcaster/frame-sdk": ">=0.0.31 <1.0.0",
     "@farcaster/frame-wagmi-connector": ">=0.0.19 <1.0.0",
     "@farcaster/mini-app-solana": "^0.0.5",
+    "@neynar/react": "^1.2.2",
     "@radix-ui/react-label": "^2.1.1",
     "@solana/wallet-adapter-react": "^0.15.38",
     "@tanstack/react-query": "^5.61.0",
@@ -338,10 +339,10 @@ export async function init() {
     "dotenv": "^16.4.7",
     "lucide-react": "^0.469.0",
     "mipd": "^0.0.7",
-    "next": "15.0.3",
+    "next": "^15",
     "next-auth": "^4.24.11",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "^19",
+    "react-dom": "^19",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "viem": "^2.23.6",
@@ -351,8 +352,8 @@ export async function init() {
 
   packageJson.devDependencies = {
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "crypto": "^1.0.1",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
@@ -363,10 +364,9 @@ export async function init() {
     "typescript": "^5"
   };
 
-  // Add Neynar dependencies if selected
+  // Add Neynar SDK if selected
   if (useNeynar) {
     packageJson.dependencies['@neynar/nodejs-sdk'] = '^2.19.0';
-    packageJson.dependencies['@neynar/react'] = '^0.9.7';
   }
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
