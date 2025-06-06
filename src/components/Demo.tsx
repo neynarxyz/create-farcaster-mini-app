@@ -42,10 +42,7 @@ export default function Demo(
     added,
     notificationDetails,
     lastEvent,
-    addFrame,
-    addFrameResult,
-    openUrl,
-    close,
+    actions,
   } = useMiniApp();
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -244,7 +241,7 @@ export default function Demo(
                 sdk.actions.openUrl
               </pre>
             </div>
-            <Button onClick={() => openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}>Open Link</Button>
+            <Button onClick={() => actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}>Open Link</Button>
           </div>
 
           <div className="mb-4">
@@ -262,7 +259,7 @@ export default function Demo(
                 sdk.actions.close
               </pre>
             </div>
-            <Button onClick={close}>Close Frame</Button>
+            <Button onClick={actions.close}>Close Frame</Button>
           </div>
         </div>
 
@@ -290,15 +287,10 @@ export default function Demo(
           <div className="mb-4">
             <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
               <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
-                sdk.actions.addFrame
+                sdk.actions.addMiniApp
               </pre>
             </div>
-            {addFrameResult && (
-              <div className="mb-2 text-sm">
-                Add frame result: {addFrameResult}
-              </div>
-            )}
-            <Button onClick={addFrame} disabled={added}>
+            <Button onClick={actions.addMiniApp} disabled={added}>
               Add frame to client
             </Button>
           </div>
