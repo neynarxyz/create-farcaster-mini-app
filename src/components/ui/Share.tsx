@@ -5,8 +5,15 @@ import { Button } from './Button';
 import { useMiniApp } from '@neynar/react';
 import { type ComposeCast } from "@farcaster/frame-sdk";
 
-interface CastConfig extends ComposeCast.Options {
+interface EmbedConfig {
+  path?: string;
+  url?: string;
+  imageUrl?: () => Promise<string>;
+}
+
+interface CastConfig extends Omit<ComposeCast.Options, 'embeds'> {
   bestFriends?: boolean;
+  embeds?: (string | EmbedConfig)[];
 }
 
 interface ShareButtonProps {
@@ -82,7 +89,7 @@ export function ShareButton({ buttonText, cast, className = '', isLoading = fals
         text: finalText,
         embeds: processedEmbeds as [string] | [string, string] | undefined,
         parent: cast.parent,
-        channel: cast.channelKey,
+        channelKey: cast.channelKey,
         close: cast.close,
       }, 'share-button');
     } catch (error) {

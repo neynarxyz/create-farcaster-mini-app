@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -22,6 +23,7 @@ import {
   useWallet as useSolanaWallet,
 } from '@solana/wallet-adapter-react';
 import { useHasSolanaProvider } from "./providers/SafeFarcasterSolanaProvider";
+import { ShareButton } from "./ui/Share";
 
 import { config } from "~/components/providers/WagmiProvider";
 import { Button } from "~/components/ui/Button";
@@ -30,13 +32,17 @@ import { base, degen, mainnet, optimism, unichain } from "wagmi/chains";
 import { BaseError, UserRejectedRequestError } from "viem";
 import { useSession } from "next-auth/react";
 import { useMiniApp } from "@neynar/react";
-import { Label } from "~/components/ui/label";
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { Header } from "~/components/ui/Header";
 import { Footer } from "~/components/ui/Footer";
 import { USE_WALLET } from "~/lib/constants";
 
 export type Tab = 'home' | 'actions' | 'context' | 'wallet';
+
+interface NeynarUser {
+  fid: number;
+  score: number;
+}
 
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
@@ -53,17 +59,13 @@ export default function Demo(
   const [txHash, setTxHash] = useState<string | null>(null);
   const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
-  const [neynarUser, setNeynarUser] = useState<any | null>(null);
+  const [neynarUser, setNeynarUser] = useState<NeynarUser | null>(null);
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const hasSolanaProvider = useHasSolanaProvider();
-  let solanaWallet, solanaPublicKey, solanaSignMessage, solanaAddress;
-  if (hasSolanaProvider) {
-    solanaWallet = useSolanaWallet();
-    ({ publicKey: solanaPublicKey, signMessage: solanaSignMessage } = solanaWallet);
-    solanaAddress = solanaPublicKey?.toBase58();
-  }
+  const solanaWallet = useSolanaWallet();
+  const { publicKey: solanaPublicKey } = solanaWallet;
 
   useEffect(() => {
     console.log("isSDKLoaded", isSDKLoaded);
@@ -220,7 +222,7 @@ export default function Demo(
         paddingRight: context?.client.safeAreaInsets?.right ?? 0,
       }}
     >
-      <div className="mx-auto py-2 px-2 pb-20">
+      <div className="mx-auto py-2 px-4 pb-20">
         <Header neynarUser={neynarUser} />
 
         <h1 className="text-2xl font-bold text-center mb-4">{title}</h1>
@@ -236,47 +238,22 @@ export default function Demo(
 
         {activeTab === 'actions' && (
           <div className="space-y-3 px-6 w-full max-w-md mx-auto">
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
-                sdk.actions.signIn
-              </pre>
-            </div>
+            <ShareButton 
+              buttonText="Share Mini App"
+              cast={{
+                text: "Check out this awesome frame @1 @2 @3! 🚀🪐",
+                bestFriends: true,
+                embeds: [`${APP_URL}/share?fid=${context?.user?.fid || 'unknown'}`]
+              }}
+              className="w-full"
+            />
+
             <SignIn />
 
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
-                sdk.actions.openUrl
-              </pre>
-            </div>
             <Button onClick={() => actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")} className="w-full">Open Link</Button>
 
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
-                sdk.actions.viewProfile
-              </pre>
-            </div>
-            <ViewProfile />
-
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
-                sdk.actions.close
-              </pre>
-            </div>
             <Button onClick={actions.close} className="w-full">Close Frame</Button>
 
-            <div className="text-sm w-full">
-              Client fid {context?.client.clientFid},
-              {added ? " frame added to client," : " frame not added to client,"}
-              {notificationDetails
-                ? " notifications enabled"
-                : " notifications disabled"}
-            </div>
-
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
-                sdk.actions.addMiniApp
-              </pre>
-            </div>
             <Button onClick={actions.addMiniApp} disabled={added} className="w-full">
               Add frame to client
             </Button>
@@ -723,41 +700,6 @@ function SignIn() {
           </div>
         </div>
       )}
-    </>
-  );
-}
-
-function ViewProfile() {
-  const [fid, setFid] = useState("3");
-
-  return (
-    <>
-      <div>
-        <Label
-          className="text-xs font-semibold text-gray-500 mb-1"
-          htmlFor="view-profile-fid"
-        >
-          Fid
-        </Label>
-        <Input
-          id="view-profile-fid"
-          type="number"
-          value={fid}
-          className="mb-2"
-          onChange={(e) => {
-            setFid(e.target.value);
-          }}
-          step="1"
-          min="1"
-        />
-      </div>
-      <Button
-        onClick={() => {
-          sdk.actions.viewProfile({ fid: parseInt(fid) });
-        }}
-      >
-        View Profile
-      </Button>
     </>
   );
 }

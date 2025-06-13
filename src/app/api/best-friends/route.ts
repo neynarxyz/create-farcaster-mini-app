@@ -1,4 +1,3 @@
-import { NeynarAPIClient } from '@neynar/nodejs-sdk';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -21,8 +20,6 @@ export async function GET(request: Request) {
   }
 
   try {
-    const neynar = new NeynarAPIClient({ apiKey });
-    // TODO: update to use best friends endpoint once SDK merged in
     const response = await fetch(
       `https://api.neynar.com/v2/farcaster/user/best_friends?fid=${fid}&limit=3`,
       {
@@ -38,12 +35,7 @@ export async function GET(request: Request) {
 
     const { users } = await response.json() as { users: { user: { fid: number; username: string } }[] };
 
-    const bestFriends = users.map(user => ({
-      fid: user.user?.fid,
-      username: user.user?.username,
-    }));
-
-    return NextResponse.json({ bestFriends });
+    return NextResponse.json({ bestFriends: users });
   } catch (error) {
     console.error('Failed to fetch best friends:', error);
     return NextResponse.json(

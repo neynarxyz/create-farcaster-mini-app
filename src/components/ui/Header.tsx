@@ -6,7 +6,10 @@ import sdk from "@farcaster/frame-sdk";
 import { useMiniApp } from "@neynar/react";
 
 type HeaderProps = {
-  neynarUser: any;
+  neynarUser?: {
+    fid: number;
+    score: number;
+  } | null;
 };
 
 export function Header({ neynarUser }: HeaderProps) {
