@@ -239,6 +239,24 @@ export async function init() {
     }
   ]);
 
+  // Ask about wallet and transaction tooling
+  const walletAnswer = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'useWallet',
+      message: 'Would you like to include wallet and transaction tooling in your mini app?\n' +
+        'This includes:\n' +
+        '- EVM wallet connection\n' +
+        '- Transaction signing\n' +
+        '- Message signing\n' +
+        '- Chain switching\n' +
+        '- Solana support\n\n' +
+        'Include wallet and transaction features?',
+      default: true
+    }
+  ]);
+  answers.useWallet = walletAnswer.useWallet;
+
   // Ask about localhost vs tunnel
   const hostingAnswer = await inquirer.prompt([
     {
@@ -388,6 +406,7 @@ export async function init() {
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_TAGS="${answers.tags.join(',')}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_ANALYTICS_ENABLED="${answers.enableAnalytics}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_USE_WALLET="${answers.useWallet}"`);
 
     fs.appendFileSync(envPath, `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`);
     if (useNeynar && neynarApiKey && neynarClientId) {

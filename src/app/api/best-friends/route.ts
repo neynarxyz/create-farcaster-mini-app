@@ -22,11 +22,21 @@ export async function GET(request: Request) {
 
   try {
     const neynar = new NeynarAPIClient({ apiKey });
-    const { users } = await neynar.fetchUserFollowers({
-      fid: parseInt(fid),
-      limit: 3,
-      viewerFid: parseInt(fid),
-    });
+    // TODO: update to use best friends endpoint once SDK merged in
+    const response = await fetch(
+      `https://api.neynar.com/v2/farcaster/user/best_friends?fid=${fid}&limit=3`,
+      {
+        headers: {
+          "x-api-key": apiKey,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Neynar API error: ${response.statusText}`);
+    }
+
+    const { users } = await response.json() as { users: { user: { fid: number; username: string } }[] };
 
     const bestFriends = users.map(user => ({
       fid: user.user?.fid,
