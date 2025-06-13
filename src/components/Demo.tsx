@@ -32,6 +32,11 @@ import { useSession } from "next-auth/react";
 import { useMiniApp } from "@neynar/react";
 import { Label } from "~/components/ui/label";
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { Header } from "~/components/ui/Header";
+import { Footer } from "~/components/ui/Footer";
+import { USE_WALLET } from "~/lib/constants";
+
+export type Tab = 'home' | 'actions' | 'context' | 'wallet';
 
 export default function Demo(
   { title }: { title?: string } = { title: "Frames v2 Demo" }
@@ -41,16 +46,14 @@ export default function Demo(
     context,
     added,
     notificationDetails,
-    lastEvent,
-    addFrame,
-    addFrameResult,
-    openUrl,
-    close,
+    actions,
   } = useMiniApp();
   const [isContextOpen, setIsContextOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('home');
   const [txHash, setTxHash] = useState<string | null>(null);
   const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
+  const [neynarUser, setNeynarUser] = useState<any | null>(null);
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
@@ -69,6 +72,25 @@ export default function Demo(
     console.log("isConnected", isConnected);
     console.log("chainId", chainId);
   }, [context, address, isConnected, chainId, isSDKLoaded]);
+
+  // Fetch Neynar user object when context is available
+  useEffect(() => {
+    const fetchNeynarUserObject = async () => {
+      if (context?.user?.fid) {
+        try {
+          const response = await fetch(`/api/users?fids=${context.user.fid}`);
+          const data = await response.json();
+          if (data.users?.[0]) {
+            setNeynarUser(data.users[0]);
+          }
+        } catch (error) {
+          console.error('Failed to fetch Neynar user object:', error);
+        }
+      }
+    };
+
+    fetchNeynarUserObject();
+  }, [context?.user?.fid]);
 
   const {
     sendTransaction,
@@ -198,123 +220,76 @@ export default function Demo(
         paddingRight: context?.client.safeAreaInsets?.right ?? 0,
       }}
     >
-      <div className="w-[300px] mx-auto py-2 px-2">
+      <div className="mx-auto py-2 px-2 pb-20">
+        <Header neynarUser={neynarUser} />
+
         <h1 className="text-2xl font-bold text-center mb-4">{title}</h1>
 
-        <div className="mb-4">
-          <h2 className="font-2xl font-bold">Context</h2>
-          <button
-            onClick={toggleContext}
-            className="flex items-center gap-2 transition-colors"
-          >
-            <span
-              className={`transform transition-transform ${
-                isContextOpen ? "rotate-90" : ""
-              }`}
-            >
-              ➤
-            </span>
-            Tap to expand
-          </button>
-
-          {isContextOpen && (
-            <div className="p-4 mt-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
-                {JSON.stringify(context, null, 2)}
-              </pre>
+        {activeTab === 'home' && (
+          <div className="flex items-center justify-center h-[calc(100vh-200px)] px-6">
+            <div className="text-center w-full max-w-md mx-auto">
+              <p className="text-lg mb-2">Put your content here!</p>
+              <p className="text-sm text-gray-500">Powered by Neynar 🪐</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div>
-          <h2 className="font-2xl font-bold">Actions</h2>
-
-          <div className="mb-4">
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+        {activeTab === 'actions' && (
+          <div className="space-y-3 px-6 w-full max-w-md mx-auto">
+            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
+              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
                 sdk.actions.signIn
               </pre>
             </div>
             <SignIn />
-          </div>
 
-          <div className="mb-4">
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
+              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
                 sdk.actions.openUrl
               </pre>
             </div>
-            <Button onClick={() => openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}>Open Link</Button>
-          </div>
+            <Button onClick={() => actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")} className="w-full">Open Link</Button>
 
-          <div className="mb-4">
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
+              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
                 sdk.actions.viewProfile
               </pre>
             </div>
             <ViewProfile />
-          </div>
 
-          <div className="mb-4">
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
+            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
+              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
                 sdk.actions.close
               </pre>
             </div>
-            <Button onClick={close}>Close Frame</Button>
-          </div>
-        </div>
+            <Button onClick={actions.close} className="w-full">Close Frame</Button>
 
-        <div className="mb-4">
-          <h2 className="font-2xl font-bold">Last event</h2>
+            <div className="text-sm w-full">
+              Client fid {context?.client.clientFid},
+              {added ? " frame added to client," : " frame not added to client,"}
+              {notificationDetails
+                ? " notifications enabled"
+                : " notifications disabled"}
+            </div>
 
-          <div className="p-4 mt-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-            <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
-              {lastEvent || "none"}
-            </pre>
-          </div>
-        </div>
-
-        <div>
-          <h2 className="font-2xl font-bold">Add to client & notifications</h2>
-
-          <div className="mt-2 mb-4 text-sm">
-            Client fid {context?.client.clientFid},
-            {added ? " frame added to client," : " frame not added to client,"}
-            {notificationDetails
-              ? " notifications enabled"
-              : " notifications disabled"}
-          </div>
-
-          <div className="mb-4">
-            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg my-2">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-words max-w-[260px] overflow-x-">
-                sdk.actions.addFrame
+            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-full">
+              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
+                sdk.actions.addMiniApp
               </pre>
             </div>
-            {addFrameResult && (
-              <div className="mb-2 text-sm">
-                Add frame result: {addFrameResult}
-              </div>
-            )}
-            <Button onClick={addFrame} disabled={added}>
+            <Button onClick={actions.addMiniApp} disabled={added} className="w-full">
               Add frame to client
             </Button>
-          </div>
 
-          {sendNotificationResult && (
-            <div className="mb-2 text-sm">
-              Send notification result: {sendNotificationResult}
-            </div>
-          )}
-          <div className="mb-4">
-            <Button onClick={sendNotification} disabled={!notificationDetails}>
+            {sendNotificationResult && (
+              <div className="text-sm w-full">
+                Send notification result: {sendNotificationResult}
+              </div>
+            )}
+            <Button onClick={sendNotification} disabled={!notificationDetails} className="w-full">
               Send notification
             </Button>
-          </div>
 
-          <div className="mb-4">
             <Button 
               onClick={async () => {
                 if (context?.user?.fid) {
@@ -325,28 +300,38 @@ export default function Demo(
                 }
               }}
               disabled={!context?.user?.fid}
+              className="w-full"
             >
               {copied ? "Copied!" : "Copy share URL"}
             </Button>
           </div>
-        </div>
+        )}
 
-        <div>
-          <h2 className="font-2xl font-bold">Wallet</h2>
-
-          {address && (
-            <div className="my-2 text-xs">
-              Address: <pre className="inline">{truncateAddress(address)}</pre>
+        {activeTab === 'context' && (
+          <div className="mx-6">
+            <h2 className="text-lg font-semibold mb-2">Context</h2>
+            <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+              <pre className="font-mono text-xs whitespace-pre-wrap break-words w-full">
+                {JSON.stringify(context, null, 2)}
+              </pre>
             </div>
-          )}
+          </div>
+        )}
 
-          {chainId && (
-            <div className="my-2 text-xs">
-              Chain ID: <pre className="inline">{chainId}</pre>
-            </div>
-          )}
+        {activeTab === 'wallet' && USE_WALLET && (
+          <div className="space-y-3 px-6 w-full max-w-md mx-auto">
+            {address && (
+              <div className="text-xs w-full">
+                Address: <pre className="inline w-full">{truncateAddress(address)}</pre>
+              </div>
+            )}
 
-          <div className="mb-4">
+            {chainId && (
+              <div className="text-xs w-full">
+                Chain ID: <pre className="inline w-full">{chainId}</pre>
+              </div>
+            )}
+
             {isConnected ? (
               <Button
                 onClick={() => disconnect()}
@@ -355,7 +340,6 @@ export default function Demo(
                 Disconnect
               </Button>
             ) : context ? (
-              /* if context is not null, mini app is running in frame client */
               <Button
                 onClick={() => connect({ connector: connectors[0] })}
                 className="w-full"
@@ -363,8 +347,7 @@ export default function Demo(
                 Connect
               </Button>
             ) : (
-              /* if context is null, mini app is running in browser */
-              <div className="space-y-2">
+              <div className="space-y-3 w-full">
                 <Button
                   onClick={() => connect({ connector: connectors[1] })}
                   className="w-full"
@@ -379,28 +362,23 @@ export default function Demo(
                 </Button>
               </div>
             )}
-          </div>
 
-          <div className="mb-4">
             <SignEvmMessage />
-          </div>
 
-          {isConnected && (
-            <>
-              <div className="mb-4">
+            {isConnected && (
+              <>
                 <SendEth />
-              </div>
-              <div className="mb-4">
                 <Button
                   onClick={sendTx}
                   disabled={!isConnected || isSendTxPending}
                   isLoading={isSendTxPending}
+                  className="w-full"
                 >
                   Send Transaction (contract)
                 </Button>
                 {isSendTxError && renderError(sendTxError)}
                 {txHash && (
-                  <div className="mt-2 text-xs">
+                  <div className="text-xs w-full">
                     <div>Hash: {truncateAddress(txHash)}</div>
                     <div>
                       Status:{" "}
@@ -412,43 +390,30 @@ export default function Demo(
                     </div>
                   </div>
                 )}
-              </div>
-              <div className="mb-4">
                 <Button
                   onClick={signTyped}
                   disabled={!isConnected || isSignTypedPending}
                   isLoading={isSignTypedPending}
+                  className="w-full"
                 >
                   Sign Typed Data
                 </Button>
                 {isSignTypedError && renderError(signTypedError)}
-              </div>
-              <div className="mb-4">
                 <Button
                   onClick={handleSwitchChain}
                   disabled={isSwitchChainPending}
                   isLoading={isSwitchChainPending}
+                  className="w-full"
                 >
                   Switch to {nextChain.name}
                 </Button>
                 {isSwitchChainError && renderError(switchChainError)}
-              </div>
-            </>
-          )}
-        </div>
-
-        {solanaAddress && (
-          <div>
-            <h2 className="font-2xl font-bold">Solana</h2>
-            <div className="my-2 text-xs">
-              Address: <pre className="inline">{truncateAddress(solanaAddress)}</pre>
-            </div>
-            <SignSolanaMessage signMessage={solanaSignMessage} />
-            <div className="mb-4">
-              <SendSolana />
-            </div>
+              </>
+            )}
           </div>
         )}
+
+        <Footer activeTab={activeTab} setActiveTab={setActiveTab} showWallet={USE_WALLET} />
       </div>
     </div>
   );
