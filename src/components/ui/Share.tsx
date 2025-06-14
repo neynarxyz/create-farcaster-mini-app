@@ -26,17 +26,18 @@ interface ShareButtonProps {
 export function ShareButton({ buttonText, cast, className = '', isLoading = false }: ShareButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [bestFriends, setBestFriends] = useState<{ fid: number; username: string; }[] | null>(null);
+  const [isLoadingBestFriends, setIsLoadingBestFriends] = useState(false);
   const { context, actions } = useMiniApp();
 
   // Fetch best friends if needed
   useEffect(() => {
     if (cast.bestFriends && context?.user?.fid) {
-      setIsProcessing(true);
+      setIsLoadingBestFriends(true);
       fetch(`/api/best-friends?fid=${context.user.fid}`)
         .then(res => res.json())
         .then(data => setBestFriends(data.bestFriends))
         .catch(err => console.error('Failed to fetch best friends:', err))
-        .finally(() => setIsProcessing(false));
+        .finally(() => setIsLoadingBestFriends(false));
     }
   }, [cast.bestFriends, context?.user?.fid]);
 
@@ -47,16 +48,21 @@ export function ShareButton({ buttonText, cast, className = '', isLoading = fals
       let finalText = cast.text || '';
 
       // Process best friends if enabled and data is loaded
-      if (cast.bestFriends && bestFriends) {
-        // Replace @N with usernames
-        finalText = finalText.replace(/@\d+/g, (match) => {
-          const friendIndex = parseInt(match.slice(1)) - 1;
-          const friend = bestFriends[friendIndex];
-          if (friend) {
-            return `@${friend.username}`;
-          }
-          return match;
-        });
+      if (cast.bestFriends) {
+        if (bestFriends) {
+          // Replace @N with usernames, or remove if no matching friend
+          finalText = finalText.replace(/@\d+/g, (match) => {
+            const friendIndex = parseInt(match.slice(1)) - 1;
+            const friend = bestFriends[friendIndex];
+            if (friend) {
+              return `@${friend.username}`;
+            }
+            return ''; // Remove @N if no matching friend
+          });
+        } else {
+          // If bestFriends is not loaded but bestFriends is enabled, remove @N patterns
+          finalText = finalText.replace(/@\d+/g, '');
+        }
       }
 
       // Process embeds
@@ -99,14 +105,12 @@ export function ShareButton({ buttonText, cast, className = '', isLoading = fals
     }
   }, [cast, bestFriends, context?.user?.fid, actions]);
 
-  const isButtonDisabled = cast.bestFriends && !bestFriends;
-
   return (
     <Button
       onClick={handleShare}
       className={className}
       isLoading={isLoading || isProcessing}
-      disabled={isButtonDisabled}
+      disabled={isLoadingBestFriends}
     >
       {buttonText}
     </Button>

@@ -2,7 +2,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Input } from "../components/ui/input";
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, {
   SignIn as SignInCore,
@@ -35,7 +34,7 @@ import { useMiniApp } from "@neynar/react";
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { Header } from "~/components/ui/Header";
 import { Footer } from "~/components/ui/Footer";
-import { USE_WALLET } from "~/lib/constants";
+import { USE_WALLET, APP_NAME } from "~/lib/constants";
 
 export type Tab = 'home' | 'actions' | 'context' | 'wallet';
 
@@ -191,7 +190,7 @@ export default function Demo(
   const signTyped = useCallback(() => {
     signTypedData({
       domain: {
-        name: "Frames v2 Demo",
+        name: APP_NAME,
         version: "1",
         chainId,
       },
@@ -199,7 +198,7 @@ export default function Demo(
         Message: [{ name: "content", type: "string" }],
       },
       message: {
-        content: "Hello from Frames v2!",
+        content: `Hello from ${APP_NAME}!`,
       },
       primaryType: "Message",
     });
@@ -243,7 +242,7 @@ export default function Demo(
               cast={{
                 text: "Check out this awesome frame @1 @2 @3! 🚀🪐",
                 bestFriends: true,
-                embeds: [`${APP_URL}/share?fid=${context?.user?.fid || 'unknown'}`]
+                embeds: [`${process.env.NEXT_PUBLIC_URL}/share/${context?.user?.fid || ''}`]
               }}
               className="w-full"
             />
@@ -252,10 +251,10 @@ export default function Demo(
 
             <Button onClick={() => actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")} className="w-full">Open Link</Button>
 
-            <Button onClick={actions.close} className="w-full">Close Frame</Button>
+            <Button onClick={actions.close} className="w-full">Close Mini App</Button>
 
             <Button onClick={actions.addMiniApp} disabled={added} className="w-full">
-              Add frame to client
+              Add Mini App to Client
             </Button>
 
             {sendNotificationResult && (

@@ -27,7 +27,7 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
     {
       headers: {
         'accept': 'application/json',
-        'x-api-key': apiKey
+        'x-api-key': 'FARCASTER_V2_FRAMES_DEMO'
       }
     }
   );
@@ -269,10 +269,17 @@ async function main() {
       }
 
       // Try to get client ID from API
-      const appInfo = await queryNeynarApp(neynarApiKey);
-      if (appInfo) {
-        neynarClientId = appInfo.app_uuid;
-        console.log('✅ Fetched Neynar app client ID');
+      if (!neynarClientId) {
+        const appInfo = await queryNeynarApp(neynarApiKey);
+        if (appInfo) {
+          neynarClientId = appInfo.app_uuid;
+          console.log('✅ Fetched Neynar app client ID');
+          break;
+        }
+      }
+
+      // We have a client ID (either from .env or fetched from API), so we can break out of the loop
+      if (neynarClientId) {
         break;
       }
 
@@ -366,6 +373,7 @@ async function main() {
 
       // FID (if it exists in current env)
       ...(process.env.FID ? [`FID="${process.env.FID}"`] : []),
+      `NEXT_PUBLIC_USE_WALLET="${process.env.NEXT_PUBLIC_USE_WALLET || 'false'}"`,
 
       // NextAuth configuration
       `NEXTAUTH_SECRET="${process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('hex')}"`,
