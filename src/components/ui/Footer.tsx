@@ -13,7 +13,7 @@ export const Footer: React.FC<FooterProps> = ({ activeTab, setActiveTab, showWal
       <button
         onClick={() => setActiveTab('home')}
         className={`flex flex-col items-center justify-center w-full h-full ${
-          activeTab === 'home' ? 'text-purple-500' : 'text-gray-500'
+          activeTab === 'home' ? 'text-purple-500 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'
         }`}
       >
         <span className="text-xl">🏠</span>
@@ -22,7 +22,7 @@ export const Footer: React.FC<FooterProps> = ({ activeTab, setActiveTab, showWal
       <button
         onClick={() => setActiveTab('actions')}
         className={`flex flex-col items-center justify-center w-full h-full ${
-          activeTab === 'actions' ? 'text-purple-500' : 'text-gray-500'
+          activeTab === 'actions' ? 'text-purple-500 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'
         }`}
       >
         <span className="text-xl">⚡</span>
@@ -31,7 +31,7 @@ export const Footer: React.FC<FooterProps> = ({ activeTab, setActiveTab, showWal
       <button
         onClick={() => setActiveTab('context')}
         className={`flex flex-col items-center justify-center w-full h-full ${
-          activeTab === 'context' ? 'text-purple-500' : 'text-gray-500'
+          activeTab === 'context' ? 'text-purple-500 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'
         }`}
       >
         <span className="text-xl">📋</span>
@@ -41,7 +41,7 @@ export const Footer: React.FC<FooterProps> = ({ activeTab, setActiveTab, showWal
         <button
           onClick={() => setActiveTab('wallet')}
           className={`flex flex-col items-center justify-center w-full h-full ${
-            activeTab === 'wallet' ? 'text-purple-500' : 'text-gray-500'
+            activeTab === 'wallet' ? 'text-purple-500 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'
           }`}
         >
           <span className="text-xl">👛</span>
