@@ -81,7 +81,7 @@ async function startDev() {
   }
 
   const useTunnel = process.env.USE_TUNNEL === 'true';
-  let frameUrl;
+  let miniAppUrl;
 
   if (useTunnel) {
     // Start localtunnel and get URL
@@ -93,7 +93,7 @@ async function startDev() {
       console.error('Error getting IP address:', error);
     }
 
-    frameUrl = tunnel.url;
+    miniAppUrl = tunnel.url;
     console.log(`
 🌐 Local tunnel URL: ${tunnel.url}
 
@@ -117,12 +117,12 @@ async function startDev() {
    5. Click "Preview" (note that it may take ~10 seconds to load)
 `);
   } else {
-    frameUrl = 'http://localhost:3000';
+    miniAppUrl = 'http://localhost:3000';
     console.log(`
 💻 To test your mini app:
    1. Open the Warpcast Mini App Developer Tools: https://warpcast.com/~/developers
    2. Scroll down to the "Preview Mini App" tool
-   3. Enter this URL: ${frameUrl}
+   3. Enter this URL: ${miniAppUrl}
    4. Click "Preview" to test your mini app (note that it may take ~5 seconds to load the first time)
 `);
   }
@@ -132,7 +132,7 @@ async function startDev() {
 
   nextDev = spawn(nextBin, ['dev'], {
     stdio: 'inherit',
-    env: { ...process.env, NEXT_PUBLIC_URL: frameUrl, NEXTAUTH_URL: frameUrl },
+    env: { ...process.env, NEXT_PUBLIC_URL: miniAppUrl, NEXTAUTH_URL: miniAppUrl },
     cwd: projectRoot,
     shell: process.platform === 'win32' // Add shell option for Windows
   });

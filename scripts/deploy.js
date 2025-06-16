@@ -72,7 +72,7 @@ async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase
   });
   const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
 
-  const tags = process.env.NEXT_PUBLIC_FRAME_TAGS?.split(',');
+  const tags = process.env.NEXT_PUBLIC_MINI_APP_TAGS?.split(',');
 
   return {
     accountAssociation: {
@@ -82,16 +82,16 @@ async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase
     },
     frame: {
       version: "1",
-      name: process.env.NEXT_PUBLIC_FRAME_NAME,
+      name: process.env.NEXT_PUBLIC_MINI_APP_NAME,
       iconUrl: `https://${trimmedDomain}/icon.png`,
       homeUrl: `https://${trimmedDomain}`,
       imageUrl: `https://${trimmedDomain}/api/opengraph-image`,
-      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
+      buttonTitle: process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT,
       splashImageUrl: `https://${trimmedDomain}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
       webhookUrl: webhookUrl?.trim(),
-      description: process.env.NEXT_PUBLIC_FRAME_DESCRIPTION,
-      primaryCategory: process.env.NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY,
+      description: process.env.NEXT_PUBLIC_MINI_APP_DESCRIPTION,
+      primaryCategory: process.env.NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY,
       tags,
     },
   };
@@ -116,11 +116,11 @@ async function loadEnvLocal() {
         // Define allowed variables to load from .env.local
         const allowedVars = [
           'SEED_PHRASE',
-          'NEXT_PUBLIC_FRAME_NAME',
-          'NEXT_PUBLIC_FRAME_DESCRIPTION',
-          'NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY',
-          'NEXT_PUBLIC_FRAME_TAGS',
-          'NEXT_PUBLIC_FRAME_BUTTON_TEXT',
+          'NEXT_PUBLIC_MINI_APP_NAME',
+          'NEXT_PUBLIC_MINI_APP_DESCRIPTION',
+          'NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY',
+          'NEXT_PUBLIC_MINI_APP_TAGS',
+          'NEXT_PUBLIC_MINI_APP_BUTTON_TEXT',
           'NEXT_PUBLIC_ANALYTICS_ENABLED',
           'NEYNAR_API_KEY',
           'NEYNAR_CLIENT_ID'
@@ -161,15 +161,15 @@ async function checkRequiredEnvVars() {
 
   const requiredVars = [
     {
-      name: 'NEXT_PUBLIC_FRAME_NAME',
+      name: 'NEXT_PUBLIC_MINI_APP_NAME',
       message: 'Enter the name for your frame (e.g., My Cool Mini App):',
-      default: process.env.NEXT_PUBLIC_FRAME_NAME,
+      default: process.env.NEXT_PUBLIC_MINI_APP_NAME,
       validate: input => input.trim() !== '' || 'Mini app name cannot be empty'
     },
     {
-      name: 'NEXT_PUBLIC_FRAME_BUTTON_TEXT',
+      name: 'NEXT_PUBLIC_MINI_APP_BUTTON_TEXT',
       message: 'Enter the text for your frame button:',
-      default: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT ?? 'Launch Mini App',
+      default: process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT ?? 'Launch Mini App',
       validate: input => input.trim() !== '' || 'Button text cannot be empty'
     }
   ];
@@ -340,7 +340,7 @@ async function setVercelEnvVar(key, value, projectRoot) {
       // Ignore errors from removal (var might not exist)
     }
     
-    // For complex objects like frameMetadata, use a temporary file approach
+    // For complex objects like miniAppMetadata, use a temporary file approach
     if (typeof value === 'object') {
       const tempFilePath = path.join(projectRoot, `${key}_temp.json`);
       // Write the value to a temporary file with proper JSON formatting
@@ -432,11 +432,11 @@ async function deployToVercel(useGitHub = false) {
       }
     }
 
-    // Generate frame metadata if we have a seed phrase
-    let frameMetadata;
+    // Generate mini app metadata if we have a seed phrase
+    let miniAppMetadata;
     let fid;
     if (process.env.SEED_PHRASE) {
-      console.log('\n🔨 Generating frame metadata...');
+      console.log('\n🔨 Generating mini app metadata...');
       const accountAddress = await validateSeedPhrase(process.env.SEED_PHRASE);
       fid = await lookupFidByCustodyAddress(accountAddress, process.env.NEYNAR_API_KEY ?? 'FARCASTER_V2_FRAMES_DEMO');
       
@@ -445,8 +445,8 @@ async function deployToVercel(useGitHub = false) {
         ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
         : `https://${domain}/api/webhook`;
 
-      frameMetadata = await generateFarcasterMetadata(domain, fid, accountAddress, process.env.SEED_PHRASE, webhookUrl);
-      console.log('✅ Frame metadata generated and signed');
+      miniAppMetadata = await generateFarcasterMetadata(domain, fid, accountAddress, process.env.SEED_PHRASE, webhookUrl);
+      console.log('✅ Mini app metadata generated and signed');
     }
 
     // Prepare environment variables
@@ -462,8 +462,8 @@ async function deployToVercel(useGitHub = false) {
       ...(process.env.NEYNAR_API_KEY && { NEYNAR_API_KEY: process.env.NEYNAR_API_KEY }),
       ...(process.env.NEYNAR_CLIENT_ID && { NEYNAR_CLIENT_ID: process.env.NEYNAR_CLIENT_ID }),
       
-      // Frame metadata - don't stringify here
-      ...(frameMetadata && { FRAME_METADATA: frameMetadata }),
+      // Mini app metadata - don't stringify here
+      ...(miniAppMetadata && { MINI_APP_METADATA: miniAppMetadata }),
       
       // Public vars
       ...Object.fromEntries(
@@ -539,10 +539,10 @@ async function deployToVercel(useGitHub = false) {
               ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
               : `https://${actualDomain}/api/webhook`;
 
-            if (frameMetadata) {
-              frameMetadata = await generateFarcasterMetadata(actualDomain, fid, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
-              // Update FRAME_METADATA env var using the new function
-              await setVercelEnvVar('FRAME_METADATA', frameMetadata, projectRoot);
+            if (miniAppMetadata) {
+              miniAppMetadata = await generateFarcasterMetadata(actualDomain, fid, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
+              // Update MINI_APP_METADATA env var using the new function
+              await setVercelEnvVar('MINI_APP_METADATA', miniAppMetadata, projectRoot);
             }
 
             // Update NEXTAUTH_URL

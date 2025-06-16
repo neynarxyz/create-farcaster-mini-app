@@ -161,7 +161,7 @@ async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase
   });
   const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
 
-  const tags = process.env.NEXT_PUBLIC_FRAME_TAGS?.split(',');
+  const tags = process.env.NEXT_PUBLIC_MINI_APP_TAGS?.split(',');
 
   return {
     accountAssociation: {
@@ -171,16 +171,16 @@ async function generateFarcasterMetadata(domain, fid, accountAddress, seedPhrase
     },
     frame: {
       version: "1",
-      name: process.env.NEXT_PUBLIC_FRAME_NAME,
+      name: process.env.NEXT_PUBLIC_MINI_APP_NAME,
       iconUrl: `https://${domain}/icon.png`,
       homeUrl: `https://${domain}`,
       imageUrl: `https://${domain}/api/opengraph-image`,
-      buttonTitle: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
+      buttonTitle: process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT,
       splashImageUrl: `https://${domain}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
       webhookUrl,
-      description: process.env.NEXT_PUBLIC_FRAME_DESCRIPTION,
-      primaryCategory: process.env.NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY,
+      description: process.env.NEXT_PUBLIC_MINI_APP_DESCRIPTION,
+      primaryCategory: process.env.NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY,
       tags,
     },
   };
@@ -217,7 +217,7 @@ async function main() {
         type: 'input',
         name: 'frameName',
         message: 'Enter the name for your mini app (e.g., My Cool Mini App):',
-        default: process.env.NEXT_PUBLIC_FRAME_NAME,
+        default: process.env.NEXT_PUBLIC_MINI_APP_NAME,
         validate: (input) => {
           if (input.trim() === '') {
             return 'Mini app name cannot be empty';
@@ -233,7 +233,7 @@ async function main() {
         type: 'input',
         name: 'buttonText',
         message: 'Enter the text for your mini app button:',
-        default: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT || 'Launch Mini App',
+        default: process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT || 'Launch Mini App',
         validate: (input) => {
           if (input.trim() === '') {
             return 'Button text cannot be empty';
@@ -355,12 +355,12 @@ async function main() {
       // Base URL
       `NEXT_PUBLIC_URL=https://${domain}`,
 
-      // Frame metadata
-      `NEXT_PUBLIC_FRAME_NAME="${frameName}"`,
-      `NEXT_PUBLIC_FRAME_DESCRIPTION="${process.env.NEXT_PUBLIC_FRAME_DESCRIPTION || ''}"`,
-      `NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY="${process.env.NEXT_PUBLIC_FRAME_PRIMARY_CATEGORY || ''}"`,
-      `NEXT_PUBLIC_FRAME_TAGS="${process.env.NEXT_PUBLIC_FRAME_TAGS || ''}"`,
-      `NEXT_PUBLIC_FRAME_BUTTON_TEXT="${buttonText}"`,
+      // Mini app metadata
+      `NEXT_PUBLIC_MINI_APP_NAME="${frameName}"`,
+      `NEXT_PUBLIC_MINI_APP_DESCRIPTION="${process.env.NEXT_PUBLIC_MINI_APP_DESCRIPTION || ''}"`,
+      `NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY="${process.env.NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY || ''}"`,
+      `NEXT_PUBLIC_MINI_APP_TAGS="${process.env.NEXT_PUBLIC_MINI_APP_TAGS || ''}"`,
+      `NEXT_PUBLIC_MINI_APP_BUTTON_TEXT="${buttonText}"`,
 
       // Analytics
       `NEXT_PUBLIC_ANALYTICS_ENABLED="${process.env.NEXT_PUBLIC_ANALYTICS_ENABLED || 'false'}"`,
@@ -379,8 +379,8 @@ async function main() {
       `NEXTAUTH_SECRET="${process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('hex')}"`,
       `NEXTAUTH_URL="https://${domain}"`,
 
-      // Frame manifest with signature
-      `FRAME_METADATA=${JSON.stringify(metadata)}`,
+      // Mini app manifest with signature
+      `MINI_APP_METADATA=${JSON.stringify(metadata)}`,
     ];
 
     // Filter out empty values and join with newlines

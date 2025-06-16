@@ -31,7 +31,7 @@ export async function getNeynarUser(fid: number): Promise<User | null> {
   }
 }
 
-type SendFrameNotificationResult =
+type SendMiniAppNotificationResult =
   | {
       state: "error";
       error: unknown;
@@ -40,7 +40,7 @@ type SendFrameNotificationResult =
   | { state: "rate_limit" }
   | { state: "success" };
 
-export async function sendNeynarFrameNotification({
+export async function sendNeynarMiniAppNotification({
   fid,
   title,
   body,
@@ -48,7 +48,7 @@ export async function sendNeynarFrameNotification({
   fid: number;
   title: string;
   body: string;
-}): Promise<SendFrameNotificationResult> {
+}): Promise<SendMiniAppNotificationResult> {
   try {
     const client = getNeynarClient();
     const targetFids = [fid];

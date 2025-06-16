@@ -4,11 +4,12 @@ import {
   verifyAppKeyWithNeynar,
 } from "@farcaster/frame-node";
 import { NextRequest } from "next/server";
+import { APP_NAME } from "~/lib/constants";
 import {
   deleteUserNotificationDetails,
   setUserNotificationDetails,
 } from "~/lib/kv";
-import { sendFrameNotification } from "~/lib/notifs";
+import { sendMiniAppNotification } from "~/lib/notifs";
 
 export async function POST(request: NextRequest) {
   // If Neynar is enabled, we don't need to handle webhooks here
@@ -58,10 +59,10 @@ export async function POST(request: NextRequest) {
     case "frame_added":
       if (event.notificationDetails) {
         await setUserNotificationDetails(fid, event.notificationDetails);
-        await sendFrameNotification({
+        await sendMiniAppNotification({
           fid,
-          title: "Welcome to Frames v2",
-          body: "Frame is now added to your client",
+          title: `Welcome to ${APP_NAME}`,
+          body: "Mini app is now added to your client",
         });
       } else {
         await deleteUserNotificationDetails(fid);
@@ -74,9 +75,9 @@ export async function POST(request: NextRequest) {
 
     case "notifications_enabled":
       await setUserNotificationDetails(fid, event.notificationDetails);
-      await sendFrameNotification({
+      await sendMiniAppNotification({
         fid,
-        title: "Ding ding ding",
+        title: `Welcome to ${APP_NAME}`,
         body: "Notifications are now enabled",
       });
       break;

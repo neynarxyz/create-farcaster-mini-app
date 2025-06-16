@@ -44,7 +44,7 @@ interface NeynarUser {
 }
 
 export default function Demo(
-  { title }: { title?: string } = { title: "Frames v2 Demo" }
+  { title }: { title?: string } = { title: "Neynar Starter Kit" }
 ) {
   const {
     isSDKLoaded,
@@ -539,7 +539,7 @@ function SignEvmMessage() {
       });
     }
 
-    signMessage({ message: "Hello from Frames v2!" });
+    signMessage({ message: `Hello from ${APP_NAME}!` });
   }, [connectAsync, isConnected, signMessage]);
 
   return (

@@ -2,8 +2,8 @@ import { notificationDetailsSchema } from "@farcaster/frame-sdk";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { setUserNotificationDetails } from "~/lib/kv";
-import { sendFrameNotification } from "~/lib/notifs";
-import { sendNeynarFrameNotification } from "~/lib/neynar";
+import { sendMiniAppNotification } from "~/lib/notifs";
+import { sendNeynarMiniAppNotification } from "~/lib/neynar";
 
 const requestSchema = z.object({
   fid: z.number(),
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Use appropriate notification function based on Neynar status
-  const sendNotification = neynarEnabled ? sendNeynarFrameNotification : sendFrameNotification;
+  const sendNotification = neynarEnabled ? sendNeynarMiniAppNotification : sendMiniAppNotification;
   const sendResult = await sendNotification({
     fid: Number(requestBody.data.fid),
     title: "Test notification",

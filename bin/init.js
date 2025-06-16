@@ -166,14 +166,14 @@ export async function init() {
     break;
   }
 
-  const defaultFrameName = (neynarAppName && !neynarAppName.toLowerCase().includes('demo')) ? neynarAppName : undefined;
+  const defaultMiniAppName = (neynarAppName && !neynarAppName.toLowerCase().includes('demo')) ? neynarAppName : undefined;
 
   const answers = await inquirer.prompt([
     {
       type: 'input',
       name: 'projectName',
       message: 'What is the name of your mini app?',
-      default: defaultFrameName,
+      default: defaultMiniAppName,
       validate: (input) => {
         if (input.trim() === '') {
           return 'Project name cannot be empty';
@@ -400,11 +400,11 @@ export async function init() {
     fs.writeFileSync(envPath, envExampleContent);
 
     // Append all remaining environment variables
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_NAME="${answers.projectName}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_DESCRIPTION="${answers.description}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_PRIMARY_CATEGORY="${answers.primaryCategory}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_TAGS="${answers.tags.join(',')}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_FRAME_BUTTON_TEXT="${answers.buttonText}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_NAME="${answers.projectName}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_DESCRIPTION="${answers.description}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY="${answers.primaryCategory}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_TAGS="${answers.tags.join(',')}"`);
+    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_BUTTON_TEXT="${answers.buttonText}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_ANALYTICS_ENABLED="${answers.enableAnalytics}"`);
     fs.appendFileSync(envPath, `\nNEXT_PUBLIC_USE_WALLET="${answers.useWallet}"`);
 

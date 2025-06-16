@@ -4,7 +4,7 @@ import { mnemonicToAccount } from 'viem/accounts';
 import { APP_BUTTON_TEXT, APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_PRIMARY_CATEGORY, APP_SPLASH_BACKGROUND_COLOR, APP_TAGS, APP_URL, APP_WEBHOOK_URL } from './constants';
 import { APP_SPLASH_URL } from './constants';
 
-interface FrameMetadata {
+interface MiniAppMetadata {
   version: string;
   name: string;
   iconUrl: string;
@@ -19,13 +19,13 @@ interface FrameMetadata {
   tags?: string[];
 };
 
-interface FrameManifest {
+interface MiniAppManifest {
   accountAssociation?: {
     header: string;
     payload: string;
     signature: string;
   };
-  frame: FrameMetadata;
+  frame: MiniAppMetadata;
 }
 
 export function cn(...inputs: ClassValue[]) {
@@ -43,7 +43,7 @@ export function getSecretEnvVars() {
   return { seedPhrase, fid };
 }
 
-export function getFrameEmbedMetadata(ogImageUrl?: string) {
+export function getMiniAppEmbedMetadata(ogImageUrl?: string) {
   return {
     version: "next",
     imageUrl: ogImageUrl ?? APP_OG_IMAGE_URL,
@@ -64,15 +64,15 @@ export function getFrameEmbedMetadata(ogImageUrl?: string) {
   };
 }
 
-export async function getFarcasterMetadata(): Promise<FrameManifest> {
-  // First check for FRAME_METADATA in .env and use that if it exists
-  if (process.env.FRAME_METADATA) {
+export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
+  // First check for MINI_APP_METADATA in .env and use that if it exists
+  if (process.env.MINI_APP_METADATA) {
     try {
-      const metadata = JSON.parse(process.env.FRAME_METADATA);
-      console.log('Using pre-signed frame metadata from environment');
+      const metadata = JSON.parse(process.env.MINI_APP_METADATA);
+      console.log('Using pre-signed mini app metadata from environment');
       return metadata;
     } catch (error) {
-      console.warn('Failed to parse FRAME_METADATA from environment:', error);
+      console.warn('Failed to parse MINI_APP_METADATA from environment:', error);
     }
   }
 
@@ -123,11 +123,11 @@ export async function getFarcasterMetadata(): Promise<FrameManifest> {
     accountAssociation,
     frame: {
       version: "1",
-      name: APP_NAME ?? "Frames v2 Demo",
+      name: APP_NAME ?? "Neynar Starter Kit",
       iconUrl: APP_ICON_URL,
       homeUrl: APP_URL,
       imageUrl: APP_OG_IMAGE_URL,
-      buttonTitle: APP_BUTTON_TEXT ?? "Launch Frame",
+      buttonTitle: APP_BUTTON_TEXT ?? "Launch Mini App",
       splashImageUrl: APP_SPLASH_URL,
       splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
       webhookUrl: APP_WEBHOOK_URL,

@@ -5,7 +5,7 @@ import {
 import { getUserNotificationDetails } from "~/lib/kv";
 import { APP_URL } from "./constants";
 
-type SendFrameNotificationResult =
+type SendMiniAppNotificationResult =
   | {
       state: "error";
       error: unknown;
@@ -14,7 +14,7 @@ type SendFrameNotificationResult =
   | { state: "rate_limit" }
   | { state: "success" };
 
-export async function sendFrameNotification({
+export async function sendMiniAppNotification({
   fid,
   title,
   body,
@@ -22,7 +22,7 @@ export async function sendFrameNotification({
   fid: number;
   title: string;
   body: string;
-}): Promise<SendFrameNotificationResult> {
+}): Promise<SendMiniAppNotificationResult> {
   const notificationDetails = await getUserNotificationDetails(fid);
   if (!notificationDetails) {
     return { state: "no_token" };
