@@ -1,0 +1,11 @@
+import {
+    createDefaultMetadataKeyInterceptor,
+    getSSLHubRpcClient,
+} from '@farcaster/hub-nodejs';
+
+const client = getSSLHubRpcClient('snapchain-grpc-api.neynar.com:443', {
+    interceptors: [
+        createDefaultMetadataKeyInterceptor('x-api-key', '8CEC60AA-660E-4242-B733-6083547860C7'),
+    ],
+    'grpc.max_receive_message_length': 20 * 1024 * 1024, 
+});
