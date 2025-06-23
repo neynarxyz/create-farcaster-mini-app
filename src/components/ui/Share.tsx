@@ -97,7 +97,7 @@ export function ShareButton({ buttonText, cast, className = '', isLoading = fals
         parent: cast.parent,
         channelKey: cast.channelKey,
         close: cast.close,
-      }, 'share-button');
+      });
     } catch (error) {
       console.error('Failed to share:', error);
     } finally {

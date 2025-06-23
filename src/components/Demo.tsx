@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
 import sdk, {
   SignIn as SignInCore,
+  type Haptics,
 } from "@farcaster/frame-sdk";
 import {
   useAccount,
@@ -52,19 +53,30 @@ export default function Demo(
     added,
     notificationDetails,
     actions,
+    setInitialTab,
+    setActiveTab,
+    currentTab,
+    haptics,
   } = useMiniApp();
   const [isContextOpen, setIsContextOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>('home');
   const [txHash, setTxHash] = useState<string | null>(null);
   const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
   const [neynarUser, setNeynarUser] = useState<NeynarUser | null>(null);
+  const [hapticIntensity, setHapticIntensity] = useState<Haptics.ImpactOccurredType>('medium');
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const hasSolanaProvider = useHasSolanaProvider();
   const solanaWallet = useSolanaWallet();
   const { publicKey: solanaPublicKey } = solanaWallet;
+
+  // Set initial tab to home on page load
+  useEffect(() => {
+    if (isSDKLoaded) {
+      setInitialTab('home');
+    }
+  }, [isSDKLoaded, setInitialTab]);
 
   useEffect(() => {
     console.log("isSDKLoaded", isSDKLoaded);
@@ -226,7 +238,7 @@ export default function Demo(
 
         <h1 className="text-2xl font-bold text-center mb-4">{title}</h1>
 
-        {activeTab === 'home' && (
+        {currentTab === 'home' && (
           <div className="flex items-center justify-center h-[calc(100vh-200px)] px-6">
             <div className="text-center w-full max-w-md mx-auto">
               <p className="text-lg mb-2">Put your content here!</p>
@@ -235,7 +247,7 @@ export default function Demo(
           </div>
         )}
 
-        {activeTab === 'actions' && (
+        {currentTab === 'actions' && (
           <div className="space-y-3 px-6 w-full max-w-md mx-auto">
             <ShareButton 
               buttonText="Share Mini App"
@@ -250,8 +262,6 @@ export default function Demo(
             <SignIn />
 
             <Button onClick={() => actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")} className="w-full">Open Link</Button>
-
-            <Button onClick={actions.close} className="w-full">Close Mini App</Button>
 
             <Button onClick={actions.addMiniApp} disabled={added} className="w-full">
               Add Mini App to Client
@@ -280,10 +290,39 @@ export default function Demo(
             >
               {copied ? "Copied!" : "Copy share URL"}
             </Button>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Haptic Intensity
+              </label>
+              <select
+                value={hapticIntensity}
+                onChange={(e) => setHapticIntensity(e.target.value as typeof hapticIntensity)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="light">Light</option>
+                <option value="medium">Medium</option>
+                <option value="heavy">Heavy</option>
+                <option value="soft">Soft</option>
+                <option value="rigid">Rigid</option>
+              </select>
+              <Button 
+                onClick={async () => {
+                  try {
+                    await haptics.impactOccurred(hapticIntensity);
+                  } catch (error) {
+                    console.error('Haptic feedback failed:', error);
+                  }
+                }}
+                className="w-full"
+              >
+                Trigger Haptic Feedback
+              </Button>
+            </div>
           </div>
         )}
 
-        {activeTab === 'context' && (
+        {currentTab === 'context' && (
           <div className="mx-6">
             <h2 className="text-lg font-semibold mb-2">Context</h2>
             <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
@@ -294,7 +333,7 @@ export default function Demo(
           </div>
         )}
 
-        {activeTab === 'wallet' && USE_WALLET && (
+        {currentTab === 'wallet' && USE_WALLET && (
           <div className="space-y-3 px-6 w-full max-w-md mx-auto">
             {address && (
               <div className="text-xs w-full">
@@ -389,7 +428,7 @@ export default function Demo(
           </div>
         )}
 
-        <Footer activeTab={activeTab} setActiveTab={setActiveTab} showWallet={USE_WALLET} />
+        <Footer activeTab={currentTab as Tab} setActiveTab={setActiveTab} showWallet={USE_WALLET} />
       </div>
     </div>
   );

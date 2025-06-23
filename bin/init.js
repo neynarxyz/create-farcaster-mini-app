@@ -347,7 +347,7 @@ export async function init() {
     "@farcaster/frame-sdk": ">=0.0.31 <1.0.0",
     "@farcaster/frame-wagmi-connector": ">=0.0.19 <1.0.0",
     "@farcaster/mini-app-solana": ">=0.0.17 <1.0.0",
-    "@neynar/react": "^1.2.2",
+    "@neynar/react": "^1.2.5",
     "@radix-ui/react-label": "^2.1.1",
     "@solana/wallet-adapter-react": "^0.15.38",
     "@tanstack/react-query": "^5.61.0",
