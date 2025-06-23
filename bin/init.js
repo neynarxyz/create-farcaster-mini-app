@@ -93,6 +93,7 @@ export async function init() {
       break;
     }
 
+    console.log('\n🪐 Find your Neynar API key at: https://dev.neynar.com/app\n');
     const neynarKeyAnswer = await inquirer.prompt([
       {
         type: 'password',
