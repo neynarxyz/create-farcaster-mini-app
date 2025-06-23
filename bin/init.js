@@ -27,7 +27,7 @@ function printWelcomeMessage() {
   console.log(`
 ${purple}╔═══════════════════════════════════════════════════╗${reset}
 ${purple}║                                                   ║${reset}
-${purple}║${reset}     ${bright}Welcome to Mini Apps Quickstart by Neynar${reset}     ${purple}║${reset}
+${purple}║${reset}         ${bright}Welcome to the Neynar Starter Kit${reset}         ${purple}║${reset}
 ${purple}║${reset}   ${dim}the quickest way to build Farcaster mini apps${reset}   ${purple}║${reset}
 ${purple}║                                                   ║${reset}
 ${purple}╚═══════════════════════════════════════════════════╝${reset}
@@ -463,7 +463,7 @@ export async function init() {
   execSync('git commit -m "initial commit from @neynar/create-farcaster-mini-app"', { cwd: projectPath });
 
   // Calculate border length based on message length
-  const message = `✨🪐 Successfully created frame ${projectName} with git and dependencies installed! 🪐✨`;
+  const message = `✨🪐 Successfully created mini app ${projectName} with git and dependencies installed! 🪐✨`;
   const borderLength = message.length;
   const borderStars = '✨'.repeat((borderLength / 2) + 1);
 
