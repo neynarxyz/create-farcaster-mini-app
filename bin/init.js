@@ -61,7 +61,7 @@ async function queryNeynarApp(apiKey) {
 }
 
 // Export the main CLI function for programmatic use
-export async function init() {
+export async function init(projectName = null, autoAcceptDefaults = false) {
   printWelcomeMessage();
 
   // Ask about Neynar usage
@@ -72,21 +72,26 @@ export async function init() {
   let neynarAppLogoUrl = null;
 
   while (useNeynar) {
-    const neynarAnswers = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'useNeynar',
-        message: `🪐 ${purple}${bright}${italic}Neynar is an API that makes it easy to build on Farcaster.${reset}\n\n` +
-        'Benefits of using Neynar in your mini app:\n' +
-        '- Pre-configured webhook handling (no setup required)\n' +
-        '- Automatic mini app analytics in your dev portal\n' +
-        '- Send manual notifications from dev.neynar.com\n' +
-        '- Built-in rate limiting and error handling\n\n' +
-        `${purple}${bright}${italic}A demo API key is included if you would like to try out Neynar before signing up!${reset}\n\n` +
-        'Would you like to use Neynar in your mini app?',
-        default: true
-      }
-    ]);
+    let neynarAnswers;
+    if (autoAcceptDefaults) {
+      neynarAnswers = { useNeynar: true };
+    } else {
+      neynarAnswers = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'useNeynar',
+          message: `🪐 ${purple}${bright}${italic}Neynar is an API that makes it easy to build on Farcaster.${reset}\n\n` +
+          'Benefits of using Neynar in your mini app:\n' +
+          '- Pre-configured webhook handling (no setup required)\n' +
+          '- Automatic mini app analytics in your dev portal\n' +
+          '- Send manual notifications from dev.neynar.com\n' +
+          '- Built-in rate limiting and error handling\n\n' +
+          `${purple}${bright}${italic}A demo API key is included if you would like to try out Neynar before signing up!${reset}\n\n` +
+          'Would you like to use Neynar in your mini app?',
+          default: true
+        }
+      ]);
+    }
 
     if (!neynarAnswers.useNeynar) {
       useNeynar = false;
@@ -94,26 +99,37 @@ export async function init() {
     }
 
     console.log('\n🪐 Find your Neynar API key at: https://dev.neynar.com/app\n');
-    const neynarKeyAnswer = await inquirer.prompt([
-      {
-        type: 'password',
-        name: 'neynarApiKey',
-        message: 'Enter your Neynar API key (or press enter to skip):',
-        default: null
-      }
-    ]);
+    
+    let neynarKeyAnswer;
+    if (autoAcceptDefaults) {
+      neynarKeyAnswer = { neynarApiKey: null };
+    } else {
+      neynarKeyAnswer = await inquirer.prompt([
+        {
+          type: 'password',
+          name: 'neynarApiKey',
+          message: 'Enter your Neynar API key (or press enter to skip):',
+          default: null
+        }
+      ]);
+    }
 
     if (neynarKeyAnswer.neynarApiKey) {
       neynarApiKey = neynarKeyAnswer.neynarApiKey;
     } else {
-      const useDemoKey = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'useDemo',
-          message: 'Would you like to try the demo Neynar API key?',
-          default: true
-        }
-      ]);
+      let useDemoKey;
+      if (autoAcceptDefaults) {
+        useDemoKey = { useDemo: true };
+      } else {
+        useDemoKey = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'useDemo',
+            message: 'Would you like to try the demo Neynar API key?',
+            default: true
+          }
+        ]);
+      }
 
       if (useDemoKey.useDemo) {
         console.warn('\n⚠️ Note: the demo key is for development purposes only and is aggressively rate limited.');
@@ -124,6 +140,10 @@ export async function init() {
     }
 
     if (!neynarApiKey) {
+      if (autoAcceptDefaults) {
+        useNeynar = false;
+        break;
+      }
       console.log('\n⚠️  No valid API key provided. Would you like to try again?');
       const { retry } = await inquirer.prompt([
         {
@@ -148,6 +168,10 @@ export async function init() {
     }
 
     if (!neynarClientId) {
+      if (autoAcceptDefaults) {
+        useNeynar = false;
+        break;
+      }
       const { retry } = await inquirer.prompt([
         {
           type: 'confirm',
@@ -169,121 +193,142 @@ export async function init() {
 
   const defaultMiniAppName = (neynarAppName && !neynarAppName.toLowerCase().includes('demo')) ? neynarAppName : undefined;
 
-  const answers = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'projectName',
-      message: 'What is the name of your mini app?',
-      default: defaultMiniAppName,
-      validate: (input) => {
-        if (input.trim() === '') {
-          return 'Project name cannot be empty';
+  let answers;
+  if (autoAcceptDefaults) {
+    answers = {
+      projectName: projectName || defaultMiniAppName || 'my-farcaster-mini-app',
+      description: 'A Farcaster mini app created with Neynar',
+      primaryCategory: null,
+      tags: [],
+      buttonText: 'Launch Mini App',
+      useWallet: true,
+      useTunnel: true,
+      enableAnalytics: true
+    };
+  } else {
+    // If autoAcceptDefaults is false but we have a projectName, we still need to ask for other options
+    const projectNamePrompt = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'projectName',
+        message: 'What is the name of your mini app?',
+        default: projectName || defaultMiniAppName,
+        validate: (input) => {
+          if (input.trim() === '') {
+            return 'Project name cannot be empty';
+          }
+          return true;
         }
-        return true;
       }
-    },
-    {
-      type: 'input',
-      name: 'description',
-      message: 'Give a one-line description of your mini app (optional):',
-      default: 'A Farcaster mini app created with Neynar'
-    },
-    {
-      type: 'list',
-      name: 'primaryCategory',
-      message: 'It is strongly recommended to choose a primary category and tags to help users discover your mini app.\n\nSelect a primary category:',
-      choices: [
-        new inquirer.Separator(),
-        { name: 'Skip (not recommended)', value: null },
-        new inquirer.Separator(),
-        { name: 'Games', value: 'games' },
-        { name: 'Social', value: 'social' },
-        { name: 'Finance', value: 'finance' },
-        { name: 'Utility', value: 'utility' },
-        { name: 'Productivity', value: 'productivity' },
-        { name: 'Health & Fitness', value: 'health-fitness' },
-        { name: 'News & Media', value: 'news-media' },
-        { name: 'Music', value: 'music' },
-        { name: 'Shopping', value: 'shopping' },
-        { name: 'Education', value: 'education' },
-        { name: 'Developer Tools', value: 'developer-tools' },
-        { name: 'Entertainment', value: 'entertainment' },
-        { name: 'Art & Creativity', value: 'art-creativity' }
-      ],
-      default: null
-    },
-    {
-      type: 'input',
-      name: 'tags',
-      message: 'Enter tags for your mini app (separate with spaces or commas, optional):',
-      default: '',
-      filter: (input) => {
-        if (!input.trim()) return [];
-        // Split by both spaces and commas, trim whitespace, and filter out empty strings
-        return input
-          .split(/[,\s]+/)
-          .map(tag => tag.trim())
-          .filter(tag => tag.length > 0);
-      }
-    },
-    {
-      type: 'input',
-      name: 'buttonText',
-      message: 'Enter the button text for your mini app:',
-      default: 'Launch Mini App',
-      validate: (input) => {
-        if (input.trim() === '') {
-          return 'Button text cannot be empty';
+    ]);
+    
+    answers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'description',
+        message: 'Give a one-line description of your mini app (optional):',
+        default: 'A Farcaster mini app created with Neynar'
+      },
+      {
+        type: 'list',
+        name: 'primaryCategory',
+        message: 'It is strongly recommended to choose a primary category and tags to help users discover your mini app.\n\nSelect a primary category:',
+        choices: [
+          new inquirer.Separator(),
+          { name: 'Skip (not recommended)', value: null },
+          new inquirer.Separator(),
+          { name: 'Games', value: 'games' },
+          { name: 'Social', value: 'social' },
+          { name: 'Finance', value: 'finance' },
+          { name: 'Utility', value: 'utility' },
+          { name: 'Productivity', value: 'productivity' },
+          { name: 'Health & Fitness', value: 'health-fitness' },
+          { name: 'News & Media', value: 'news-media' },
+          { name: 'Music', value: 'music' },
+          { name: 'Shopping', value: 'shopping' },
+          { name: 'Education', value: 'education' },
+          { name: 'Developer Tools', value: 'developer-tools' },
+          { name: 'Entertainment', value: 'entertainment' },
+          { name: 'Art & Creativity', value: 'art-creativity' }
+        ],
+        default: null
+      },
+      {
+        type: 'input',
+        name: 'tags',
+        message: 'Enter tags for your mini app (separate with spaces or commas, optional):',
+        default: '',
+        filter: (input) => {
+          if (!input.trim()) return [];
+          // Split by both spaces and commas, trim whitespace, and filter out empty strings
+          return input
+            .split(/[,\s]+/)
+            .map(tag => tag.trim())
+            .filter(tag => tag.length > 0);
         }
-        return true;
+      },
+      {
+        type: 'input',
+        name: 'buttonText',
+        message: 'Enter the button text for your mini app:',
+        default: 'Launch Mini App',
+        validate: (input) => {
+          if (input.trim() === '') {
+            return 'Button text cannot be empty';
+          }
+          return true;
+        }
       }
-    }
-  ]);
+    ]);
 
-  // Ask about wallet and transaction tooling
-  const walletAnswer = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'useWallet',
-      message: 'Would you like to include wallet and transaction tooling in your mini app?\n' +
-        'This includes:\n' +
-        '- EVM wallet connection\n' +
-        '- Transaction signing\n' +
-        '- Message signing\n' +
-        '- Chain switching\n' +
-        '- Solana support\n\n' +
-        'Include wallet and transaction features?',
-      default: true
-    }
-  ]);
-  answers.useWallet = walletAnswer.useWallet;
+    // Merge project name from the first prompt
+    answers.projectName = projectNamePrompt.projectName;
 
-  // Ask about localhost vs tunnel
-  const hostingAnswer = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'useTunnel',
-      message: 'Would you like to test on mobile and/or test the app with Warpcast developer tools?\n' +
-        `⚠️ ${yellow}${italic}Both mobile testing and the Warpcast debugger require setting up a tunnel to serve your app from localhost to the broader internet.\n${reset}` +
-        'Configure a tunnel for mobile testing and/or Warpcast developer tools?',
-      default: true
-    }
-  ]);
-  answers.useTunnel = hostingAnswer.useTunnel;
+    // Ask about wallet and transaction tooling
+    const walletAnswer = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'useWallet',
+        message: 'Would you like to include wallet and transaction tooling in your mini app?\n' +
+          'This includes:\n' +
+          '- EVM wallet connection\n' +
+          '- Transaction signing\n' +
+          '- Message signing\n' +
+          '- Chain switching\n' +
+          '- Solana support\n\n' +
+          'Include wallet and transaction features?',
+        default: true
+      }
+    ]);
+    answers.useWallet = walletAnswer.useWallet;
 
-  // Ask about analytics opt-out
-  const analyticsAnswer = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'enableAnalytics',
-      message: 'Would you like to help improve Neynar products by sharing usage data from your mini app?',
-      default: true
-    }
-  ]);
-  answers.enableAnalytics = analyticsAnswer.enableAnalytics;
+    // Ask about localhost vs tunnel
+    const hostingAnswer = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'useTunnel',
+        message: 'Would you like to test on mobile and/or test the app with Warpcast developer tools?\n' +
+          `⚠️ ${yellow}${italic}Both mobile testing and the Warpcast debugger require setting up a tunnel to serve your app from localhost to the broader internet.\n${reset}` +
+          'Configure a tunnel for mobile testing and/or Warpcast developer tools?',
+        default: true
+      }
+    ]);
+    answers.useTunnel = hostingAnswer.useTunnel;
 
-  const projectName = answers.projectName;
-  const projectDirName = projectName.replace(/\s+/g, '-').toLowerCase();
+    // Ask about analytics opt-out
+    const analyticsAnswer = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'enableAnalytics',
+        message: 'Would you like to help improve Neynar products by sharing usage data from your mini app?',
+        default: true
+      }
+    ]);
+    answers.enableAnalytics = analyticsAnswer.enableAnalytics;
+  }
+
+  const finalProjectName = answers.projectName;
+  const projectDirName = finalProjectName.replace(/\s+/g, '-').toLowerCase();
   const projectPath = path.join(process.cwd(), projectDirName);
 
   console.log(`\nCreating a new mini app in ${projectPath}`);
@@ -328,7 +373,7 @@ export async function init() {
   const packageJsonPath = path.join(projectPath, 'package.json');
   let packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
-  packageJson.name = projectName;
+  packageJson.name = finalProjectName;
   packageJson.version = '0.1.0';
   delete packageJson.author;
   delete packageJson.keywords;
@@ -464,7 +509,7 @@ export async function init() {
   execSync('git commit -m "initial commit from @neynar/create-farcaster-mini-app"', { cwd: projectPath });
 
   // Calculate border length based on message length
-  const message = `✨🪐 Successfully created mini app ${projectName} with git and dependencies installed! 🪐✨`;
+  const message = `✨🪐 Successfully created mini app ${finalProjectName} with git and dependencies installed! 🪐✨`;
   const borderLength = message.length;
   const borderStars = '✨'.repeat((borderLength / 2) + 1);
 
@@ -472,6 +517,6 @@ export async function init() {
   console.log(`${message}`);
   console.log(`${borderStars}`);
   console.log('\nTo run the app:');
-  console.log(`  cd ${projectName}`);
+  console.log(`  cd ${finalProjectName}`);
   console.log('  npm run dev\n');
 }
