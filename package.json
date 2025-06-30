@@ -1,6 +1,6 @@
 {
   "name": "@neynar/create-farcaster-mini-app",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "type": "module",
   "private": false,
   "access": "public",

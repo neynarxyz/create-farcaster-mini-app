@@ -418,6 +418,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vercel/sdk": "^1.9.0",
     "crypto": "^1.0.1",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",

@@ -1,22 +1,22 @@
 import { execSync, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import { mnemonicToAccount } from 'viem/accounts';
+import { Vercel } from '@vercel/sdk';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 
 // Load environment variables in specific order
-// First load .env for main config
 dotenv.config({ path: '.env' });
 
 async function validateSeedPhrase(seedPhrase) {
   try {
-    // Try to create an account from the seed phrase
     const account = mnemonicToAccount(seedPhrase);
     return account.address;
   } catch (error) {
@@ -113,7 +113,6 @@ async function loadEnvLocal() {
         console.log('Loading values from .env.local...');
         const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
         
-        // Define allowed variables to load from .env.local
         const allowedVars = [
           'SEED_PHRASE',
           'NEXT_PUBLIC_MINI_APP_NAME',
@@ -126,28 +125,23 @@ async function loadEnvLocal() {
           'NEYNAR_CLIENT_ID'
         ];
         
-        // Copy allowed values except SEED_PHRASE to .env
         const envContent = fs.existsSync('.env') ? fs.readFileSync('.env', 'utf8') + '\n' : '';
         let newEnvContent = envContent;
         
         for (const [key, value] of Object.entries(localEnv)) {
           if (allowedVars.includes(key)) {
-            // Update process.env
             process.env[key] = value;
-            // Add to .env content if not already there (except for SEED_PHRASE)
             if (key !== 'SEED_PHRASE' && !envContent.includes(`${key}=`)) {
               newEnvContent += `${key}="${value}"\n`;
             }
           }
         }
         
-        // Write updated content to .env
         fs.writeFileSync('.env', newEnvContent);
         console.log('✅ Values from .env.local have been written to .env');
       }
     }
   } catch (error) {
-    // Error reading .env.local, which is fine
     console.log('Note: No .env.local file found');
   }
 }
@@ -156,7 +150,6 @@ async function checkRequiredEnvVars() {
   console.log('\n📝 Checking environment variables...');
   console.log('Loading values from .env...');
   
-  // Load .env.local if user wants to
   await loadEnvLocal();
 
   const requiredVars = [
@@ -188,15 +181,12 @@ async function checkRequiredEnvVars() {
           validate: varConfig.validate
         }
       ]);
-      // Write to both process.env and .env file
+      
       process.env[varConfig.name] = value;
       
-      // Read existing .env content
       const envContent = fs.existsSync('.env') ? fs.readFileSync('.env', 'utf8') : '';
       
-      // Check if the variable already exists in .env
       if (!envContent.includes(`${varConfig.name}=`)) {
-        // Append the new variable to .env without extra newlines
         const newLine = envContent ? '\n' : '';
         fs.appendFileSync('.env', `${newLine}${varConfig.name}="${value.trim()}"`);
       }
@@ -229,7 +219,6 @@ async function checkRequiredEnvVars() {
       ]);
 
       if (storeSeedPhrase) {
-        // Write to .env.local
         fs.appendFileSync('.env.local', `\nSEED_PHRASE="${seedPhrase}"`);
         console.log('✅ Seed phrase stored in .env.local');
       } else {
@@ -271,6 +260,39 @@ async function installVercelCLI() {
   });
 }
 
+async function getVercelToken() {
+  try {
+    // Try to get token from Vercel CLI config
+    const configPath = path.join(os.homedir(), '.vercel', 'auth.json');
+    if (fs.existsSync(configPath)) {
+      const authConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      return authConfig.token;
+    }
+  } catch (error) {
+    console.warn('Could not read Vercel token from config file');
+  }
+  
+  // Try environment variable
+  if (process.env.VERCEL_TOKEN) {
+    return process.env.VERCEL_TOKEN;
+  }
+  
+  // Try to extract from vercel whoami
+  try {
+    const whoamiOutput = execSync('vercel whoami', { 
+      encoding: 'utf8',
+      stdio: 'pipe'
+    });
+    
+    // If we can get whoami, we're logged in, but we need the actual token
+    // The token isn't directly exposed, so we'll need to use CLI for some operations
+    console.log('✅ Verified Vercel CLI authentication');
+    return null; // We'll fall back to CLI operations
+  } catch (error) {
+    throw new Error('Not logged in to Vercel CLI. Please run this script again to login.');
+  }
+}
+
 async function loginToVercel() {
   console.log('\n🔑 Vercel Login');
   console.log('You can either:');
@@ -283,26 +305,16 @@ async function loginToVercel() {
   console.log('4. Return here once your Vercel account is created\n');
   console.log('\nNote: you may need to cancel this script with ctrl+c and run it again if creating a new vercel account');
   
-  // Start the login process
   const child = spawn('vercel', ['login'], {
     stdio: 'inherit'
   });
 
-  // Wait for the login process to complete
   await new Promise((resolve, reject) => {
     child.on('close', (code) => {
-      if (code === 0) {
-        resolve();
-      } else {
-        // Don't reject here, as the process might exit with non-zero
-        // during the browser auth flow
-        resolve();
-      }
+      resolve();
     });
   });
 
-  // After the browser flow completes, verify we're actually logged in
-  // Keep checking for up to 5 minutes (increased timeout for new account setup)
   console.log('\n📱 Waiting for login to complete...');
   console.log('If you\'re creating a new account, please complete the Vercel account setup in your browser first.');
   
@@ -315,7 +327,6 @@ async function loginToVercel() {
       if (error.message.includes('Account not found')) {
         console.log('ℹ️  Waiting for Vercel account setup to complete...');
       }
-      // Still not logged in, wait 2 seconds before trying again
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
@@ -327,9 +338,59 @@ async function loginToVercel() {
   return false;
 }
 
-async function setVercelEnvVar(key, value, projectRoot) {
+async function setVercelEnvVarSDK(vercelClient, projectId, key, value) {
   try {
-    // First try to remove the existing env var if it exists
+    let processedValue;
+    if (typeof value === 'object') {
+      processedValue = JSON.stringify(value);
+    } else {
+      processedValue = value.toString();
+    }
+
+    // Get existing environment variables
+    const existingVars = await vercelClient.projects.getEnvironmentVariables({
+      idOrName: projectId
+    });
+
+    const existingVar = existingVars.envs?.find(env => 
+      env.key === key && env.target?.includes('production')
+    );
+
+    if (existingVar) {
+      // Update existing variable
+      await vercelClient.projects.editEnvironmentVariable({
+        idOrName: projectId,
+        id: existingVar.id,
+        requestBody: {
+          value: processedValue,
+          target: ['production']
+        }
+      });
+      console.log(`✅ Updated environment variable: ${key}`);
+    } else {
+      // Create new variable
+      await vercelClient.projects.createEnvironmentVariable({
+        idOrName: projectId,
+        requestBody: {
+          key: key,
+          value: processedValue,
+          type: 'encrypted',
+          target: ['production']
+        }
+      });
+      console.log(`✅ Created environment variable: ${key}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.warn(`⚠️  Warning: Failed to set environment variable ${key}:`, error.message);
+    return false;
+  }
+}
+
+async function setVercelEnvVarCLI(key, value, projectRoot) {
+  try {
+    // Remove existing env var
     try {
       execSync(`vercel env rm ${key} production -y`, {
         cwd: projectRoot,
@@ -337,42 +398,80 @@ async function setVercelEnvVar(key, value, projectRoot) {
         env: process.env
       });
     } catch (error) {
-      // Ignore errors from removal (var might not exist)
+      // Ignore errors from removal
     }
-    
-    // For complex objects like miniAppMetadata, use a temporary file approach
+
+    let processedValue;
     if (typeof value === 'object') {
-      const tempFilePath = path.join(projectRoot, `${key}_temp.json`);
-      // Write the value to a temporary file with proper JSON formatting
-      fs.writeFileSync(tempFilePath, JSON.stringify(value));
-      
-      // Use the file to add the environment variable
-      execSync(`vercel env add ${key} production < "${tempFilePath}"`, {
-        cwd: projectRoot,
-        stdio: 'inherit',
-        env: process.env
-      });
-      
-      // Clean up the temporary file
-      fs.unlinkSync(tempFilePath);
+      processedValue = JSON.stringify(value);
     } else {
-      // For simple string values, use a different approach to avoid shell interpretation issues
-      const tempFilePath = path.join(projectRoot, `${key}_temp.txt`);
-      fs.writeFileSync(tempFilePath, value.toString());
-      
-      execSync(`vercel env add ${key} production < "${tempFilePath}"`, {
-        cwd: projectRoot,
-        stdio: 'inherit',
-        env: process.env
-      });
-      
-      fs.unlinkSync(tempFilePath);
+      processedValue = value.toString();
     }
+
+    // Create temporary file
+    const tempFilePath = path.join(projectRoot, `${key}_temp.txt`);
+    fs.writeFileSync(tempFilePath, processedValue, 'utf8');
+
+    // Use appropriate command based on platform
+    let command;
+    if (process.platform === 'win32') {
+      command = `type "${tempFilePath}" | vercel env add ${key} production`;
+    } else {
+      command = `cat "${tempFilePath}" | vercel env add ${key} production`;
+    }
+
+    execSync(command, {
+      cwd: projectRoot,
+      stdio: 'pipe', // Changed from 'inherit' to avoid interactive prompts
+      shell: true,
+      env: process.env
+    });
+
+    fs.unlinkSync(tempFilePath);
+    console.log(`✅ Set environment variable: ${key}`);
     return true;
   } catch (error) {
+    const tempFilePath = path.join(projectRoot, `${key}_temp.txt`);
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
     console.warn(`⚠️  Warning: Failed to set environment variable ${key}:`, error.message);
     return false;
   }
+}
+
+async function setEnvironmentVariables(vercelClient, projectId, envVars, projectRoot) {
+  console.log('\n📝 Setting up environment variables...');
+  
+  const results = [];
+  
+  for (const [key, value] of Object.entries(envVars)) {
+    if (!value) continue;
+    
+    let success = false;
+    
+    // Try SDK approach first if we have a Vercel client
+    if (vercelClient && projectId) {
+      success = await setVercelEnvVarSDK(vercelClient, projectId, key, value);
+    }
+    
+    // Fallback to CLI approach
+    if (!success) {
+      success = await setVercelEnvVarCLI(key, value, projectRoot);
+    }
+    
+    results.push({ key, success });
+  }
+  
+  // Report results
+  const failed = results.filter(r => !r.success);
+  if (failed.length > 0) {
+    console.warn(`\n⚠️  Failed to set ${failed.length} environment variables:`);
+    failed.forEach(r => console.warn(`   - ${r.key}`));
+    console.warn('\nYou may need to set these manually in the Vercel dashboard.');
+  }
+  
+  return results;
 }
 
 async function deployToVercel(useGitHub = false) {
@@ -389,46 +488,74 @@ async function deployToVercel(useGitHub = false) {
       }, null, 2));
     }
 
-    // TODO: check if project already exists here
-
     // Set up Vercel project
     console.log('\n📦 Setting up Vercel project...');
-    console.log(' An initial deployment is required to get an assigned domain that can be used in the mini app manifest\n');
+    console.log('An initial deployment is required to get an assigned domain that can be used in the mini app manifest\n');
     console.log('\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n');
+    
     execSync('vercel', { 
       cwd: projectRoot,
       stdio: 'inherit',
       shell: process.platform === 'win32'
     });
 
-    // Load project info from .vercel/project.json
+    // Load project info
     const projectJson = JSON.parse(fs.readFileSync('.vercel/project.json', 'utf8'));
     const projectId = projectJson.projectId;
 
-    // Get project details using project inspect
-    console.log('\n🔍 Getting project details...');
-    const inspectOutput = execSync(`vercel project inspect ${projectId} 2>&1`, {
-      cwd: projectRoot,
-      encoding: 'utf8'
-    });
+    // Get Vercel token and initialize SDK client
+    let vercelClient = null;
+    try {
+      const token = await getVercelToken();
+      if (token) {
+        vercelClient = new Vercel({
+          bearerToken: token
+        });
+        console.log('✅ Initialized Vercel SDK client');
+      }
+    } catch (error) {
+      console.warn('⚠️  Could not initialize Vercel SDK, falling back to CLI operations');
+    }
 
-    // Extract project name from inspect output
-    let projectName;
+    // Get project details
+    console.log('\n🔍 Getting project details...');
     let domain;
-    const nameMatch = inspectOutput.match(/Name\s+([^\n]+)/);
-    if (nameMatch) {
-      projectName = nameMatch[1].trim();
-      domain = `${projectName}.vercel.app`;
-      console.log('🌐 Using project name for domain:', domain);
-    } else {
-      // Try alternative format
-      const altMatch = inspectOutput.match(/Found Project [^/]+\/([^\n]+)/);
-      if (altMatch) {
-        projectName = altMatch[1].trim();
+    let projectName;
+
+    if (vercelClient) {
+      try {
+        const project = await vercelClient.projects.get({
+          idOrName: projectId
+        });
+        projectName = project.name;
+        domain = `${projectName}.vercel.app`;
+        console.log('🌐 Using project name for domain:', domain);
+      } catch (error) {
+        console.warn('⚠️  Could not get project details via SDK, using CLI fallback');
+      }
+    }
+
+    // Fallback to CLI method if SDK failed
+    if (!domain) {
+      const inspectOutput = execSync(`vercel project inspect ${projectId} 2>&1`, {
+        cwd: projectRoot,
+        encoding: 'utf8'
+      });
+
+      const nameMatch = inspectOutput.match(/Name\s+([^\n]+)/);
+      if (nameMatch) {
+        projectName = nameMatch[1].trim();
         domain = `${projectName}.vercel.app`;
         console.log('🌐 Using project name for domain:', domain);
       } else {
-        throw new Error('Could not determine project name from inspection output');
+        const altMatch = inspectOutput.match(/Found Project [^/]+\/([^\n]+)/);
+        if (altMatch) {
+          projectName = altMatch[1].trim();
+          domain = `${projectName}.vercel.app`;
+          console.log('🌐 Using project name for domain:', domain);
+        } else {
+          throw new Error('Could not determine project name from inspection output');
+        }
       }
     }
 
@@ -440,7 +567,6 @@ async function deployToVercel(useGitHub = false) {
       const accountAddress = await validateSeedPhrase(process.env.SEED_PHRASE);
       fid = await lookupFidByCustodyAddress(accountAddress, process.env.NEYNAR_API_KEY ?? 'FARCASTER_V2_FRAMES_DEMO');
       
-      // Determine webhook URL based on Neynar configuration
       const webhookUrl = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
         ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
         : `https://${domain}/api/webhook`;
@@ -452,33 +578,23 @@ async function deployToVercel(useGitHub = false) {
     // Prepare environment variables
     const nextAuthSecret = process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('hex');
     const vercelEnv = {
-      // Required vars
       NEXTAUTH_SECRET: nextAuthSecret,
-      AUTH_SECRET: nextAuthSecret, // Fallback for some NextAuth versions
-      NEXTAUTH_URL: `https://${domain}`, // Add the deployment URL
+      AUTH_SECRET: nextAuthSecret,
+      NEXTAUTH_URL: `https://${domain}`,
       NEXT_PUBLIC_URL: `https://${domain}`,
       
-      // Optional vars that should be set if they exist
       ...(process.env.NEYNAR_API_KEY && { NEYNAR_API_KEY: process.env.NEYNAR_API_KEY }),
       ...(process.env.NEYNAR_CLIENT_ID && { NEYNAR_CLIENT_ID: process.env.NEYNAR_CLIENT_ID }),
-      
-      // Mini app metadata - don't stringify here
       ...(miniAppMetadata && { MINI_APP_METADATA: miniAppMetadata }),
       
-      // Public vars
       ...Object.fromEntries(
         Object.entries(process.env)
           .filter(([key]) => key.startsWith('NEXT_PUBLIC_'))
       )
     };
 
-    // Add or update env vars in Vercel project
-    console.log('\n📝 Setting up environment variables...');
-    for (const [key, value] of Object.entries(vercelEnv)) {
-      if (value) {
-        await setVercelEnvVar(key, value, projectRoot);
-      }
-    }
+    // Set environment variables
+    await setEnvironmentVariables(vercelClient, projectId, vercelEnv, projectRoot);
 
     // Deploy the project
     if (useGitHub) {
@@ -498,91 +614,55 @@ async function deployToVercel(useGitHub = false) {
       stdio: 'inherit',
       env: process.env
     });
-    // Verify the actual domain after deployment
-    
+
+    // Verify actual domain after deployment
     console.log('\n🔍 Verifying deployment domain...');
     
-    // Create a temporary file path
-    const tempOutputFile = path.join(projectRoot, 'vercel_output.txt');
+    let actualDomain = domain;
+    if (vercelClient) {
+      try {
+        const deployments = await vercelClient.deployments.list({
+          projectId: projectId,
+          limit: 1
+        });
+        
+        if (deployments.deployments?.[0]?.url) {
+          actualDomain = deployments.deployments[0].url;
+          console.log('🌐 Verified actual domain:', actualDomain);
+        }
+      } catch (error) {
+        console.warn('⚠️  Could not verify domain via SDK, using assumed domain');
+      }
+    }
 
-    try {
-      // Redirect output to a file
-      execSync(`vercel project ls > "${tempOutputFile}" 2>&1`, {
+    // Update environment variables if domain changed
+    if (actualDomain !== domain) {
+      console.log('🔄 Updating environment variables with correct domain...');
+      
+      const webhookUrl = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
+        ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
+        : `https://${actualDomain}/api/webhook`;
+
+      const updatedEnv = {
+        NEXTAUTH_URL: `https://${actualDomain}`,
+        NEXT_PUBLIC_URL: `https://${actualDomain}`
+      };
+
+      if (miniAppMetadata) {
+        const updatedMetadata = await generateFarcasterMetadata(actualDomain, fid, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
+        updatedEnv.MINI_APP_METADATA = updatedMetadata;
+      }
+
+      await setEnvironmentVariables(vercelClient, projectId, updatedEnv, projectRoot);
+
+      console.log('\n📦 Redeploying with correct domain...');
+      execSync('vercel deploy --prod', { 
         cwd: projectRoot,
-        shell: true
+        stdio: 'inherit',
+        env: process.env
       });
       
-      // Read the output file
-      const projectOutput = fs.readFileSync(tempOutputFile, 'utf8');
-
-      // Process the output
-      const projectLines = projectOutput
-        .split('\n')
-        .filter(line => line.includes('https://'));
-      
-      // Find the line containing our project name
-      const currentProject = projectLines.find(line => 
-        line.includes(projectName)
-      );
-      
-      if (currentProject) {
-        // Extract the domain from the line
-        const domainMatch = currentProject.match(/https:\/\/([^\s]+)/);
-        if (domainMatch) {
-          const actualDomain = domainMatch[1];
-          if (actualDomain !== domain) {
-            console.log(`⚠️  Actual domain (${actualDomain}) differs from assumed domain (${domain})`);
-            console.log('🔄 Updating environment variables with correct domain...');
-            
-            // Update domain-dependent environment variables
-            const webhookUrl = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
-              ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
-              : `https://${actualDomain}/api/webhook`;
-
-            if (miniAppMetadata) {
-              miniAppMetadata = await generateFarcasterMetadata(actualDomain, fid, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
-              // Update MINI_APP_METADATA env var using the new function
-              await setVercelEnvVar('MINI_APP_METADATA', miniAppMetadata, projectRoot);
-            }
-
-            // Update NEXTAUTH_URL
-            await setVercelEnvVar('NEXTAUTH_URL', `https://${actualDomain}`, projectRoot);
-
-            // Update NEXT_PUBLIC_URL
-            await setVercelEnvVar('NEXT_PUBLIC_URL', `https://${actualDomain}`, projectRoot);
-
-            // Redeploy with updated environment variables
-            console.log('\n📦 Redeploying with correct domain...');
-            execSync('vercel deploy --prod', { 
-              cwd: projectRoot,
-              stdio: 'inherit',
-              env: process.env
-            });
-            
-            domain = actualDomain;
-          }
-        } else {
-          console.warn('⚠️  Could not extract domain from project line');
-        }
-      } else {
-        console.warn('⚠️  Could not find project in Vercel project list');
-      }
-      
-      // Clean up the temporary file
-      fs.unlinkSync(tempOutputFile);
-    } catch (error) {
-      console.error('Error:', error);
-      
-      // Try to read the output file even if there was an error
-      try {
-        if (fs.existsSync(tempOutputFile)) {
-          const errorOutput = fs.readFileSync(tempOutputFile, 'utf8');
-          console.log('Error output file contents:', errorOutput);
-          fs.unlinkSync(tempOutputFile);
-        }
-      } catch (readError) {
-        console.error('Error reading output file:', readError);
-      }
+      domain = actualDomain;
     }
     
     console.log('\n✨ Deployment complete! Your mini app is now live at:');
@@ -597,19 +677,28 @@ async function deployToVercel(useGitHub = false) {
 
 async function main() {
   try {
-    // Print welcome message
-    console.log('🚀 Vercel Mini App Deployment');
-    console.log('This script will deploy your mini app to Vercel.');
+    console.log('🚀 Vercel Mini App Deployment (SDK Edition)');
+    console.log('This script will deploy your mini app to Vercel using the Vercel SDK.');
     console.log('\nThe script will:');
     console.log('1. Check for required environment variables');
     console.log('2. Set up a Vercel project (new or existing)');
-    console.log('3. Configure environment variables in Vercel');
-    console.log('4. Deploy and build your mini app (Vercel will run the build automatically)\n');
+    console.log('3. Configure environment variables in Vercel using SDK');
+    console.log('4. Deploy and build your mini app\n');
 
-    // Check for required environment variables
+    // Check if @vercel/sdk is installed
+    try {
+      await import('@vercel/sdk');
+    } catch (error) {
+      console.log('📦 Installing @vercel/sdk...');
+      execSync('npm install @vercel/sdk', { 
+        cwd: projectRoot,
+        stdio: 'inherit'
+      });
+      console.log('✅ @vercel/sdk installed successfully');
+    }
+
     await checkRequiredEnvVars();
 
-    // Check for git remote
     const remoteUrl = await getGitRemote();
     let useGitHub = false;
 
@@ -650,20 +739,16 @@ async function main() {
       }
     }
 
-    // Check and install Vercel CLI if needed
     if (!await checkVercelCLI()) {
       console.log('Vercel CLI not found. Installing...');
       await installVercelCLI();
     }
 
-    // Login to Vercel
-    console.log('pre login');
     if (!await loginToVercel()) {
       console.error('\n❌ Failed to log in to Vercel. Please try again.');
       process.exit(1);
     }
 
-    // Deploy to Vercel
     await deployToVercel(useGitHub);
 
   } catch (error) {
@@ -673,4 +758,3 @@ async function main() {
 }
 
 main();
-
