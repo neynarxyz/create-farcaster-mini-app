@@ -446,14 +446,57 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
     // Write it to .env.local
     fs.writeFileSync(envPath, envExampleContent);
 
-    // Append all remaining environment variables
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_NAME="${answers.projectName}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_DESCRIPTION="${answers.description}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY="${answers.primaryCategory}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_TAGS="${answers.tags.join(',')}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_MINI_APP_BUTTON_TEXT="${answers.buttonText}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_ANALYTICS_ENABLED="${answers.enableAnalytics}"`);
-    fs.appendFileSync(envPath, `\nNEXT_PUBLIC_USE_WALLET="${answers.useWallet}"`);
+    // Append remaining environment variables
+    // Update constants.ts file with user-provided values
+    console.log('\nUpdating constants.ts...');
+    const constantsPath = path.join(projectPath, 'src', 'lib', 'constants.ts');
+    if (fs.existsSync(constantsPath)) {
+      let constantsContent = fs.readFileSync(constantsPath, 'utf8');
+      
+      // Update APP_NAME
+      constantsContent = constantsContent.replace(
+        /export const APP_NAME = ['"`][^'"`]*['"`];/,
+        `export const APP_NAME = '${answers.projectName}';`
+      );
+      
+      // Update APP_DESCRIPTION
+      constantsContent = constantsContent.replace(
+        /export const APP_DESCRIPTION = ['"`][^'"`]*['"`];/,
+        `export const APP_DESCRIPTION = '${answers.description}';`
+      );
+      
+      // Update APP_PRIMARY_CATEGORY
+      if (answers.primaryCategory) {
+        constantsContent = constantsContent.replace(
+          /export const APP_PRIMARY_CATEGORY = ['"`][^'"`]*['"`];/,
+          `export const APP_PRIMARY_CATEGORY = '${answers.primaryCategory}';`
+        );
+      }
+      
+      // Update APP_TAGS
+      const tagsString = answers.tags.length > 0 ? `['${answers.tags.join("', '")}']` : "['neynar', 'starter-kit', 'demo']";
+      constantsContent = constantsContent.replace(
+        /export const APP_TAGS = \[[^\]]*\];/,
+        `export const APP_TAGS = ${tagsString};`
+      );
+      
+      // Update APP_BUTTON_TEXT
+      constantsContent = constantsContent.replace(
+        /export const APP_BUTTON_TEXT = ['"`][^'"`]*['"`];/,
+        `export const APP_BUTTON_TEXT = '${answers.buttonText}';`
+      );
+      
+      // Update USE_WALLET
+      constantsContent = constantsContent.replace(
+        /export const USE_WALLET = (true|false);/,
+        `export const USE_WALLET = ${answers.useWallet};`
+      );
+      
+      fs.writeFileSync(constantsPath, constantsContent);
+      console.log('Updated constants.ts with user configuration');
+    } else {
+      console.log('⚠️  constants.ts not found, skipping constants update');
+    }
 
     fs.appendFileSync(envPath, `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`);
     if (useNeynar && neynarApiKey && neynarClientId) {
