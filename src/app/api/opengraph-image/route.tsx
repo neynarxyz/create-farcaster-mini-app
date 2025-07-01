@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   return new ImageResponse(
     (
-      <div tw="flex h-full w-full flex-col justify-center items-center relative bg-purple-600">
+      <div tw="flex h-full w-full flex-col justify-center items-center relative bg-primary">
         {user?.pfp_url && (
           <div tw="flex w-96 h-96 rounded-full overflow-hidden mb-8 border-8 border-white">
             <img src={user.pfp_url} alt="Profile" tw="w-full h-full object-cover" />

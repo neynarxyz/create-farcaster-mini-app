@@ -1,14 +1,92 @@
+/**
+ * Application constants and configuration values.
+ * 
+ * This file contains all the configuration constants used throughout the mini app.
+ * These values are either sourced from environment variables or hardcoded and provide
+ * configuration for the app's appearance, behavior, and integration settings.
+ */
+
+// --- App Configuration ---
+/**
+ * The base URL of the application.
+ * Used for generating absolute URLs for assets and API endpoints.
+ */
 export const APP_URL = process.env.NEXT_PUBLIC_URL!;
-export const APP_NAME = process.env.NEXT_PUBLIC_MINI_APP_NAME;
-export const APP_DESCRIPTION = process.env.NEXT_PUBLIC_MINI_APP_DESCRIPTION;
-export const APP_PRIMARY_CATEGORY = process.env.NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY;
-export const APP_TAGS = process.env.NEXT_PUBLIC_MINI_APP_TAGS?.split(',');
+
+/**
+ * The name of the mini app as displayed to users.
+ * Used in titles, headers, and app store listings.
+ */
+export const APP_NAME = 'Starter Kit';
+
+/**
+ * A brief description of the mini app's functionality.
+ * Used in app store listings and metadata.
+ */
+export const APP_DESCRIPTION = 'A demo of the Neynar Starter Kit';
+
+/**
+ * The primary category for the mini app.
+ * Used for app store categorization and discovery.
+ */
+export const APP_PRIMARY_CATEGORY = 'developer-tools';
+
+/**
+ * Tags associated with the mini app.
+ * Used for search and discovery in app stores.
+ * Parsed from comma-separated environment variable.
+ */
+export const APP_TAGS = ['neynar', 'starter-kit', 'demo'];
+
+// --- Asset URLs ---
+/**
+ * URL for the app's icon image.
+ * Used in app store listings and UI elements.
+ */
 export const APP_ICON_URL = `${APP_URL}/icon.png`;
+
+/**
+ * URL for the app's Open Graph image.
+ * Used for social media sharing and previews.
+ */
 export const APP_OG_IMAGE_URL = `${APP_URL}/api/opengraph-image`;
+
+/**
+ * URL for the app's splash screen image.
+ * Displayed during app loading.
+ */
 export const APP_SPLASH_URL = `${APP_URL}/splash.png`;
+
+/**
+ * Background color for the splash screen.
+ * Used as fallback when splash image is loading.
+ */
 export const APP_SPLASH_BACKGROUND_COLOR = "#f7f7f7";
-export const APP_BUTTON_TEXT = process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT;
+
+// --- UI Configuration ---
+/**
+ * Text displayed on the main action button.
+ * Used for the primary call-to-action in the mini app.
+ */
+export const APP_BUTTON_TEXT = 'Launch NSK';
+
+// --- Integration Configuration ---
+/**
+ * Webhook URL for receiving events from Neynar.
+ * 
+ * If Neynar API key and client ID are configured, uses the official
+ * Neynar webhook endpoint. Otherwise, falls back to a local webhook
+ * endpoint for development and testing.
+ */
 export const APP_WEBHOOK_URL = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
     ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
     : `${APP_URL}/api/webhook`;
-export const USE_WALLET = process.env.NEXT_PUBLIC_USE_WALLET === 'true';
+
+/**
+ * Flag to enable/disable wallet functionality.
+ * 
+ * When true, wallet-related components and features are rendered.
+ * When false, wallet functionality is completely hidden from the UI.
+ * Useful for mini apps that don't require wallet integration.
+ */
+export const USE_WALLET = true;
