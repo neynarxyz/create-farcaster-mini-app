@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState, useEffect } from "react";
-import { useAccount, useSendTransaction, useSignTypedData, useWaitForTransactionReceipt, useDisconnect, useConnect, useSwitchChain, useChainId } from "wagmi";
+import { useAccount, useSendTransaction, useSignTypedData, useWaitForTransactionReceipt, useDisconnect, useConnect, useSwitchChain, useChainId, type Connector } from "wagmi";
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { base, degen, mainnet, optimism, unichain } from "wagmi/chains";
 import { Button } from "../Button";
@@ -61,10 +61,13 @@ function WalletStatus({ address, chainId }: WalletStatusProps) {
 
 interface ConnectionControlsProps {
   isConnected: boolean;
-  context: any;
-  connect: any;
-  connectors: readonly any[];
-  disconnect: any;
+  context: {
+    user?: { fid?: number };
+    client?: unknown;
+  } | null;
+  connect: (args: { connector: Connector }) => void;
+  connectors: readonly Connector[];
+  disconnect: () => void;
 }
 
 /**
