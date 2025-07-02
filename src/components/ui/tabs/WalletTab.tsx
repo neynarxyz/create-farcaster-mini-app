@@ -158,19 +158,6 @@ export function WalletTab() {
 
   // --- Effects ---
   /**
-   * Debug logging for wallet auto-connection and state changes.
-   * Logs context, connection status, address, and available connectors.
-   */
-  useEffect(() => {
-    console.log("WalletTab Debug Info:");
-    console.log("- context:", context);
-    console.log("- isConnected:", isConnected);
-    console.log("- address:", address);
-    console.log("- connectors:", connectors);
-    console.log("- context?.user:", context?.user);
-  }, [context, isConnected, address, connectors]);
-
-  /**
    * Auto-connect when Farcaster context is available.
    * 
    * This effect detects when the app is running in a Farcaster client

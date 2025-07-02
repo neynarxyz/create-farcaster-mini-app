@@ -90,3 +90,12 @@ export const APP_WEBHOOK_URL = process.env.NEYNAR_API_KEY && process.env.NEYNAR_
  * Useful for mini apps that don't require wallet integration.
  */
 export const USE_WALLET = true;
+
+/**
+ * Flag to enable/disable analytics tracking.
+ * 
+ * When true, usage analytics are collected and sent to Neynar.
+ * When false, analytics collection is disabled.
+ * Useful for privacy-conscious users or development environments.
+ */
+export const ANALYTICS_ENABLED = true;

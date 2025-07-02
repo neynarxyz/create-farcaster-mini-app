@@ -453,47 +453,81 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
     if (fs.existsSync(constantsPath)) {
       let constantsContent = fs.readFileSync(constantsPath, 'utf8');
       
+      // Helper function to escape single quotes in strings
+      const escapeString = (str) => str.replace(/'/g, "\\'");
+      
+      // Helper function to safely replace constants with validation
+      const safeReplace = (content, pattern, replacement, constantName) => {
+        const newContent = content.replace(pattern, replacement);
+        if (newContent === content) {
+          console.log(`⚠️  Warning: Could not update ${constantName} in constants.ts`);
+        }
+        return newContent;
+      };
+      
       // Update APP_NAME
-      constantsContent = constantsContent.replace(
-        /export const APP_NAME = ['"`][^'"`]*['"`];/,
-        `export const APP_NAME = '${answers.projectName}';`
+      constantsContent = safeReplace(
+        constantsContent,
+        /export const APP_NAME\s*=\s*['"`][^'"`]*['"`];/,
+        `export const APP_NAME = '${escapeString(answers.projectName)}';`,
+        'APP_NAME'
       );
       
       // Update APP_DESCRIPTION
-      constantsContent = constantsContent.replace(
-        /export const APP_DESCRIPTION = ['"`][^'"`]*['"`];/,
-        `export const APP_DESCRIPTION = '${answers.description}';`
+      constantsContent = safeReplace(
+        constantsContent,
+        /export const APP_DESCRIPTION\s*=\s*['"`][^'"`]*['"`];/,
+        `export const APP_DESCRIPTION = '${escapeString(answers.description)}';`,
+        'APP_DESCRIPTION'
       );
       
       // Update APP_PRIMARY_CATEGORY
       if (answers.primaryCategory) {
-        constantsContent = constantsContent.replace(
-          /export const APP_PRIMARY_CATEGORY = ['"`][^'"`]*['"`];/,
-          `export const APP_PRIMARY_CATEGORY = '${answers.primaryCategory}';`
+        constantsContent = safeReplace(
+          constantsContent,
+          /export const APP_PRIMARY_CATEGORY\s*=\s*['"`][^'"`]*['"`];/,
+          `export const APP_PRIMARY_CATEGORY = '${escapeString(answers.primaryCategory)}';`,
+          'APP_PRIMARY_CATEGORY'
         );
       }
       
       // Update APP_TAGS
-      const tagsString = answers.tags.length > 0 ? `['${answers.tags.join("', '")}']` : "['neynar', 'starter-kit', 'demo']";
-      constantsContent = constantsContent.replace(
-        /export const APP_TAGS = \[[^\]]*\];/,
-        `export const APP_TAGS = ${tagsString};`
+      const tagsString = answers.tags.length > 0 
+        ? `['${answers.tags.map(tag => escapeString(tag)).join("', '")}']` 
+        : "['neynar', 'starter-kit', 'demo']";
+      constantsContent = safeReplace(
+        constantsContent,
+        /export const APP_TAGS\s*=\s*\[[^\]]*\];/,
+        `export const APP_TAGS = ${tagsString};`,
+        'APP_TAGS'
       );
       
       // Update APP_BUTTON_TEXT
-      constantsContent = constantsContent.replace(
-        /export const APP_BUTTON_TEXT = ['"`][^'"`]*['"`];/,
-        `export const APP_BUTTON_TEXT = '${answers.buttonText}';`
+      constantsContent = safeReplace(
+        constantsContent,
+        /export const APP_BUTTON_TEXT\s*=\s*['"`][^'"`]*['"`];/,
+        `export const APP_BUTTON_TEXT = '${escapeString(answers.buttonText)}';`,
+        'APP_BUTTON_TEXT'
       );
       
       // Update USE_WALLET
-      constantsContent = constantsContent.replace(
-        /export const USE_WALLET = (true|false);/,
-        `export const USE_WALLET = ${answers.useWallet};`
+      constantsContent = safeReplace(
+        constantsContent,
+        /export const USE_WALLET\s*=\s*(true|false);/,
+        `export const USE_WALLET = ${answers.useWallet};`,
+        'USE_WALLET'
+      );
+      
+      // Update ANALYTICS_ENABLED
+      constantsContent = safeReplace(
+        constantsContent,
+        /export const ANALYTICS_ENABLED\s*=\s*(true|false);/,
+        `export const ANALYTICS_ENABLED = ${answers.enableAnalytics};`,
+        'ANALYTICS_ENABLED'
       );
       
       fs.writeFileSync(constantsPath, constantsContent);
-      console.log('Updated constants.ts with user configuration');
+      console.log('✅ Updated constants.ts with user configuration');
     } else {
       console.log('⚠️  constants.ts not found, skipping constants update');
     }
