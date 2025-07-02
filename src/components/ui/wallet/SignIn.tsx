@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useCallback, useState } from "react";
-import { signIn, signOut, getCsrfToken } from "next-auth/react";
-import sdk, { SignIn as SignInCore } from "@farcaster/frame-sdk";
-import { useSession } from "next-auth/react";
-import { Button } from "../Button";
+import { useCallback, useState } from 'react';
+import { signIn, signOut, getCsrfToken } from 'next-auth/react';
+import sdk, { SignIn as SignInCore } from '@farcaster/frame-sdk';
+import { useSession } from 'next-auth/react';
+import { Button } from '../Button';
 
 /**
  * SignIn component handles Farcaster authentication using Sign-In with Farcaster (SIWF).
@@ -55,7 +55,7 @@ export function SignIn() {
    */
   const getNonce = useCallback(async () => {
     const nonce = await getCsrfToken();
-    if (!nonce) throw new Error("Unable to generate nonce");
+    if (!nonce) throw new Error('Unable to generate nonce');
     return nonce;
   }, []);
 
@@ -77,17 +77,17 @@ export function SignIn() {
       const nonce = await getNonce();
       const result = await sdk.actions.signIn({ nonce });
       setSignInResult(result);
-      await signIn("credentials", {
+      await signIn('credentials', {
         message: result.message,
         signature: result.signature,
         redirect: false,
       });
     } catch (e) {
       if (e instanceof SignInCore.RejectedByUser) {
-        setSignInFailure("Rejected by user");
+        setSignInFailure('Rejected by user');
         return;
       }
-      setSignInFailure("Unknown error");
+      setSignInFailure('Unknown error');
     } finally {
       setAuthState((prev) => ({ ...prev, signingIn: false }));
     }
@@ -115,12 +115,12 @@ export function SignIn() {
   return (
     <>
       {/* Authentication Buttons */}
-      {status !== "authenticated" && (
+      {status !== 'authenticated' && (
         <Button onClick={handleSignIn} disabled={authState.signingIn}>
           Sign In with Farcaster
         </Button>
       )}
-      {status === "authenticated" && (
+      {status === 'authenticated' && (
         <Button onClick={handleSignOut} disabled={authState.signingOut}>
           Sign out
         </Button>
