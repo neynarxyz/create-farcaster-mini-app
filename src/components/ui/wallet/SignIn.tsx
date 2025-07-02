@@ -128,7 +128,7 @@ export function SignIn() {
 
       {/* Session Information */}
       {session && (
-        <div className='my-2 p-2 text-xs overflow-x-scroll bg-secondary rounded-lg font-mono border border-primary-100'>
+        <div className='my-2 p-2 text-xs overflow-x-scroll rounded-lg font-mono border border-secondary-100'>
           <div className='font-semibold text-gray-500 mb-1'>Session</div>
           <div className='whitespace-pre'>
             {JSON.stringify(session, null, 2)}
@@ -138,7 +138,7 @@ export function SignIn() {
 
       {/* Error Display */}
       {signInFailure && !authState.signingIn && (
-        <div className='my-2 p-2 text-xs overflow-x-scroll bg-secondary rounded-lg font-mono border border-primary-100'>
+        <div className='my-2 p-2 text-xs overflow-x-scroll rounded-lg font-mono border border-secondary-100'>
           <div className='font-semibold text-gray-500 mb-1'>SIWF Result</div>
           <div className='whitespace-pre'>{signInFailure}</div>
         </div>
@@ -146,7 +146,7 @@ export function SignIn() {
 
       {/* Success Result Display */}
       {signInResult && !authState.signingIn && (
-        <div className='my-2 p-2 text-xs overflow-x-scroll bg-secondary rounded-lg font-mono border border-primary-100'>
+        <div className='my-2 p-2 text-xs overflow-x-scroll rounded-lg font-mono border border-secondary-100'>
           <div className='font-semibold text-gray-500 mb-1'>SIWF Result</div>
           <div className='whitespace-pre'>
             {JSON.stringify(signInResult, null, 2)}
