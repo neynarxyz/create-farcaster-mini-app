@@ -8,17 +8,17 @@ import { Button } from "../Button";
 
 /**
  * SignIn component handles Farcaster authentication using Sign-In with Farcaster (SIWF).
- * 
+ *
  * This component provides a complete authentication flow for Farcaster users:
  * - Generates nonces for secure authentication
  * - Handles the SIWF flow using the Farcaster SDK
  * - Manages NextAuth session state
  * - Provides sign-out functionality
  * - Displays authentication status and results
- * 
+ *
  * The component integrates with both the Farcaster Frame SDK and NextAuth
  * to provide seamless authentication within mini apps.
- * 
+ *
  * @example
  * ```tsx
  * <SignIn />
@@ -45,11 +45,11 @@ export function SignIn() {
   // --- Handlers ---
   /**
    * Generates a nonce for the sign-in process.
-   * 
+   *
    * This function retrieves a CSRF token from NextAuth to use as a nonce
    * for the SIWF authentication flow. The nonce ensures the authentication
    * request is fresh and prevents replay attacks.
-   * 
+   *
    * @returns Promise<string> - The generated nonce token
    * @throws Error if unable to generate nonce
    */
@@ -61,13 +61,13 @@ export function SignIn() {
 
   /**
    * Handles the sign-in process using Farcaster SDK.
-   * 
+   *
    * This function orchestrates the complete SIWF flow:
    * 1. Generates a nonce for security
    * 2. Calls the Farcaster SDK to initiate sign-in
    * 3. Submits the result to NextAuth for session management
    * 4. Handles various error conditions including user rejection
-   * 
+   *
    * @returns Promise<void>
    */
   const handleSignIn = useCallback(async () => {
@@ -95,10 +95,10 @@ export function SignIn() {
 
   /**
    * Handles the sign-out process.
-   * 
+   *
    * This function clears the NextAuth session and resets the local
    * sign-in result state to complete the sign-out flow.
-   * 
+   *
    * @returns Promise<void>
    */
   const handleSignOut = useCallback(async () => {
@@ -128,9 +128,9 @@ export function SignIn() {
 
       {/* Session Information */}
       {session && (
-        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 mb-1">Session</div>
-          <div className="whitespace-pre">
+        <div className='my-2 p-2 text-xs overflow-x-scroll bg-secondary rounded-lg font-mono border border-primary-100'>
+          <div className='font-semibold text-gray-500 mb-1'>Session</div>
+          <div className='whitespace-pre'>
             {JSON.stringify(session, null, 2)}
           </div>
         </div>
@@ -138,21 +138,21 @@ export function SignIn() {
 
       {/* Error Display */}
       {signInFailure && !authState.signingIn && (
-        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
-          <div className="whitespace-pre">{signInFailure}</div>
+        <div className='my-2 p-2 text-xs overflow-x-scroll bg-secondary rounded-lg font-mono border border-primary-100'>
+          <div className='font-semibold text-gray-500 mb-1'>SIWF Result</div>
+          <div className='whitespace-pre'>{signInFailure}</div>
         </div>
       )}
 
       {/* Success Result Display */}
       {signInResult && !authState.signingIn && (
-        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
-          <div className="whitespace-pre">
+        <div className='my-2 p-2 text-xs overflow-x-scroll bg-secondary rounded-lg font-mono border border-primary-100'>
+          <div className='font-semibold text-gray-500 mb-1'>SIWF Result</div>
+          <div className='whitespace-pre'>
             {JSON.stringify(signInResult, null, 2)}
           </div>
         </div>
       )}
     </>
   );
-} 
+}
