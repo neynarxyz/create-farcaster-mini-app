@@ -541,7 +541,6 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
       );
       
       fs.writeFileSync(constantsPath, constantsContent);
-      console.log('✅ Updated constants.ts with user configuration');
     } else {
       console.log('⚠️  constants.ts not found, skipping constants update');
     }
@@ -556,7 +555,6 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
     
     fs.unlinkSync(envExamplePath);
-    console.log('\nCreated .env.local file from .env.example');
   } else {
     console.log('\n.env.example does not exist, skipping copy and remove operations');
   }
