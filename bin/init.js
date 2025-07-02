@@ -458,17 +458,33 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
       
       // Helper function to safely replace constants with validation
       const safeReplace = (content, pattern, replacement, constantName) => {
-        const newContent = content.replace(pattern, replacement);
-        if (newContent === content) {
-          console.log(`⚠️  Warning: Could not update ${constantName} in constants.ts`);
+        const match = content.match(pattern);
+        if (!match) {
+          console.log(`⚠️  Warning: Could not update ${constantName} in constants.ts. Pattern not found.`);
+          console.log(`Pattern: ${pattern}`);
+          console.log(`Expected to match in: ${content.split('\n').find(line => line.includes(constantName)) || 'Not found'}`);
+        } else {
+          const newContent = content.replace(pattern, replacement);
+          return newContent;
         }
-        return newContent;
+        return content;
+      };
+      
+      // Regex patterns that match whole lines with export const
+      const patterns = {
+        APP_NAME: /^export const APP_NAME\s*=\s*['"`][^'"`]*['"`];$/m,
+        APP_DESCRIPTION: /^export const APP_DESCRIPTION\s*=\s*['"`][^'"`]*['"`];$/m,
+        APP_PRIMARY_CATEGORY: /^export const APP_PRIMARY_CATEGORY\s*=\s*['"`][^'"`]*['"`];$/m,
+        APP_TAGS: /^export const APP_TAGS\s*=\s*\[[^\]]*\];$/m,
+        APP_BUTTON_TEXT: /^export const APP_BUTTON_TEXT\s*=\s*['"`][^'"`]*['"`];$/m,
+        USE_WALLET: /^export const USE_WALLET\s*=\s*(true|false);$/m,
+        ANALYTICS_ENABLED: /^export const ANALYTICS_ENABLED\s*=\s*(true|false);$/m
       };
       
       // Update APP_NAME
       constantsContent = safeReplace(
         constantsContent,
-        /export const APP_NAME\s*=\s*['"`][^'"`]*['"`];/,
+        patterns.APP_NAME,
         `export const APP_NAME = '${escapeString(answers.projectName)}';`,
         'APP_NAME'
       );
@@ -476,20 +492,18 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
       // Update APP_DESCRIPTION
       constantsContent = safeReplace(
         constantsContent,
-        /export const APP_DESCRIPTION\s*=\s*['"`][^'"`]*['"`];/,
+        patterns.APP_DESCRIPTION,
         `export const APP_DESCRIPTION = '${escapeString(answers.description)}';`,
         'APP_DESCRIPTION'
       );
       
-      // Update APP_PRIMARY_CATEGORY
-      if (answers.primaryCategory) {
-        constantsContent = safeReplace(
-          constantsContent,
-          /export const APP_PRIMARY_CATEGORY\s*=\s*['"`][^'"`]*['"`];/,
-          `export const APP_PRIMARY_CATEGORY = '${escapeString(answers.primaryCategory)}';`,
-          'APP_PRIMARY_CATEGORY'
-        );
-      }
+      // Update APP_PRIMARY_CATEGORY (always update, null becomes empty string)
+      constantsContent = safeReplace(
+        constantsContent,
+        patterns.APP_PRIMARY_CATEGORY,
+        `export const APP_PRIMARY_CATEGORY = '${escapeString(answers.primaryCategory || '')}';`,
+        'APP_PRIMARY_CATEGORY'
+      );
       
       // Update APP_TAGS
       const tagsString = answers.tags.length > 0 
@@ -497,23 +511,23 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         : "['neynar', 'starter-kit', 'demo']";
       constantsContent = safeReplace(
         constantsContent,
-        /export const APP_TAGS\s*=\s*\[[^\]]*\];/,
+        patterns.APP_TAGS,
         `export const APP_TAGS = ${tagsString};`,
         'APP_TAGS'
       );
       
-      // Update APP_BUTTON_TEXT
+      // Update APP_BUTTON_TEXT (always update, use answers value)
       constantsContent = safeReplace(
         constantsContent,
-        /export const APP_BUTTON_TEXT\s*=\s*['"`][^'"`]*['"`];/,
-        `export const APP_BUTTON_TEXT = '${escapeString(answers.buttonText)}';`,
+        patterns.APP_BUTTON_TEXT,
+        `export const APP_BUTTON_TEXT = '${escapeString(answers.buttonText || '')}';`,
         'APP_BUTTON_TEXT'
       );
       
       // Update USE_WALLET
       constantsContent = safeReplace(
         constantsContent,
-        /export const USE_WALLET\s*=\s*(true|false);/,
+        patterns.USE_WALLET,
         `export const USE_WALLET = ${answers.useWallet};`,
         'USE_WALLET'
       );
@@ -521,7 +535,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
       // Update ANALYTICS_ENABLED
       constantsContent = safeReplace(
         constantsContent,
-        /export const ANALYTICS_ENABLED\s*=\s*(true|false);/,
+        patterns.ANALYTICS_ENABLED,
         `export const ANALYTICS_ENABLED = ${answers.enableAnalytics};`,
         'ANALYTICS_ENABLED'
       );

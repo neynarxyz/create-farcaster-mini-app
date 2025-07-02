@@ -4,6 +4,9 @@
  * This file contains all the configuration constants used throughout the mini app.
  * These values are either sourced from environment variables or hardcoded and provide
  * configuration for the app's appearance, behavior, and integration settings.
+ * 
+ * NOTE: This file is automatically updated by the init script.
+ * Manual changes may be overwritten during project initialization.
  */
 
 // --- App Configuration ---
@@ -34,7 +37,6 @@ export const APP_PRIMARY_CATEGORY = 'developer-tools';
 /**
  * Tags associated with the mini app.
  * Used for search and discovery in app stores.
- * Parsed from comma-separated environment variable.
  */
 export const APP_TAGS = ['neynar', 'starter-kit', 'demo'];
 
