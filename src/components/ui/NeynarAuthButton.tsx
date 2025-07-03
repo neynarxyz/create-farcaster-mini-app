@@ -473,13 +473,6 @@ export function NeynarAuthButton() {
               <span>Initializing...</span>
             </>
           ) : (
-            /* The above code is a conditional rendering block in a TypeScript React component. It checks
-          if the environment variable `NODE_ENV` is set to "development", and if so, it renders a
-          debug info section displaying various boolean values related to the application state.
-          This debug info includes values such as `authenticated`, `isSuccess`, `validSignature`,
-          `hasData`, `isPolling`, `isError`, `hasStoredAuth`, `hasUrl`, and `hasChannelToken`. These
-          values are displayed in a formatted JSON string within a `<pre>` element for easy
-          readability during development. */
             <>
               <span>Sign in with Neynar</span>
             </>
