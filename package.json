@@ -1,6 +1,6 @@
 {
   "name": "@neynar/create-farcaster-mini-app",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "type": "module",
   "private": false,
   "access": "public",
@@ -37,7 +37,7 @@
     "lint": "next lint",
     "deploy:vercel": "node scripts/deploy.js",
     "deploy:raw": "vercel --prod",
-    "cleanup": "lsof -ti :3000 | xargs kill -9"
+    "cleanup": "node scripts/cleanup.js"
   },
   "bin": {
     "@neynar/create-farcaster-mini-app": "./bin/index.js"
