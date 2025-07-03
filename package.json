@@ -45,6 +45,7 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "inquirer": "^12.4.3",
+    "siwe": "^3.0.0",
     "viem": "^2.23.6"
   },
   "devDependencies": {
