@@ -1,39 +1,42 @@
 import { NextResponse } from 'next/server';
 import { getNeynarClient } from '~/lib/neynar';
 
+export async function POST() {
+  try {
+    const neynarClient = getNeynarClient();
+    const signer = await neynarClient.createSigner();
+    return NextResponse.json(signer);
+  } catch (error) {
+    console.error('Error fetching signer:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch signer' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const message = searchParams.get('message');
-  const signature = searchParams.get('signature');
+  const signerUuid = searchParams.get('signerUuid');
 
-  if (!message) {
+  if (!signerUuid) {
     return NextResponse.json(
-      { error: 'Message parameter is required' },
+      { error: 'signerUuid is required' },
       { status: 400 }
     );
   }
-
-  if (!signature) {
-    return NextResponse.json(
-      { error: 'Signature parameter is required' },
-      { status: 400 }
-    );
-  }
-
-  const client = getNeynarClient();
-
-  let signers;
 
   try {
-    const data = await client.fetchSigners({ message, signature });
-    signers = data.signers;
+    const neynarClient = getNeynarClient();
+    const signer = await neynarClient.lookupSigner({
+      signerUuid,
+    });
+    return NextResponse.json(signer);
   } catch (error) {
-    console.error('Error fetching signers:', error?.response?.data);
-    throw new Error('Failed to fetch signers');
+    console.error('Error fetching signed key:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch signed key' },
+      { status: 500 }
+    );
   }
-  console.log('signers =>', signers);
-
-  return NextResponse.json({
-    signers,
-  });
 }
