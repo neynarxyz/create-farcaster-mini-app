@@ -456,7 +456,7 @@ export function NeynarAuthButton() {
   // Helper function to create a signer
   const createSigner = useCallback(async () => {
     try {
-      console.log('🔧 Creating new signer...');
+      // console.log('🔧 Creating new signer...');
 
       const response = await fetch('/api/auth/signer', {
         method: 'POST',
@@ -467,11 +467,11 @@ export function NeynarAuthButton() {
       }
 
       const signerData = await response.json();
-      console.log('✅ Signer created:', signerData);
+      // console.log('✅ Signer created:', signerData);
 
       return signerData;
     } catch (error) {
-      console.error('❌ Error creating signer:', error);
+      //  console.error('❌ Error creating signer:', error);
       throw error;
     }
   }, []);
@@ -480,7 +480,7 @@ export function NeynarAuthButton() {
   const generateSignedKeyRequest = useCallback(
     async (signerUuid: string, publicKey: string) => {
       try {
-        console.log('🔑 Generating signed key request...');
+        // console.log('🔑 Generating signed key request...');
 
         // Prepare request body
         const requestBody: {
@@ -508,7 +508,7 @@ export function NeynarAuthButton() {
         }
 
         const data = await response.json();
-        console.log('✅ Signed key request generated:', data);
+        // console.log('✅ Signed key request generated:', data);
 
         return data;
       } catch (error) {
@@ -523,7 +523,7 @@ export function NeynarAuthButton() {
   const fetchAllSigners = useCallback(
     async (message: string, signature: string) => {
       try {
-        console.log('� Fetching all signers...');
+        // console.log('� Fetching all signers...');
         setSignersLoading(true);
 
         const response = await fetch(
@@ -533,10 +533,10 @@ export function NeynarAuthButton() {
         );
 
         const signerData = await response.json();
-        console.log('� Signer response:', signerData);
+        // console.log('� Signer response:', signerData);
 
         if (response.ok) {
-          console.log('✅ Signers fetched successfully:', signerData.signers);
+          // console.log('✅ Signers fetched successfully:', signerData.signers);
 
           // Store signers in localStorage
           const updatedState = updateSignersInAuthState(
@@ -564,7 +564,7 @@ export function NeynarAuthButton() {
   // Helper function to poll signer status
   const startPolling = useCallback(
     (signerUuid: string, message: string, signature: string) => {
-      console.log('� Starting polling for signer:', signerUuid);
+      // console.log('� Starting polling for signer:', signerUuid);
 
       const interval = setInterval(async () => {
         try {
@@ -577,10 +577,10 @@ export function NeynarAuthButton() {
           }
 
           const signerData = await response.json();
-          console.log('� Signer status:', signerData.status);
+          // console.log('� Signer status:', signerData.status);
 
           if (signerData.status === 'approved') {
-            console.log('🎉 Signer approved!');
+            // console.log('🎉 Signer approved!');
             clearInterval(interval);
             setPollingInterval(null);
             setShowDialog(false);
@@ -634,14 +634,14 @@ export function NeynarAuthButton() {
     if (stored && stored.isAuthenticated) {
       setStoredAuth(stored);
       if (stored.signers && stored.signers.length > 0) {
-        console.log('📂 Loaded stored signers:', stored.signers);
+        // console.log('📂 Loaded stored signers:', stored.signers);
       }
     }
   }, []);
 
   // Success callback - this is critical!
   const onSuccessCallback = useCallback((res: unknown) => {
-    console.log('🎉 Sign in successful!', res);
+    // console.log('🎉 Sign in successful!', res);
     const authState: StoredAuthState = {
       isAuthenticated: true,
       userData: res as StoredAuthState['userData'],
@@ -652,11 +652,6 @@ export function NeynarAuthButton() {
     // setShowDialog(false);
   }, []);
 
-  // Status response callback
-  const onStatusCallback = useCallback((statusData: unknown) => {
-    console.log('📊 Status response:', statusData);
-  }, []);
-
   // Error callback
   const onErrorCallback = useCallback((error?: Error | null) => {
     console.error('❌ Sign in error:', error);
@@ -665,7 +660,6 @@ export function NeynarAuthButton() {
   const signInState = useSignIn({
     nonce: nonce || undefined,
     onSuccess: onSuccessCallback,
-    onStatusResponse: onStatusCallback,
     onError: onErrorCallback,
   });
 
@@ -687,30 +681,30 @@ export function NeynarAuthButton() {
   // Connect when component mounts and we have a nonce
   useEffect(() => {
     if (nonce && !channelToken) {
-      console.log('🔌 Connecting with nonce:', nonce);
+      // console.log('🔌 Connecting with nonce:', nonce);
       connect();
     }
   }, [nonce, channelToken, connect]);
 
   // Debug logging
-  useEffect(() => {
-    console.log('🔍 Auth state:', {
-      isSuccess,
-      validSignature,
-      hasData: !!data,
-      isPolling,
-      isError,
-      storedAuth: !!storedAuth?.isAuthenticated,
-    });
-  }, [isSuccess, validSignature, data, isPolling, isError, storedAuth]);
+  // useEffect(() => {
+  //   console.log('🔍 Auth state:', {
+  //     isSuccess,
+  //     validSignature,
+  //     hasData: !!data,
+  //     isPolling,
+  //     isError,
+  //     storedAuth: !!storedAuth?.isAuthenticated,
+  //   });
+  // }, [isSuccess, validSignature, data, isPolling, isError, storedAuth]);
 
   // Handle fetching signers after successful authentication
   useEffect(() => {
     if (data?.message && data?.signature) {
-      console.log('📝 Got message and signature:', {
-        message: data.message,
-        signature: data.signature,
-      });
+      // console.log('📝 Got message and signature:', {
+      //   message: data.message,
+      //   signature: data.signature,
+      // });
       const handleSignerFlow = async () => {
         try {
           // Ensure we have message and signature
@@ -728,7 +722,7 @@ export function NeynarAuthButton() {
 
           // Check if no signers exist
           if (!signers || signers.length === 0) {
-            console.log('� No signers found, creating new signer...');
+            // console.log('� No signers found, creating new signer...');
 
             // Step 1: Create a signer
             const newSigner = await createSigner();
@@ -750,7 +744,7 @@ export function NeynarAuthButton() {
             }
           } else {
             // If signers exist, close the dialog
-            console.log('✅ Signers already exist, closing dialog');
+            // console.log('✅ Signers already exist, closing dialog');
             setSignersLoading(false);
             setShowDialog(false);
             setDialogStep('signin');
@@ -775,9 +769,9 @@ export function NeynarAuthButton() {
   ]);
 
   const handleSignIn = useCallback(() => {
-    console.log('🚀 Starting sign in flow...');
+    // console.log('🚀 Starting sign in flow...');
     if (isError) {
-      console.log('🔄 Reconnecting due to error...');
+      // console.log('🔄 Reconnecting due to error...');
       reconnect();
     }
     setDialogStep('signin');
@@ -786,13 +780,13 @@ export function NeynarAuthButton() {
 
     // Open mobile app if on mobile and URL is available
     if (url && isMobile()) {
-      console.log('📱 Opening mobile app:', url);
+      // console.log('📱 Opening mobile app:', url);
       window.open(url, '_blank');
     }
   }, [isError, reconnect, signIn, url]);
 
   const handleSignOut = useCallback(() => {
-    console.log('👋 Signing out...');
+    // console.log('👋 Signing out...');
     setShowDialog(false);
     signOut();
     clearAuthState();
