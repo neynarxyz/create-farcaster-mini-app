@@ -65,7 +65,7 @@ async function loadEnvLocal() {
         let newEnvContent = envContent;
         
         for (const [key, value] of Object.entries(localEnv)) {
-          if (key !== 'SEED_PHRASE') {
+          if (key !== 'SEED_PHRASE' && key !== 'SPONSOR_SIGNER') {
             // Update process.env
             process.env[key] = value;
             // Add to .env content if not already there
@@ -86,6 +86,9 @@ async function loadEnvLocal() {
       const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
       if (localEnv.SEED_PHRASE) {
         process.env.SEED_PHRASE = localEnv.SEED_PHRASE;
+      }
+      if (localEnv.SPONSOR_SIGNER) {
+        process.env.SPONSOR_SIGNER = localEnv.SPONSOR_SIGNER;
       }
     }
   } catch (error) {
@@ -370,6 +373,8 @@ async function main() {
         [`NEYNAR_API_KEY="${process.env.NEYNAR_API_KEY}"`] : []),
       ...(neynarClientId ? 
         [`NEYNAR_CLIENT_ID="${neynarClientId}"`] : []),
+      ...(process.env.SPONSOR_SIGNER ? 
+        [`SPONSOR_SIGNER="${process.env.SPONSOR_SIGNER}"`] : []),
 
       // FID (if it exists in current env)
       ...(process.env.FID ? [`FID="${process.env.FID}"`] : []),

@@ -115,6 +115,7 @@ async function loadEnvLocal() {
         
         const allowedVars = [
           'SEED_PHRASE',
+          'SPONSOR_SIGNER',
           'NEXT_PUBLIC_MINI_APP_NAME',
           'NEXT_PUBLIC_MINI_APP_DESCRIPTION',
           'NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY',
@@ -131,7 +132,7 @@ async function loadEnvLocal() {
         for (const [key, value] of Object.entries(localEnv)) {
           if (allowedVars.includes(key)) {
             process.env[key] = value;
-            if (key !== 'SEED_PHRASE' && !envContent.includes(`${key}=`)) {
+            if (key !== 'SEED_PHRASE' && key !== 'SPONSOR_SIGNER' && !envContent.includes(`${key}=`)) {
               newEnvContent += `${key}="${value}"\n`;
             }
           }
@@ -224,6 +225,35 @@ async function checkRequiredEnvVars() {
       } else {
         console.log('ℹ️  Seed phrase will only be used for this deployment');
       }
+
+      // Ask about sponsor signer if SEED_PHRASE is provided
+      if (!process.env.SPONSOR_SIGNER) {
+        const { sponsorSigner } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'sponsorSigner',
+            message:
+              'Do you want to sponsor the signer? (This will be used in Sign In With Neynar)\n' +
+              'Note: If you choose to sponsor the signer, Neynar will sponsor it for you and you will be charged in CUs.',
+            default: false,
+          },
+        ]);
+        
+        process.env.SPONSOR_SIGNER = sponsorSigner.toString();
+        
+        if (storeSeedPhrase) {
+          fs.appendFileSync('.env.local', `\nSPONSOR_SIGNER="${sponsorSigner}"`);
+          console.log('✅ Sponsor signer preference stored in .env.local');
+        }
+      }
+    }
+  }
+
+  // Load SPONSOR_SIGNER from .env.local if SEED_PHRASE exists but SPONSOR_SIGNER doesn't
+  if (process.env.SEED_PHRASE && !process.env.SPONSOR_SIGNER && fs.existsSync('.env.local')) {
+    const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
+    if (localEnv.SPONSOR_SIGNER) {
+      process.env.SPONSOR_SIGNER = localEnv.SPONSOR_SIGNER;
     }
   }
 }
@@ -585,6 +615,7 @@ async function deployToVercel(useGitHub = false) {
       
       ...(process.env.NEYNAR_API_KEY && { NEYNAR_API_KEY: process.env.NEYNAR_API_KEY }),
       ...(process.env.NEYNAR_CLIENT_ID && { NEYNAR_CLIENT_ID: process.env.NEYNAR_CLIENT_ID }),
+      ...(process.env.SPONSOR_SIGNER && { SPONSOR_SIGNER: process.env.SPONSOR_SIGNER }),
       ...(miniAppMetadata && { MINI_APP_METADATA: miniAppMetadata }),
       
       ...Object.fromEntries(

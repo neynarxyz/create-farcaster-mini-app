@@ -221,6 +221,8 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
       useWallet: true,
       useTunnel: true,
       enableAnalytics: true,
+      seedPhrase: null,
+      sponsorSigner: false,
     };
   } else {
     // If autoAcceptDefaults is false but we have a projectName, we still need to ask for other options
@@ -347,6 +349,34 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
       },
     ]);
     answers.enableAnalytics = analyticsAnswer.enableAnalytics;
+
+    // Ask about SEED_PHRASE
+    const seedPhraseAnswer = await inquirer.prompt([
+      {
+        type: 'password',
+        name: 'seedPhrase',
+        message:
+          '⚠️  If SEED_PHRASE is not provided, you will not be able to use Sign In With Neynar.\n\n' +
+          'Enter your SEED_PHRASE (or press enter to skip):',
+        default: null,
+      },
+    ]);
+    answers.seedPhrase = seedPhraseAnswer.seedPhrase;
+
+    // Ask about sponsor signer if SEED_PHRASE is provided
+    if (answers.seedPhrase) {
+      const sponsorSignerAnswer = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'sponsorSigner',
+          message:
+            'Do you want to sponsor the signer? (This will be used in Sign In With Neynar)\n' +
+            'Note: If you choose to sponsor the signer, Neynar will sponsor it for you and you will be charged in CUs.',
+          default: false,
+        },
+      ]);
+      answers.sponsorSigner = sponsorSignerAnswer.sponsorSigner;
+    }
   }
 
   const finalProjectName = answers.projectName;
@@ -597,6 +627,10 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
       console.log(
         '\n⚠️  Could not find a Neynar client ID and/or API key. Please configure Neynar manually in .env.local with NEYNAR_API_KEY and NEYNAR_CLIENT_ID'
       );
+    }
+    if (answers.seedPhrase) {
+      fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
+      fs.appendFileSync(envPath, `\nSPONSOR_SIGNER="${answers.sponsorSigner}"`);
     }
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
 
