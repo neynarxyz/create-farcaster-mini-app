@@ -1,18 +1,18 @@
 import {
   SendNotificationRequest,
   sendNotificationResponseSchema,
-} from "@farcaster/frame-sdk";
-import { getUserNotificationDetails } from "~/lib/kv";
-import { APP_URL } from "./constants";
+} from '@farcaster/frame-sdk';
+import { getUserNotificationDetails } from '~/lib/kv';
+import { APP_URL } from './constants';
 
 type SendMiniAppNotificationResult =
   | {
-      state: "error";
+      state: 'error';
       error: unknown;
     }
-  | { state: "no_token" }
-  | { state: "rate_limit" }
-  | { state: "success" };
+  | { state: 'no_token' }
+  | { state: 'rate_limit' }
+  | { state: 'success' };
 
 export async function sendMiniAppNotification({
   fid,
@@ -25,13 +25,13 @@ export async function sendMiniAppNotification({
 }): Promise<SendMiniAppNotificationResult> {
   const notificationDetails = await getUserNotificationDetails(fid);
   if (!notificationDetails) {
-    return { state: "no_token" };
+    return { state: 'no_token' };
   }
 
   const response = await fetch(notificationDetails.url, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       notificationId: crypto.randomUUID(),
@@ -48,17 +48,17 @@ export async function sendMiniAppNotification({
     const responseBody = sendNotificationResponseSchema.safeParse(responseJson);
     if (responseBody.success === false) {
       // Malformed response
-      return { state: "error", error: responseBody.error.errors };
+      return { state: 'error', error: responseBody.error.errors };
     }
 
     if (responseBody.data.result.rateLimitedTokens.length) {
       // Rate limited
-      return { state: "rate_limit" };
+      return { state: 'rate_limit' };
     }
 
-    return { state: "success" };
+    return { state: 'success' };
   } else {
     // Error response
-    return { state: "error", error: responseJson };
+    return { state: 'error', error: responseJson };
   }
 }

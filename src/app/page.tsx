@@ -1,7 +1,7 @@
-import { Metadata } from "next";
-import App from "./app";
-import { APP_NAME, APP_DESCRIPTION, APP_OG_IMAGE_URL } from "~/lib/constants";
-import { getMiniAppEmbedMetadata } from "~/lib/utils";
+import { Metadata } from 'next';
+import { APP_NAME, APP_DESCRIPTION, APP_OG_IMAGE_URL } from '~/lib/constants';
+import { getMiniAppEmbedMetadata } from '~/lib/utils';
+import App from './app';
 
 export const revalidate = 300;
 
@@ -14,11 +14,11 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [APP_OG_IMAGE_URL],
     },
     other: {
-      "fc:frame": JSON.stringify(getMiniAppEmbedMetadata()),
+      'fc:frame': JSON.stringify(getMiniAppEmbedMetadata()),
     },
   };
 }
 
 export default function Home() {
-  return (<App />);
+  return <App />;
 }

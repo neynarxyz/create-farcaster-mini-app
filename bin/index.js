@@ -25,7 +25,7 @@ if (autoAcceptDefaults && !projectName) {
   autoAcceptDefaults = false;
 }
 
-init(projectName, autoAcceptDefaults).catch((err) => {
+init(projectName, autoAcceptDefaults).catch(err => {
   console.error('Error:', err);
   process.exit(1);
 });

@@ -21,13 +21,13 @@ args.forEach((arg, index) => {
 
 try {
   console.log(`Checking for processes on port ${port}...`);
-  
+
   // Find processes using the port
   const pids = execSync(`lsof -ti :${port}`, { encoding: 'utf8' }).trim();
-  
+
   if (pids) {
     console.log(`Found processes: ${pids.replace(/\n/g, ', ')}`);
-    
+
     // Kill the processes
     execSync(`kill -9 ${pids.replace(/\n/g, ' ')}`);
     console.log(`✓ Processes on port ${port} have been terminated`);

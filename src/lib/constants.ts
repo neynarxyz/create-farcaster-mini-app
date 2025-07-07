@@ -1,10 +1,10 @@
 /**
  * Application constants and configuration values.
- * 
+ *
  * This file contains all the configuration constants used throughout the mini app.
  * These values are either sourced from environment variables or hardcoded and provide
  * configuration for the app's appearance, behavior, and integration settings.
- * 
+ *
  * NOTE: This file is automatically updated by the init script.
  * Manual changes may be overwritten during project initialization.
  */
@@ -63,7 +63,7 @@ export const APP_SPLASH_URL = `${APP_URL}/splash.png`;
  * Background color for the splash screen.
  * Used as fallback when splash image is loading.
  */
-export const APP_SPLASH_BACKGROUND_COLOR = "#f7f7f7";
+export const APP_SPLASH_BACKGROUND_COLOR = '#f7f7f7';
 
 // --- UI Configuration ---
 /**
@@ -75,18 +75,19 @@ export const APP_BUTTON_TEXT = 'Launch NSK';
 // --- Integration Configuration ---
 /**
  * Webhook URL for receiving events from Neynar.
- * 
+ *
  * If Neynar API key and client ID are configured, uses the official
  * Neynar webhook endpoint. Otherwise, falls back to a local webhook
  * endpoint for development and testing.
  */
-export const APP_WEBHOOK_URL = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
+export const APP_WEBHOOK_URL =
+  process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID
     ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
     : `${APP_URL}/api/webhook`;
 
 /**
  * Flag to enable/disable wallet functionality.
- * 
+ *
  * When true, wallet-related components and features are rendered.
  * When false, wallet functionality is completely hidden from the UI.
  * Useful for mini apps that don't require wallet integration.
@@ -95,7 +96,7 @@ export const USE_WALLET = true;
 
 /**
  * Flag to enable/disable analytics tracking.
- * 
+ *
  * When true, usage analytics are collected and sent to Neynar.
  * When false, analytics collection is disabled.
  * Useful for privacy-conscious users or development environments.
