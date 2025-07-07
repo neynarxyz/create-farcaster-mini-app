@@ -44,7 +44,6 @@
     "type-check:dev": "tsc --project tsconfig.dev.json --noEmit",
     "check": "npm run type-check && npm run lint:check && npm run format:check",
     "check:dev": "npm run type-check:dev && npm run lint:check && npm run format:check",
-    "prepare": "echo 'Skipping prepare script temporarily'",
     "deploy:vercel": "node scripts/deploy.js",
     "deploy:raw": "vercel --prod",
     "cleanup": "node scripts/cleanup.js"
