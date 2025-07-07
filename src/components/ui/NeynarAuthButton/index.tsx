@@ -50,8 +50,6 @@ export function NeynarAuthButton() {
   // Helper function to create a signer
   const createSigner = useCallback(async () => {
     try {
-      // console.log('🔧 Creating new signer...');
-
       const response = await fetch('/api/auth/signer', {
         method: 'POST',
       });
@@ -61,12 +59,10 @@ export function NeynarAuthButton() {
       }
 
       const signerData = await response.json();
-      // console.log('✅ Signer created:', signerData);
-
       return signerData;
     } catch (error) {
-      //  console.error('❌ Error creating signer:', error);
-      throw error;
+      console.error('❌ Error creating signer:', error);
+      // throw error;
     }
   }, []);
 
@@ -74,8 +70,6 @@ export function NeynarAuthButton() {
   const generateSignedKeyRequest = useCallback(
     async (signerUuid: string, publicKey: string) => {
       try {
-        // console.log('🔑 Generating signed key request...');
-
         // Prepare request body
         const requestBody: {
           signerUuid: string;
@@ -102,12 +96,11 @@ export function NeynarAuthButton() {
         }
 
         const data = await response.json();
-        // console.log('✅ Signed key request generated:', data);
 
         return data;
       } catch (error) {
         console.error('❌ Error generating signed key request:', error);
-        throw error;
+        // throw error;
       }
     },
     []
@@ -117,7 +110,6 @@ export function NeynarAuthButton() {
   const fetchAllSigners = useCallback(
     async (message: string, signature: string) => {
       try {
-        // console.log('� Fetching all signers...');
         setSignersLoading(true);
 
         const response = await fetch(
@@ -127,11 +119,8 @@ export function NeynarAuthButton() {
         );
 
         const signerData = await response.json();
-        // console.log('� Signer response:', signerData);
 
         if (response.ok) {
-          // console.log('✅ Signers fetched successfully:', signerData.signers);
-
           // Store signers in localStorage, preserving existing auth data
           const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
           const updatedState: StoredAuthState = {
@@ -146,11 +135,11 @@ export function NeynarAuthButton() {
           return signerData.signers;
         } else {
           console.error('❌ Failed to fetch signers');
-          throw new Error('Failed to fetch signers');
+          // throw new Error('Failed to fetch signers');
         }
       } catch (error) {
         console.error('❌ Error fetching signers:', error);
-        throw error;
+        // throw error;
       } finally {
         setSignersLoading(false);
       }
@@ -161,8 +150,6 @@ export function NeynarAuthButton() {
   // Helper function to poll signer status
   const startPolling = useCallback(
     (signerUuid: string, message: string, signature: string) => {
-      // console.log('� Starting polling for signer:', signerUuid);
-
       const interval = setInterval(async () => {
         try {
           const response = await fetch(
@@ -174,10 +161,8 @@ export function NeynarAuthButton() {
           }
 
           const signerData = await response.json();
-          // console.log('� Signer status:', signerData.status);
 
           if (signerData.status === 'approved') {
-            // console.log('🎉 Signer approved!');
             clearInterval(interval);
             setPollingInterval(null);
             setShowDialog(false);
@@ -230,15 +215,11 @@ export function NeynarAuthButton() {
     const stored = getItem<StoredAuthState>(STORAGE_KEY);
     if (stored && stored.isAuthenticated) {
       setStoredAuth(stored);
-      if (stored.signers && stored.signers.length > 0) {
-        // console.log('📂 Loaded stored signers:', stored.signers);
-      }
     }
   }, []);
 
   // Success callback - this is critical!
   const onSuccessCallback = useCallback((res: unknown) => {
-    // console.log('🎉 Sign in successful!', res);
     const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
     const authState: StoredAuthState = {
       isAuthenticated: true,
@@ -279,30 +260,13 @@ export function NeynarAuthButton() {
   // Connect when component mounts and we have a nonce
   useEffect(() => {
     if (nonce && !channelToken) {
-      // console.log('🔌 Connecting with nonce:', nonce);
       connect();
     }
   }, [nonce, channelToken, connect]);
 
-  // Debug logging
-  // useEffect(() => {
-  //   console.log('🔍 Auth state:', {
-  //     isSuccess,
-  //     validSignature,
-  //     hasData: !!data,
-  //     isPolling,
-  //     isError,
-  //     storedAuth: !!storedAuth?.isAuthenticated,
-  //   });
-  // }, [isSuccess, validSignature, data, isPolling, isError, storedAuth]);
-
   // Handle fetching signers after successful authentication
   useEffect(() => {
     if (data?.message && data?.signature) {
-      // console.log('📝 Got message and signature:', {
-      //   message: data.message,
-      //   signature: data.signature,
-      // });
       const handleSignerFlow = async () => {
         try {
           // Ensure we have message and signature
@@ -320,8 +284,6 @@ export function NeynarAuthButton() {
 
           // Check if no signers exist or if we have empty signers
           if (!signers || signers.length === 0) {
-            // console.log('🔧 No signers found, creating new signer...');
-
             // Step 1: Create a signer
             const newSigner = await createSigner();
 
@@ -342,7 +304,6 @@ export function NeynarAuthButton() {
             }
           } else {
             // If signers exist, close the dialog
-            // console.log('✅ Signers already exist, closing dialog');
             setSignersLoading(false);
             setShowDialog(false);
             setDialogStep('signin');
@@ -367,9 +328,7 @@ export function NeynarAuthButton() {
   ]);
 
   const handleSignIn = useCallback(() => {
-    // console.log('🚀 Starting sign in flow...');
     if (isError) {
-      // console.log('🔄 Reconnecting due to error...');
       reconnect();
     }
     setDialogStep('signin');
@@ -378,13 +337,11 @@ export function NeynarAuthButton() {
 
     // Open mobile app if on mobile and URL is available
     if (url && isMobile()) {
-      // console.log('📱 Opening mobile app:', url);
       window.open(url, '_blank');
     }
   }, [isError, reconnect, signIn, url]);
 
   const handleSignOut = useCallback(() => {
-    // console.log('👋 Signing out...');
     setShowDialog(false);
     signOut();
     removeItem(STORAGE_KEY);
@@ -396,28 +353,6 @@ export function NeynarAuthButton() {
     ((isSuccess && validSignature) || storedAuth?.isAuthenticated) &&
     !!(storedAuth?.signers && storedAuth.signers.length > 0);
   const userData = data || storedAuth?.userData;
-
-  // Debug logging
-  // useEffect(() => {
-  //   console.log('🔍 Auth state:', {
-  //     authenticated,
-  //     isSuccess,
-  //     validSignature,
-  //     hasData: !!data,
-  //     isError,
-  //     storedAuth: !!storedAuth?.isAuthenticated,
-  //     storedSigners: storedAuth?.signers?.length || 0,
-  //     hasUrl: !!url,
-  //   });
-  // }, [
-  //   authenticated,
-  //   isSuccess,
-  //   validSignature,
-  //   data,
-  //   isError,
-  //   storedAuth,
-  //   url,
-  // ]);
 
   // Show loading state while nonce is being fetched or signers are loading
   if (!nonce || signersLoading) {
@@ -482,30 +417,6 @@ export function NeynarAuthButton() {
           signerApprovalUrl={signerApprovalUrl}
         />
       )}
-
-      {/* Debug panel (optional - can be removed in production) */}
-      {/* {process.env.NODE_ENV === "development" && (
-        <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-mono">
-          <div className="font-semibold mb-2">Debug Info:</div>
-          <pre className="whitespace-pre-wrap text-xs">
-            {JSON.stringify(
-              {
-                authenticated,
-                isSuccess,
-                validSignature,
-                hasData: !!data,
-                isPolling,
-                isError,
-                hasStoredAuth: !!storedAuth?.isAuthenticated,
-                hasUrl: !!url,
-                hasChannelToken: !!channelToken,
-              },
-              null,
-              2
-            )}
-          </pre>
-        </div>
-      )} */}
     </>
   );
 }
