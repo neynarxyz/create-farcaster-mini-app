@@ -6,7 +6,7 @@ import { ShareButton } from '../Share';
 import { Button } from '../Button';
 import { SignIn } from '../wallet/SignIn';
 import { type Haptics } from '@farcaster/frame-sdk';
-import { NeynarAuthButton } from '../NeynarAuthButton';
+import { NeynarAuthButton } from '../NeynarAuthButton/index';
 
 /**
  * ActionsTab component handles mini app actions like sharing, notifications, and haptic feedback.
