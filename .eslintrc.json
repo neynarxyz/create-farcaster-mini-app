@@ -7,7 +7,7 @@
   },
   "extends": [
     "eslint:recommended",
-    "@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended",
     "next/core-web-vitals",
     "next/typescript",
     "prettier"
@@ -21,9 +21,23 @@
     },
     "project": "./tsconfig.json"
   },
-  "plugins": ["@typescript-eslint", "prettier"],
+  "plugins": ["@typescript-eslint", "prettier", "import"],
   "rules": {
-    "prettier/prettier": "error",
+    "prettier/prettier": [
+      "error",
+      {
+        "semi": true,
+        "trailingComma": "all",
+        "singleQuote": true,
+        "printWidth": 80,
+        "tabWidth": 2,
+        "useTabs": false,
+        "bracketSpacing": true,
+        "bracketSameLine": false,
+        "arrowParens": "avoid",
+        "endOfLine": "lf"
+      }
+    ],
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -35,40 +49,80 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/prefer-const": "error",
-    "@typescript-eslint/no-floating-promises": "error",
+    "prefer-const": "error",
+    "@typescript-eslint/no-floating-promises": "warn",
     "@typescript-eslint/await-thenable": "error",
-    "@typescript-eslint/no-misused-promises": "error",
-    "@typescript-eslint/require-await": "error",
+    "@typescript-eslint/no-misused-promises": "warn",
+    "@typescript-eslint/require-await": "warn",
     "react/display-name": "off",
     "react/prop-types": "off",
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
     "no-console": ["warn", { "allow": ["warn", "error"] }],
-    "prefer-const": "error",
     "no-var": "error",
     "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
     "no-trailing-spaces": "error",
     "eol-last": "error",
-    "comma-dangle": ["error", "es5"],
     "semi": ["error", "always"],
-    "quotes": ["error", "single", { "avoidEscape": true }]
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "pathGroups": [
+          {
+            "pattern": "react",
+            "group": "external",
+            "position": "before"
+          },
+          {
+            "pattern": "next/**",
+            "group": "external",
+            "position": "before"
+          },
+          {
+            "pattern": "~/**",
+            "group": "internal"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["react"],
+        "newlines-between": "never",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ]
   },
   "overrides": [
     {
       "files": ["*.js", "*.jsx"],
+      "parserOptions": {
+        "project": null
+      },
       "rules": {
         "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-require-imports": "off",
         "@typescript-eslint/no-floating-promises": "off",
         "@typescript-eslint/await-thenable": "off",
         "@typescript-eslint/no-misused-promises": "off",
-        "@typescript-eslint/require-await": "off"
+        "@typescript-eslint/require-await": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "no-console": "off"
       }
     },
     {
       "files": ["*.config.js", "*.config.ts", "next.config.*"],
       "rules": {
-        "@typescript-eslint/no-var-requires": "off"
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-require-imports": "off"
       }
     }
   ]

@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
-import { Button } from './Button';
-import { useMiniApp } from '@neynar/react';
 import { type ComposeCast } from '@farcaster/frame-sdk';
+import { useMiniApp } from '@neynar/react';
+import { Button } from './Button';
 
 interface EmbedConfig {
   path?: string;
@@ -86,7 +86,7 @@ export function ShareButton({
             // Add UTM parameters
             url.searchParams.set(
               'utm_source',
-              `share-cast-${context?.user?.fid || 'unknown'}`
+              `share-cast-${context?.user?.fid || 'unknown'}`,
             );
 
             // If custom image generator is provided, use it
@@ -98,7 +98,7 @@ export function ShareButton({
             return url.toString();
           }
           return embed.url || '';
-        })
+        }),
       );
 
       // Open cast composer with all supported intents

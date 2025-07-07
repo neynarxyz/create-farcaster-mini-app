@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { Button } from '../Button';
 import { renderError } from '../../../lib/errorUtils';
+import { Button } from '../Button';
 
 interface SignSolanaMessageProps {
   signMessage?: (message: Uint8Array) => Promise<Uint8Array>;

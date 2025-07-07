@@ -85,7 +85,7 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
     } catch (error) {
       console.warn(
         'Failed to parse MINI_APP_METADATA from environment:',
-        error
+        error,
       );
     }
   }
@@ -101,7 +101,7 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
   const secretEnvVars = getSecretEnvVars();
   if (!secretEnvVars) {
     console.warn(
-      'No seed phrase or FID found in environment variables -- generating unsigned metadata'
+      'No seed phrase or FID found in environment variables -- generating unsigned metadata',
     );
   }
 
@@ -117,7 +117,7 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
       key: custodyAddress,
     };
     const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString(
-      'base64'
+      'base64',
     );
 
     const payload = {
@@ -125,14 +125,14 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
     };
     const encodedPayload = Buffer.from(
       JSON.stringify(payload),
-      'utf-8'
+      'utf-8',
     ).toString('base64url');
 
     const signature = await account.signMessage({
       message: `${encodedHeader}.${encodedPayload}`,
     });
     const encodedSignature = Buffer.from(signature, 'utf-8').toString(
-      'base64url'
+      'base64url',
     );
 
     accountAssociation = {

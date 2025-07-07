@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useMiniApp } from '@neynar/react';
+import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import {
   useAccount,
   useSendTransaction,
@@ -12,17 +14,15 @@ import {
   useChainId,
   type Connector,
 } from 'wagmi';
-import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { base, degen, mainnet, optimism, unichain } from 'wagmi/chains';
-import { Button } from '../Button';
-import { truncateAddress } from '../../../lib/truncateAddress';
-import { renderError } from '../../../lib/errorUtils';
-import { SignEvmMessage } from '../wallet/SignEvmMessage';
-import { SendEth } from '../wallet/SendEth';
-import { SignSolanaMessage } from '../wallet/SignSolanaMessage';
-import { SendSolana } from '../wallet/SendSolana';
 import { USE_WALLET, APP_NAME } from '../../../lib/constants';
-import { useMiniApp } from '@neynar/react';
+import { renderError } from '../../../lib/errorUtils';
+import { truncateAddress } from '../../../lib/truncateAddress';
+import { Button } from '../Button';
+import { SendEth } from '../wallet/SendEth';
+import { SendSolana } from '../wallet/SendSolana';
+import { SignEvmMessage } from '../wallet/SignEvmMessage';
+import { SignSolanaMessage } from '../wallet/SignSolanaMessage';
 
 /**
  * WalletTab component manages wallet-related UI for both EVM and Solana chains.
@@ -112,7 +112,7 @@ function ConnectionControls({
             console.log('Manual Farcaster connection attempt');
             console.log(
               'Connectors:',
-              connectors.map((c, i) => `${i}: ${c.name}`)
+              connectors.map((c, i) => `${i}: ${c.name}`),
             );
             connect({ connector: connectors[0] });
           }}
@@ -213,7 +213,7 @@ export function WalletTab() {
       console.log('- User FID:', context.user.fid);
       console.log(
         '- Available connectors:',
-        connectors.map((c, i) => `${i}: ${c.name}`)
+        connectors.map((c, i) => `${i}: ${c.name}`),
       );
       console.log('- Using connector:', connectors[0].name);
       console.log('- In Farcaster client:', isInFarcasterClient);
@@ -278,7 +278,7 @@ export function WalletTab() {
         onSuccess: hash => {
           setEvmContractTransactionHash(hash);
         },
-      }
+      },
     );
   }, [sendTransaction]);
 

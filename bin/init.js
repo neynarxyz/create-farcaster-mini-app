@@ -3,16 +3,16 @@
 import { execSync } from 'child_process';
 import crypto from 'crypto';
 import fs from 'fs';
-import inquirer from 'inquirer';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import inquirer from 'inquirer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const REPO_URL = 'https://github.com/neynarxyz/create-farcaster-mini-app.git';
 const SCRIPT_VERSION = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
+  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'),
 ).version;
 
 // ANSI color codes
@@ -46,12 +46,12 @@ async function queryNeynarApp(apiKey) {
   }
   try {
     const response = await fetch(
-      `https://api.neynar.com/portal/app_by_api_key?starter_kit=true`,
+      'https://api.neynar.com/portal/app_by_api_key?starter_kit=true',
       {
         headers: {
           'x-api-key': apiKey,
         },
-      }
+      },
     );
     const data = await response.json();
     return data;
@@ -101,7 +101,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
     }
 
     console.log(
-      '\n🪐 Find your Neynar API key at: https://dev.neynar.com/app\n'
+      '\n🪐 Find your Neynar API key at: https://dev.neynar.com/app\n',
     );
 
     let neynarKeyAnswer;
@@ -137,13 +137,13 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
 
       if (useDemoKey.useDemo) {
         console.warn(
-          '\n⚠️ Note: the demo key is for development purposes only and is aggressively rate limited.'
+          '\n⚠️ Note: the demo key is for development purposes only and is aggressively rate limited.',
         );
         console.log(
-          'For production, please sign up for a Neynar account at https://neynar.com/ and configure the API key in your .env or .env.local file with NEYNAR_API_KEY.'
+          'For production, please sign up for a Neynar account at https://neynar.com/ and configure the API key in your .env or .env.local file with NEYNAR_API_KEY.',
         );
         console.log(
-          `\n${purple}${bright}${italic}Neynar now has a free tier! See https://neynar.com/#pricing for details.\n${reset}`
+          `\n${purple}${bright}${italic}Neynar now has a free tier! See https://neynar.com/#pricing for details.\n${reset}`,
         );
         neynarApiKey = 'FARCASTER_V2_FRAMES_DEMO';
       }
@@ -155,7 +155,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         break;
       }
       console.log(
-        '\n⚠️  No valid API key provided. Would you like to try again?'
+        '\n⚠️  No valid API key provided. Would you like to try again?',
       );
       const { retry } = await inquirer.prompt([
         {
@@ -392,7 +392,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
   // Update package.json
   console.log('\nUpdating package.json...');
   const packageJsonPath = path.join(projectPath, 'package.json');
-  let packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
   packageJson.name = finalProjectName;
   packageJson.version = '0.1.0';
@@ -496,11 +496,11 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         const match = content.match(pattern);
         if (!match) {
           console.log(
-            `⚠️  Warning: Could not update ${constantName} in constants.ts. Pattern not found.`
+            `⚠️  Warning: Could not update ${constantName} in constants.ts. Pattern not found.`,
           );
           console.log(`Pattern: ${pattern}`);
           console.log(
-            `Expected to match in: ${content.split('\n').find(line => line.includes(constantName)) || 'Not found'}`
+            `Expected to match in: ${content.split('\n').find(line => line.includes(constantName)) || 'Not found'}`,
           );
         } else {
           const newContent = content.replace(pattern, replacement);
@@ -529,7 +529,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         constantsContent,
         patterns.APP_NAME,
         `export const APP_NAME = '${escapeString(answers.projectName)}';`,
-        'APP_NAME'
+        'APP_NAME',
       );
 
       // Update APP_DESCRIPTION
@@ -537,7 +537,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         constantsContent,
         patterns.APP_DESCRIPTION,
         `export const APP_DESCRIPTION = '${escapeString(answers.description)}';`,
-        'APP_DESCRIPTION'
+        'APP_DESCRIPTION',
       );
 
       // Update APP_PRIMARY_CATEGORY (always update, null becomes empty string)
@@ -545,7 +545,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         constantsContent,
         patterns.APP_PRIMARY_CATEGORY,
         `export const APP_PRIMARY_CATEGORY = '${escapeString(answers.primaryCategory || '')}';`,
-        'APP_PRIMARY_CATEGORY'
+        'APP_PRIMARY_CATEGORY',
       );
 
       // Update APP_TAGS
@@ -557,7 +557,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         constantsContent,
         patterns.APP_TAGS,
         `export const APP_TAGS = ${tagsString};`,
-        'APP_TAGS'
+        'APP_TAGS',
       );
 
       // Update APP_BUTTON_TEXT (always update, use answers value)
@@ -565,7 +565,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         constantsContent,
         patterns.APP_BUTTON_TEXT,
         `export const APP_BUTTON_TEXT = '${escapeString(answers.buttonText || '')}';`,
-        'APP_BUTTON_TEXT'
+        'APP_BUTTON_TEXT',
       );
 
       // Update USE_WALLET
@@ -573,7 +573,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         constantsContent,
         patterns.USE_WALLET,
         `export const USE_WALLET = ${answers.useWallet};`,
-        'USE_WALLET'
+        'USE_WALLET',
       );
 
       // Update ANALYTICS_ENABLED
@@ -581,7 +581,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
         constantsContent,
         patterns.ANALYTICS_ENABLED,
         `export const ANALYTICS_ENABLED = ${answers.enableAnalytics};`,
-        'ANALYTICS_ENABLED'
+        'ANALYTICS_ENABLED',
       );
 
       fs.writeFileSync(constantsPath, constantsContent);
@@ -591,14 +591,14 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
 
     fs.appendFileSync(
       envPath,
-      `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`
+      `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`,
     );
     if (useNeynar && neynarApiKey && neynarClientId) {
       fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${neynarApiKey}"`);
       fs.appendFileSync(envPath, `\nNEYNAR_CLIENT_ID="${neynarClientId}"`);
     } else if (useNeynar) {
       console.log(
-        '\n⚠️  Could not find a Neynar client ID and/or API key. Please configure Neynar manually in .env.local with NEYNAR_API_KEY and NEYNAR_CLIENT_ID'
+        '\n⚠️  Could not find a Neynar client ID and/or API key. Please configure Neynar manually in .env.local with NEYNAR_API_KEY and NEYNAR_CLIENT_ID',
       );
     }
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
@@ -606,7 +606,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
     fs.unlinkSync(envExamplePath);
   } else {
     console.log(
-      '\n.env.example does not exist, skipping copy and remove operations'
+      '\n.env.example does not exist, skipping copy and remove operations',
     );
   }
 
@@ -651,7 +651,7 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
   execSync('git add .', { cwd: projectPath });
   execSync(
     'git commit -m "initial commit from @neynar/create-farcaster-mini-app"',
-    { cwd: projectPath }
+    { cwd: projectPath },
   );
 
   // Calculate border length based on message length

@@ -1,12 +1,12 @@
-import { createConfig, http, WagmiProvider } from 'wagmi';
-import { base, degen, mainnet, optimism, unichain, celo } from 'wagmi/chains';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import React from 'react';
 import { farcasterFrame } from '@farcaster/frame-wagmi-connector';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createConfig, http, WagmiProvider } from 'wagmi';
+import { useConnect, useAccount } from 'wagmi';
+import { base, degen, mainnet, optimism, unichain, celo } from 'wagmi/chains';
 import { coinbaseWallet, metaMask } from 'wagmi/connectors';
 import { APP_NAME, APP_ICON_URL, APP_URL } from '~/lib/constants';
-import { useEffect, useState } from 'react';
-import { useConnect, useAccount } from 'wagmi';
-import React from 'react';
 
 // Custom hook for Coinbase Wallet detection and auto-connection
 function useCoinbaseWalletAutoConnect() {

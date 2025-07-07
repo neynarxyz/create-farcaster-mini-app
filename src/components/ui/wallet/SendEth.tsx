@@ -7,9 +7,9 @@ import {
   useWaitForTransactionReceipt,
 } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { Button } from '../Button';
-import { truncateAddress } from '../../../lib/truncateAddress';
 import { renderError } from '../../../lib/errorUtils';
+import { truncateAddress } from '../../../lib/truncateAddress';
+import { Button } from '../Button';
 
 /**
  * SendEth component handles sending ETH transactions to protocol guild addresses.

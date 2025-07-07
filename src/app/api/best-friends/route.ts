@@ -11,14 +11,14 @@ export async function GET(request: Request) {
         error:
           'Neynar API key is not configured. Please add NEYNAR_API_KEY to your environment variables.',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
   if (!fid) {
     return NextResponse.json(
       { error: 'FID parameter is required' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
         headers: {
           'x-api-key': apiKey,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
         error:
           'Failed to fetch best friends. Please check your Neynar API key and try again.',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

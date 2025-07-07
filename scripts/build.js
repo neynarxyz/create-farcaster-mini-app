@@ -1,11 +1,11 @@
 import { execSync } from 'child_process';
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { mnemonicToAccount } from 'viem/accounts';
 import { fileURLToPath } from 'url';
-import inquirer from 'inquirer';
 import dotenv from 'dotenv';
-import crypto from 'crypto';
+import inquirer from 'inquirer';
+import { mnemonicToAccount } from 'viem/accounts';
 
 // ANSI color codes
 const yellow = '\x1b[33m';
@@ -29,7 +29,7 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
         accept: 'application/json',
         'x-api-key': 'FARCASTER_V2_FRAMES_DEMO',
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -112,7 +112,7 @@ async function validateDomain(domain) {
   // Basic domain validation
   if (
     !cleanDomain.match(
-      /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/
+      /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/,
     )
   ) {
     throw new Error('Invalid domain format');
@@ -127,12 +127,12 @@ async function queryNeynarApp(apiKey) {
   }
   try {
     const response = await fetch(
-      `https://api.neynar.com/portal/app_by_api_key`,
+      'https://api.neynar.com/portal/app_by_api_key',
       {
         headers: {
           'x-api-key': apiKey,
         },
-      }
+      },
     );
     const data = await response.json();
     return data;
@@ -157,7 +157,7 @@ async function generateFarcasterMetadata(
   fid,
   accountAddress,
   seedPhrase,
-  webhookUrl
+  webhookUrl,
 ) {
   const header = {
     type: 'custody',
@@ -165,14 +165,14 @@ async function generateFarcasterMetadata(
     fid,
   };
   const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString(
-    'base64'
+    'base64',
   );
 
   const payload = {
     domain,
   };
   const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf-8').toString(
-    'base64url'
+    'base64url',
   );
 
   const account = mnemonicToAccount(seedPhrase);
@@ -180,7 +180,7 @@ async function generateFarcasterMetadata(
     message: `${encodedHeader}.${encodedPayload}`,
   });
   const encodedSignature = Buffer.from(signature, 'utf-8').toString(
-    'base64url'
+    'base64url',
   );
 
   const tags = process.env.NEXT_PUBLIC_MINI_APP_TAGS?.split(',');
@@ -310,7 +310,7 @@ async function main() {
 
       // If we get here, the API key was invalid
       console.log(
-        '\n⚠️  Could not find Neynar app information. The API key may be incorrect.'
+        '\n⚠️  Could not find Neynar app information. The API key may be incorrect.',
       );
       const { retry } = await inquirer.prompt([
         {
@@ -363,7 +363,7 @@ async function main() {
 
     const fid = await lookupFidByCustodyAddress(
       accountAddress,
-      neynarApiKey ?? 'FARCASTER_V2_FRAMES_DEMO'
+      neynarApiKey ?? 'FARCASTER_V2_FRAMES_DEMO',
     );
 
     // Generate and sign manifest
@@ -380,10 +380,10 @@ async function main() {
       fid,
       accountAddress,
       seedPhrase,
-      webhookUrl
+      webhookUrl,
     );
     console.log(
-      '\n✅ Mini app manifest generated' + (seedPhrase ? ' and signed' : '')
+      '\n✅ Mini app manifest generated' + (seedPhrase ? ' and signed' : ''),
     );
 
     // Read existing .env file or create new one
@@ -449,7 +449,7 @@ async function main() {
     // Run next build
     console.log('\nBuilding Next.js application...');
     const nextBin = path.normalize(
-      path.join(projectRoot, 'node_modules', '.bin', 'next')
+      path.join(projectRoot, 'node_modules', '.bin', 'next'),
     );
     execSync(`"${nextBin}" build`, {
       cwd: projectRoot,
@@ -458,10 +458,10 @@ async function main() {
     });
 
     console.log(
-      '\n✨ Build complete! Your mini app is ready for deployment. 🪐'
+      '\n✨ Build complete! Your mini app is ready for deployment. 🪐',
     );
     console.log(
-      '📝 Make sure to configure the environment variables from .env in your hosting provider'
+      '📝 Make sure to configure the environment variables from .env in your hosting provider',
     );
   } catch (error) {
     console.error('\n❌ Error:', error.message);

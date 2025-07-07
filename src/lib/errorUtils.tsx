@@ -31,7 +31,7 @@ export function renderError(error: unknown): ReactElement | null {
   // Special handling for user rejections in wallet operations
   if (error instanceof BaseError) {
     const isUserRejection = error.walk(
-      e => e instanceof UserRejectedRequestError
+      e => e instanceof UserRejectedRequestError,
     );
 
     if (isUserRejection) {

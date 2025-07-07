@@ -1,5 +1,5 @@
-import { NeynarAPIClient } from '@neynar/nodejs-sdk';
 import { NextResponse } from 'next/server';
+import { NeynarAPIClient } from '@neynar/nodejs-sdk';
 
 export async function GET(request: Request) {
   const apiKey = process.env.NEYNAR_API_KEY;
@@ -12,14 +12,14 @@ export async function GET(request: Request) {
         error:
           'Neynar API key is not configured. Please add NEYNAR_API_KEY to your environment variables.',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
   if (!fids) {
     return NextResponse.json(
       { error: 'FIDs parameter is required' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
         error:
           'Failed to fetch users. Please check your Neynar API key and try again.',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

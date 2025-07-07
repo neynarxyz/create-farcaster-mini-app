@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
 import { APP_URL, APP_NAME, APP_DESCRIPTION } from '~/lib/constants';
 import { getMiniAppEmbedMetadata } from '~/lib/utils';
 export const revalidate = 300;

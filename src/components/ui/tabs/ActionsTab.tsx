@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useMiniApp } from '@neynar/react';
-import { ShareButton } from '../Share';
-import { Button } from '../Button';
-import { SignIn } from '../wallet/SignIn';
 import { type Haptics } from '@farcaster/frame-sdk';
+import { useMiniApp } from '@neynar/react';
+import { Button } from '../Button';
+import { ShareButton } from '../Share';
+import { SignIn } from '../wallet/SignIn';
 
 /**
  * ActionsTab component handles mini app actions like sharing, notifications, and haptic feedback.
@@ -98,7 +98,7 @@ export function ActionsTab() {
       setTimeout(
         () =>
           setNotificationState(prev => ({ ...prev, shareUrlCopied: false })),
-        2000
+        2000,
       );
     }
   }, [context?.user?.fid]);
@@ -182,7 +182,7 @@ export function ActionsTab() {
           value={selectedHapticIntensity}
           onChange={e =>
             setSelectedHapticIntensity(
-              e.target.value as Haptics.ImpactOccurredType
+              e.target.value as Haptics.ImpactOccurredType,
             )
           }
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"

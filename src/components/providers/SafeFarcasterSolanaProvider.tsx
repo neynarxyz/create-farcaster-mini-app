@@ -5,9 +5,9 @@ import { sdk } from '@farcaster/frame-sdk';
 const FarcasterSolanaProvider = dynamic(
   () =>
     import('@farcaster/mini-app-solana').then(
-      mod => mod.FarcasterSolanaProvider
+      mod => mod.FarcasterSolanaProvider,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 
 type SafeFarcasterSolanaProviderProps = {

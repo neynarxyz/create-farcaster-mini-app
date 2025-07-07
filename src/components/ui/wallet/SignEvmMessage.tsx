@@ -3,10 +3,10 @@
 import { useCallback } from 'react';
 import { useAccount, useConnect, useSignMessage } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { Button } from '../Button';
-import { config } from '../../providers/WagmiProvider';
 import { APP_NAME } from '../../../lib/constants';
 import { renderError } from '../../../lib/errorUtils';
+import { config } from '../../providers/WagmiProvider';
+import { Button } from '../Button';
 
 /**
  * SignEvmMessage component handles signing messages on EVM-compatible chains.

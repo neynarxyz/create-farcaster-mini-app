@@ -6,9 +6,9 @@ import {
   useWallet as useSolanaWallet,
 } from '@solana/wallet-adapter-react';
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import { Button } from '../Button';
-import { truncateAddress } from '../../../lib/truncateAddress';
 import { renderError } from '../../../lib/errorUtils';
+import { truncateAddress } from '../../../lib/truncateAddress';
+import { Button } from '../Button';
 
 /**
  * SendSolana component handles sending SOL transactions on Solana.
@@ -71,7 +71,7 @@ export function SendSolana() {
           fromPubkey: new PublicKey(fromPubkeyStr),
           toPubkey: new PublicKey(toPubkeyStr),
           lamports: 0n,
-        })
+        }),
       );
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = new PublicKey(fromPubkeyStr);

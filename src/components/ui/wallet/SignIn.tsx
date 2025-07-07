@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { signIn, signOut, getCsrfToken } from 'next-auth/react';
 import sdk, { SignIn as SignInCore } from '@farcaster/frame-sdk';
+import { signIn, signOut, getCsrfToken } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
 import { Button } from '../Button';
 

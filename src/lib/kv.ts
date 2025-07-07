@@ -19,7 +19,7 @@ function getUserNotificationDetailsKey(fid: number): string {
 }
 
 export async function getUserNotificationDetails(
-  fid: number
+  fid: number,
 ): Promise<FrameNotificationDetails | null> {
   const key = getUserNotificationDetailsKey(fid);
   if (redis) {
@@ -30,7 +30,7 @@ export async function getUserNotificationDetails(
 
 export async function setUserNotificationDetails(
   fid: number,
-  notificationDetails: FrameNotificationDetails
+  notificationDetails: FrameNotificationDetails,
 ): Promise<void> {
   const key = getUserNotificationDetailsKey(fid);
   if (redis) {
@@ -41,7 +41,7 @@ export async function setUserNotificationDetails(
 }
 
 export async function deleteUserNotificationDetails(
-  fid: number
+  fid: number,
 ): Promise<void> {
   const key = getUserNotificationDetailsKey(fid);
   if (redis) {

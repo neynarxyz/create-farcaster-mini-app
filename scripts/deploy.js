@@ -1,13 +1,13 @@
 import { execSync, spawn } from 'child_process';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
-import { fileURLToPath } from 'url';
-import inquirer from 'inquirer';
-import dotenv from 'dotenv';
 import crypto from 'crypto';
-import { mnemonicToAccount } from 'viem/accounts';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Vercel } from '@vercel/sdk';
+import dotenv from 'dotenv';
+import inquirer from 'inquirer';
+import { mnemonicToAccount } from 'viem/accounts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -37,7 +37,7 @@ async function lookupFidByCustodyAddress(custodyAddress, apiKey) {
         accept: 'application/json',
         'x-api-key': apiKey,
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -60,7 +60,7 @@ async function generateFarcasterMetadata(
   fid,
   accountAddress,
   seedPhrase,
-  webhookUrl
+  webhookUrl,
 ) {
   const trimmedDomain = domain.trim();
   const header = {
@@ -69,14 +69,14 @@ async function generateFarcasterMetadata(
     fid,
   };
   const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString(
-    'base64'
+    'base64',
   );
 
   const payload = {
     domain: trimmedDomain,
   };
   const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf-8').toString(
-    'base64url'
+    'base64url',
   );
 
   const account = mnemonicToAccount(seedPhrase);
@@ -84,7 +84,7 @@ async function generateFarcasterMetadata(
     message: `${encodedHeader}.${encodedPayload}`,
   });
   const encodedSignature = Buffer.from(signature, 'utf-8').toString(
-    'base64url'
+    'base64url',
   );
 
   const tags = process.env.NEXT_PUBLIC_MINI_APP_TAGS?.split(',');
@@ -187,7 +187,7 @@ async function checkRequiredEnvVars() {
   ];
 
   const missingVars = requiredVars.filter(
-    varConfig => !process.env[varConfig.name]
+    varConfig => !process.env[varConfig.name],
   );
 
   if (missingVars.length > 0) {
@@ -213,7 +213,7 @@ async function checkRequiredEnvVars() {
         const newLine = envContent ? '\n' : '';
         fs.appendFileSync(
           '.env',
-          `${newLine}${varConfig.name}="${value.trim()}"`
+          `${newLine}${varConfig.name}="${value.trim()}"`,
         );
       }
     }
@@ -318,7 +318,7 @@ async function getVercelToken() {
     return null; // We'll fall back to CLI operations
   } catch (error) {
     throw new Error(
-      'Not logged in to Vercel CLI. Please run this script again to login.'
+      'Not logged in to Vercel CLI. Please run this script again to login.',
     );
   }
 }
@@ -334,7 +334,7 @@ async function loginToVercel() {
   console.log('3. Complete the Vercel account setup in your browser');
   console.log('4. Return here once your Vercel account is created\n');
   console.log(
-    '\nNote: you may need to cancel this script with ctrl+c and run it again if creating a new vercel account'
+    '\nNote: you may need to cancel this script with ctrl+c and run it again if creating a new vercel account',
   );
 
   const child = spawn('vercel', ['login'], {
@@ -349,7 +349,7 @@ async function loginToVercel() {
 
   console.log('\n📱 Waiting for login to complete...');
   console.log(
-    "If you're creating a new account, please complete the Vercel account setup in your browser first."
+    "If you're creating a new account, please complete the Vercel account setup in your browser first.",
   );
 
   for (let i = 0; i < 150; i++) {
@@ -387,7 +387,7 @@ async function setVercelEnvVarSDK(vercelClient, projectId, key, value) {
     });
 
     const existingVar = existingVars.envs?.find(
-      env => env.key === key && env.target?.includes('production')
+      env => env.key === key && env.target?.includes('production'),
     );
 
     if (existingVar) {
@@ -419,7 +419,7 @@ async function setVercelEnvVarSDK(vercelClient, projectId, key, value) {
   } catch (error) {
     console.warn(
       `⚠️  Warning: Failed to set environment variable ${key}:`,
-      error.message
+      error.message,
     );
     return false;
   }
@@ -474,7 +474,7 @@ async function setVercelEnvVarCLI(key, value, projectRoot) {
     }
     console.warn(
       `⚠️  Warning: Failed to set environment variable ${key}:`,
-      error.message
+      error.message,
     );
     return false;
   }
@@ -484,7 +484,7 @@ async function setEnvironmentVariables(
   vercelClient,
   projectId,
   envVars,
-  projectRoot
+  projectRoot,
 ) {
   console.log('\n📝 Setting up environment variables...');
 
@@ -514,7 +514,7 @@ async function setEnvironmentVariables(
     console.warn(`\n⚠️  Failed to set ${failed.length} environment variables:`);
     failed.forEach(r => console.warn(`   - ${r.key}`));
     console.warn(
-      '\nYou may need to set these manually in the Vercel dashboard.'
+      '\nYou may need to set these manually in the Vercel dashboard.',
     );
   }
 
@@ -537,18 +537,18 @@ async function deployToVercel(useGitHub = false) {
             framework: 'nextjs',
           },
           null,
-          2
-        )
+          2,
+        ),
       );
     }
 
     // Set up Vercel project
     console.log('\n📦 Setting up Vercel project...');
     console.log(
-      'An initial deployment is required to get an assigned domain that can be used in the mini app manifest\n'
+      'An initial deployment is required to get an assigned domain that can be used in the mini app manifest\n',
     );
     console.log(
-      '\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n'
+      '\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n',
     );
 
     execSync('vercel', {
@@ -559,7 +559,7 @@ async function deployToVercel(useGitHub = false) {
 
     // Load project info
     const projectJson = JSON.parse(
-      fs.readFileSync('.vercel/project.json', 'utf8')
+      fs.readFileSync('.vercel/project.json', 'utf8'),
     );
     const projectId = projectJson.projectId;
 
@@ -575,7 +575,7 @@ async function deployToVercel(useGitHub = false) {
       }
     } catch (error) {
       console.warn(
-        '⚠️  Could not initialize Vercel SDK, falling back to CLI operations'
+        '⚠️  Could not initialize Vercel SDK, falling back to CLI operations',
       );
     }
 
@@ -594,7 +594,7 @@ async function deployToVercel(useGitHub = false) {
         console.log('🌐 Using project name for domain:', domain);
       } catch (error) {
         console.warn(
-          '⚠️  Could not get project details via SDK, using CLI fallback'
+          '⚠️  Could not get project details via SDK, using CLI fallback',
         );
       }
     }
@@ -606,7 +606,7 @@ async function deployToVercel(useGitHub = false) {
         {
           cwd: projectRoot,
           encoding: 'utf8',
-        }
+        },
       );
 
       const nameMatch = inspectOutput.match(/Name\s+([^\n]+)/);
@@ -622,7 +622,7 @@ async function deployToVercel(useGitHub = false) {
           console.log('🌐 Using project name for domain:', domain);
         } else {
           throw new Error(
-            'Could not determine project name from inspection output'
+            'Could not determine project name from inspection output',
           );
         }
       }
@@ -636,7 +636,7 @@ async function deployToVercel(useGitHub = false) {
       const accountAddress = await validateSeedPhrase(process.env.SEED_PHRASE);
       fid = await lookupFidByCustodyAddress(
         accountAddress,
-        process.env.NEYNAR_API_KEY ?? 'FARCASTER_V2_FRAMES_DEMO'
+        process.env.NEYNAR_API_KEY ?? 'FARCASTER_V2_FRAMES_DEMO',
       );
 
       const webhookUrl =
@@ -649,7 +649,7 @@ async function deployToVercel(useGitHub = false) {
         fid,
         accountAddress,
         process.env.SEED_PHRASE,
-        webhookUrl
+        webhookUrl,
       );
       console.log('✅ Mini app metadata generated and signed');
     }
@@ -673,8 +673,8 @@ async function deployToVercel(useGitHub = false) {
 
       ...Object.fromEntries(
         Object.entries(process.env).filter(([key]) =>
-          key.startsWith('NEXT_PUBLIC_')
-        )
+          key.startsWith('NEXT_PUBLIC_'),
+        ),
       ),
     };
 
@@ -683,7 +683,7 @@ async function deployToVercel(useGitHub = false) {
       vercelClient,
       projectId,
       vercelEnv,
-      projectRoot
+      projectRoot,
     );
 
     // Deploy the project
@@ -722,7 +722,7 @@ async function deployToVercel(useGitHub = false) {
         }
       } catch (error) {
         console.warn(
-          '⚠️  Could not verify domain via SDK, using assumed domain'
+          '⚠️  Could not verify domain via SDK, using assumed domain',
         );
       }
     }
@@ -747,7 +747,7 @@ async function deployToVercel(useGitHub = false) {
           fid,
           await validateSeedPhrase(process.env.SEED_PHRASE),
           process.env.SEED_PHRASE,
-          webhookUrl
+          webhookUrl,
         );
         updatedEnv.MINI_APP_METADATA = updatedMetadata;
       }
@@ -756,7 +756,7 @@ async function deployToVercel(useGitHub = false) {
         vercelClient,
         projectId,
         updatedEnv,
-        projectRoot
+        projectRoot,
       );
 
       console.log('\n📦 Redeploying with correct domain...');
@@ -772,7 +772,7 @@ async function deployToVercel(useGitHub = false) {
     console.log('\n✨ Deployment complete! Your mini app is now live at:');
     console.log(`🌐 https://${domain}`);
     console.log(
-      '\n📝 You can manage your project at https://vercel.com/dashboard'
+      '\n📝 You can manage your project at https://vercel.com/dashboard',
     );
   } catch (error) {
     console.error('\n❌ Deployment failed:', error.message);
@@ -784,7 +784,7 @@ async function main() {
   try {
     console.log('🚀 Vercel Mini App Deployment (SDK Edition)');
     console.log(
-      'This script will deploy your mini app to Vercel using the Vercel SDK.'
+      'This script will deploy your mini app to Vercel using the Vercel SDK.',
     );
     console.log('\nThe script will:');
     console.log('1. Check for required environment variables');

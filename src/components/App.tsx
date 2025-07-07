@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import { useMiniApp } from '@neynar/react';
-import { Header } from '~/components/ui/Header';
 import { Footer } from '~/components/ui/Footer';
+import { Header } from '~/components/ui/Header';
 import {
   HomeTab,
   ActionsTab,
@@ -55,7 +55,7 @@ export interface AppProps {
  * ```
  */
 export default function App(
-  { title }: AppProps = { title: 'Neynar Starter Kit' }
+  { title }: AppProps = { title: 'Neynar Starter Kit' },
 ) {
   // --- Hooks ---
   const { isSDKLoaded, context, setInitialTab, setActiveTab, currentTab } =
