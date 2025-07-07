@@ -1,9 +1,12 @@
-import React, { createContext, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { createContext, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { sdk } from '@farcaster/frame-sdk';
 
 const FarcasterSolanaProvider = dynamic(
-  () => import('@farcaster/mini-app-solana').then(mod => mod.FarcasterSolanaProvider),
+  () =>
+    import('@farcaster/mini-app-solana').then(
+      mod => mod.FarcasterSolanaProvider
+    ),
   { ssr: false }
 );
 
@@ -12,10 +15,15 @@ type SafeFarcasterSolanaProviderProps = {
   children: React.ReactNode;
 };
 
-const SolanaProviderContext = createContext<{ hasSolanaProvider: boolean }>({ hasSolanaProvider: false });
+const SolanaProviderContext = createContext<{ hasSolanaProvider: boolean }>({
+  hasSolanaProvider: false,
+});
 
-export function SafeFarcasterSolanaProvider({ endpoint, children }: SafeFarcasterSolanaProviderProps) {
-  const isClient = typeof window !== "undefined";
+export function SafeFarcasterSolanaProvider({
+  endpoint,
+  children,
+}: SafeFarcasterSolanaProviderProps) {
+  const isClient = typeof window !== 'undefined';
   const [hasSolanaProvider, setHasSolanaProvider] = useState<boolean>(false);
   const [checked, setChecked] = useState<boolean>(false);
 
@@ -48,8 +56,8 @@ export function SafeFarcasterSolanaProvider({ endpoint, children }: SafeFarcaste
     const origError = console.error;
     console.error = (...args) => {
       if (
-        typeof args[0] === "string" &&
-        args[0].includes("WalletConnectionError: could not get Solana provider")
+        typeof args[0] === 'string' &&
+        args[0].includes('WalletConnectionError: could not get Solana provider')
       ) {
         if (!errorShown) {
           origError(...args);

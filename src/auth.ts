@@ -1,8 +1,8 @@
-import { AuthOptions, getServerSession } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials";
-import { createAppClient, viemConnector } from "@farcaster/auth-client";
+import { AuthOptions, getServerSession } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { createAppClient, viemConnector } from '@farcaster/auth-client';
 
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session {
     user: {
       fid: number;
@@ -26,34 +26,34 @@ function getDomainFromUrl(urlString: string | undefined): string {
 }
 
 export const authOptions: AuthOptions = {
-    // Configure one or more authentication providers
+  // Configure one or more authentication providers
   providers: [
     CredentialsProvider({
-      name: "Sign in with Farcaster",
+      name: 'Sign in with Farcaster',
       credentials: {
         message: {
-          label: "Message",
-          type: "text",
-          placeholder: "0x0",
+          label: 'Message',
+          type: 'text',
+          placeholder: '0x0',
         },
         signature: {
-          label: "Signature",
-          type: "text",
-          placeholder: "0x0",
+          label: 'Signature',
+          type: 'text',
+          placeholder: '0x0',
         },
         // In a production app with a server, these should be fetched from
         // your Farcaster data indexer rather than have them accepted as part
         // of credentials.
         // question: should these natively use the Neynar API?
         name: {
-          label: "Name",
-          type: "text",
-          placeholder: "0x0",
+          label: 'Name',
+          type: 'text',
+          placeholder: '0x0',
         },
         pfp: {
-          label: "Pfp",
-          type: "text",
-          placeholder: "0x0",
+          label: 'Pfp',
+          type: 'text',
+          placeholder: '0x0',
         },
       },
       async authorize(credentials, req) {
@@ -100,30 +100,30 @@ export const authOptions: AuthOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: "none",
-        path: "/",
-        secure: true
-      }
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+      },
     },
     callbackUrl: {
       name: `next-auth.callback-url`,
       options: {
-        sameSite: "none",
-        path: "/",
-        secure: true
-      }
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+      },
     },
     csrfToken: {
       name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: "none",
-        path: "/",
-        secure: true
-      }
-    }
-  }
-}
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+      },
+    },
+  },
+};
 
 export const getSession = async () => {
   try {
@@ -132,4 +132,4 @@ export const getSession = async () => {
     console.error('Error getting server session:', error);
     return null;
   }
-}
+};

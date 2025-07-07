@@ -1,7 +1,18 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { mnemonicToAccount } from 'viem/accounts';
-import { APP_BUTTON_TEXT, APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_PRIMARY_CATEGORY, APP_SPLASH_BACKGROUND_COLOR, APP_TAGS, APP_URL, APP_WEBHOOK_URL } from './constants';
+import {
+  APP_BUTTON_TEXT,
+  APP_DESCRIPTION,
+  APP_ICON_URL,
+  APP_NAME,
+  APP_OG_IMAGE_URL,
+  APP_PRIMARY_CATEGORY,
+  APP_SPLASH_BACKGROUND_COLOR,
+  APP_TAGS,
+  APP_URL,
+  APP_WEBHOOK_URL,
+} from './constants';
 import { APP_SPLASH_URL } from './constants';
 
 interface MiniAppMetadata {
@@ -17,7 +28,7 @@ interface MiniAppMetadata {
   description?: string;
   primaryCategory?: string;
   tags?: string[];
-};
+}
 
 interface MiniAppManifest {
   accountAssociation?: {
@@ -35,7 +46,7 @@ export function cn(...inputs: ClassValue[]) {
 export function getSecretEnvVars() {
   const seedPhrase = process.env.SEED_PHRASE;
   const fid = process.env.FID;
-  
+
   if (!seedPhrase || !fid) {
     return null;
   }
@@ -45,12 +56,12 @@ export function getSecretEnvVars() {
 
 export function getMiniAppEmbedMetadata(ogImageUrl?: string) {
   return {
-    version: "next",
+    version: 'next',
     imageUrl: ogImageUrl ?? APP_OG_IMAGE_URL,
     button: {
       title: APP_BUTTON_TEXT,
       action: {
-        type: "launch_frame",
+        type: 'launch_frame',
         name: APP_NAME,
         url: APP_URL,
         splashImageUrl: APP_SPLASH_URL,
@@ -72,7 +83,10 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
       console.log('Using pre-signed mini app metadata from environment');
       return metadata;
     } catch (error) {
-      console.warn('Failed to parse MINI_APP_METADATA from environment:', error);
+      console.warn(
+        'Failed to parse MINI_APP_METADATA from environment:',
+        error
+      );
     }
   }
 
@@ -86,7 +100,9 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
 
   const secretEnvVars = getSecretEnvVars();
   if (!secretEnvVars) {
-    console.warn('No seed phrase or FID found in environment variables -- generating unsigned metadata');
+    console.warn(
+      'No seed phrase or FID found in environment variables -- generating unsigned metadata'
+    );
   }
 
   let accountAssociation;
@@ -100,34 +116,41 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
       type: 'custody',
       key: custodyAddress,
     };
-    const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString('base64');
+    const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString(
+      'base64'
+    );
 
     const payload = {
-      domain
+      domain,
     };
-    const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf-8').toString('base64url');
+    const encodedPayload = Buffer.from(
+      JSON.stringify(payload),
+      'utf-8'
+    ).toString('base64url');
 
-    const signature = await account.signMessage({ 
-      message: `${encodedHeader}.${encodedPayload}`
+    const signature = await account.signMessage({
+      message: `${encodedHeader}.${encodedPayload}`,
     });
-    const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
+    const encodedSignature = Buffer.from(signature, 'utf-8').toString(
+      'base64url'
+    );
 
     accountAssociation = {
       header: encodedHeader,
       payload: encodedPayload,
-      signature: encodedSignature
+      signature: encodedSignature,
     };
   }
 
   return {
     accountAssociation,
     frame: {
-      version: "1",
-      name: APP_NAME ?? "Neynar Starter Kit",
+      version: '1',
+      name: APP_NAME ?? 'Neynar Starter Kit',
       iconUrl: APP_ICON_URL,
       homeUrl: APP_URL,
       imageUrl: APP_OG_IMAGE_URL,
-      buttonTitle: APP_BUTTON_TEXT ?? "Launch Mini App",
+      buttonTitle: APP_BUTTON_TEXT ?? 'Launch Mini App',
       splashImageUrl: APP_SPLASH_URL,
       splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
       webhookUrl: APP_WEBHOOK_URL,

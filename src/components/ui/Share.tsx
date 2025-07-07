@@ -3,7 +3,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { Button } from './Button';
 import { useMiniApp } from '@neynar/react';
-import { type ComposeCast } from "@farcaster/frame-sdk";
+import { type ComposeCast } from '@farcaster/frame-sdk';
 
 interface EmbedConfig {
   path?: string;
@@ -23,9 +23,16 @@ interface ShareButtonProps {
   isLoading?: boolean;
 }
 
-export function ShareButton({ buttonText, cast, className = '', isLoading = false }: ShareButtonProps) {
+export function ShareButton({
+  buttonText,
+  cast,
+  className = '',
+  isLoading = false,
+}: ShareButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [bestFriends, setBestFriends] = useState<{ fid: number; username: string; }[] | null>(null);
+  const [bestFriends, setBestFriends] = useState<
+    { fid: number; username: string }[] | null
+  >(null);
   const [isLoadingBestFriends, setIsLoadingBestFriends] = useState(false);
   const { context, actions } = useMiniApp();
 
@@ -51,7 +58,7 @@ export function ShareButton({ buttonText, cast, className = '', isLoading = fals
       if (cast.bestFriends) {
         if (bestFriends) {
           // Replace @N with usernames, or remove if no matching friend
-          finalText = finalText.replace(/@\d+/g, (match) => {
+          finalText = finalText.replace(/@\d+/g, match => {
             const friendIndex = parseInt(match.slice(1)) - 1;
             const friend = bestFriends[friendIndex];
             if (friend) {
@@ -67,16 +74,20 @@ export function ShareButton({ buttonText, cast, className = '', isLoading = fals
 
       // Process embeds
       const processedEmbeds = await Promise.all(
-        (cast.embeds || []).map(async (embed) => {
+        (cast.embeds || []).map(async embed => {
           if (typeof embed === 'string') {
             return embed;
           }
           if (embed.path) {
-            const baseUrl = process.env.NEXT_PUBLIC_URL || window.location.origin;
+            const baseUrl =
+              process.env.NEXT_PUBLIC_URL || window.location.origin;
             const url = new URL(`${baseUrl}${embed.path}`);
 
             // Add UTM parameters
-            url.searchParams.set('utm_source', `share-cast-${context?.user?.fid || 'unknown'}`);
+            url.searchParams.set(
+              'utm_source',
+              `share-cast-${context?.user?.fid || 'unknown'}`
+            );
 
             // If custom image generator is provided, use it
             if (embed.imageUrl) {

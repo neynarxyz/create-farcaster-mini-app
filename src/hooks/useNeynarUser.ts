@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export interface NeynarUser {
   fid: number;
@@ -19,20 +19,21 @@ export function useNeynarUser(context?: { user?: { fid?: number } }) {
     setLoading(true);
     setError(null);
     fetch(`/api/users?fids=${context.user.fid}`)
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      .then(response => {
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
         return response.json();
       })
-      .then((data) => {
+      .then(data => {
         if (data.users?.[0]) {
           setUser(data.users[0]);
         } else {
           setUser(null);
         }
       })
-      .catch((err) => setError(err.message))
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, [context?.user?.fid]);
 
   return { user, loading, error };
-} 
+}

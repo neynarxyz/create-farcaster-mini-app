@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useCallback } from "react";
-import { useAccount, useConnect, useSignMessage } from "wagmi";
-import { base } from "wagmi/chains";
-import { Button } from "../Button";
-import { config } from "../../providers/WagmiProvider";
-import { APP_NAME } from "../../../lib/constants";
-import { renderError } from "../../../lib/errorUtils";
+import { useCallback } from 'react';
+import { useAccount, useConnect, useSignMessage } from 'wagmi';
+import { base } from 'wagmi/chains';
+import { Button } from '../Button';
+import { config } from '../../providers/WagmiProvider';
+import { APP_NAME } from '../../../lib/constants';
+import { renderError } from '../../../lib/errorUtils';
 
 /**
  * SignEvmMessage component handles signing messages on EVM-compatible chains.
- * 
+ *
  * This component provides a simple interface for users to sign messages using
  * their connected EVM wallet. It automatically handles wallet connection if
  * the user is not already connected, and displays the signature result.
- * 
+ *
  * Features:
  * - Automatic wallet connection if needed
  * - Message signing with app name
  * - Error handling and display
  * - Signature result display
- * 
+ *
  * @example
  * ```tsx
  * <SignEvmMessage />
@@ -41,12 +41,12 @@ export function SignEvmMessage() {
   // --- Handlers ---
   /**
    * Handles the message signing process.
-   * 
+   *
    * This function first ensures the user is connected to an EVM wallet,
    * then requests them to sign a message containing the app name.
    * If the user is not connected, it automatically connects using the
    * Farcaster Frame connector.
-   * 
+   *
    * @returns Promise<void>
    */
   const signEvmMessage = useCallback(async () => {
@@ -78,4 +78,4 @@ export function SignEvmMessage() {
       )}
     </>
   );
-} 
+}

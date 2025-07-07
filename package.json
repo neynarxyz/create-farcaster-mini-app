@@ -35,6 +35,14 @@
     "build:raw": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "lint:check": "next lint --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write . && eslint --fix .",
+    "type-check": "tsc --noEmit",
+    "check": "npm run type-check && npm run lint:check && npm run format:check",
+    "prepare": "npm run check",
     "deploy:vercel": "node scripts/deploy.js",
     "deploy:raw": "vercel --prod",
     "cleanup": "node scripts/cleanup.js"
@@ -50,6 +58,13 @@
   "devDependencies": {
     "@neynar/nodejs-sdk": "^2.19.0",
     "@types/node": "^22.13.10",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^15.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
     "typescript": "^5.6.3"
   }
 }
