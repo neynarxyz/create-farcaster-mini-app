@@ -299,7 +299,7 @@ export function NeynarAuthButton() {
             if (signedKeyData.signer_approval_url) {
               setSignerApprovalUrl(signedKeyData.signer_approval_url);
               setSignersLoading(false); // Stop loading, show QR code
-              if (context?.client?.clientFid === FARCASTER_FID) {
+              if (isMobile() && context?.client?.clientFid === FARCASTER_FID) {
                 setShowDialog(false);
                 window.open(signedKeyData.signer_approval_url, '_blank');
               } else {
