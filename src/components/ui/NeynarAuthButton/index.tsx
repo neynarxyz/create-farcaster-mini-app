@@ -177,7 +177,7 @@ export function NeynarAuthButton() {
         } catch (error) {
           console.error('❌ Error polling signer:', error);
         }
-      }, 1000); // Poll every 1 second
+      }, 2000); // Poll every 2 second
 
       setPollingInterval(interval);
     },
