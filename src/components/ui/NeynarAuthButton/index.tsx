@@ -9,8 +9,10 @@ import { isMobile } from '~/lib/devices';
 import { ProfileButton } from '~/components/ui/NeynarAuthButton/ProfileButton';
 import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
 import { getItem, removeItem, setItem } from '~/lib/localStorage';
+import { useMiniApp } from '@neynar/react';
 
 const STORAGE_KEY = 'neynar_authenticated_user';
+const FARCASTER_FID = 9152;
 
 interface StoredAuthState {
   isAuthenticated: boolean;
@@ -34,7 +36,7 @@ export function NeynarAuthButton() {
   const [nonce, setNonce] = useState<string | null>(null);
   const [storedAuth, setStoredAuth] = useState<StoredAuthState | null>(null);
   const [signersLoading, setSignersLoading] = useState(false);
-
+  const { context } = useMiniApp();
   // New state for unified dialog flow
   const [showDialog, setShowDialog] = useState(false);
   const [dialogStep, setDialogStep] = useState<'signin' | 'access' | 'loading'>(
@@ -297,7 +299,12 @@ export function NeynarAuthButton() {
             if (signedKeyData.signer_approval_url) {
               setSignerApprovalUrl(signedKeyData.signer_approval_url);
               setSignersLoading(false); // Stop loading, show QR code
-              setDialogStep('access'); // Switch to access step to show QR
+              if (context?.client?.clientFid === FARCASTER_FID) {
+                setShowDialog(false);
+                window.open(signedKeyData.signer_approval_url, '_blank');
+              } else {
+                setDialogStep('access'); // Switch to access step to show QR
+              }
 
               // Step 4: Start polling for signer approval
               startPolling(newSigner.signer_uuid, data.message, data.signature);

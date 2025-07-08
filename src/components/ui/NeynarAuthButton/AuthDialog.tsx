@@ -149,9 +149,6 @@ export function AuthDialog({
             <div className='text-red-600 dark:text-red-400 mb-4'>
               {error?.message || 'Unknown error, please try again.'}
             </div>
-            <button onClick={onClose} className='btn btn-primary'>
-              Try Again
-            </button>
           </div>
         ) : (
           <div className='text-center'>
@@ -195,10 +192,15 @@ export function AuthDialog({
               <button
                 onClick={() =>
                   window.open(
-                    content.qrUrl.replace(
-                      'https://farcaster.xyz/',
-                      'farcaster://'
-                    ),
+                    content.qrUrl
+                      .replace(
+                        'https://farcaster.xyz/',
+                        'https://client.farcaster.xyz/deeplinks/'
+                      )
+                      .replace(
+                        'https://client.farcaster.xyz/deeplinks/',
+                        'farcaster://'
+                      ),
                     '_blank'
                   )
                 }
