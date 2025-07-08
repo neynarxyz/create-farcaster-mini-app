@@ -193,24 +193,17 @@ export function AuthDialog({
 
             {content.showOpenButton && content.qrUrl && (
               <button
-                onClick={() => window.open(content.qrUrl, '_blank')}
+                onClick={() =>
+                  window.open(
+                    content.qrUrl.replace(
+                      'https://farcaster.xyz/',
+                      'farcaster://'
+                    ),
+                    '_blank'
+                  )
+                }
                 className='btn btn-outline flex items-center justify-center gap-2 w-full'
               >
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  width={12}
-                  height={18}
-                  fill='none'
-                >
-                  <path
-                    fill='currentColor'
-                    d='M11.25 8.25H.75a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5Z'
-                  />
-                  <path
-                    fill='currentColor'
-                    d='M9.75 6.75a.75.75 0 0 0-1.5 0v3a.75.75 0 0 0 1.5 0v-3Z'
-                  />
-                </svg>
                 I&apos;m using my phone →
               </button>
             )}
