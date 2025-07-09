@@ -3,7 +3,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { Button } from './Button';
 import { useMiniApp } from '@neynar/react';
-import { type ComposeCast } from "@farcaster/frame-sdk";
+import { type ComposeCast } from "@farcaster/miniapp-sdk";
 
 interface EmbedConfig {
   path?: string;

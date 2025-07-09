@@ -2,7 +2,7 @@ import {
   ParseWebhookEvent,
   parseWebhookEvent,
   verifyAppKeyWithNeynar,
-} from "@farcaster/frame-node";
+} from "@farcaster/miniapp-node";
 import { NextRequest } from "next/server";
 import { APP_NAME } from "~/lib/constants";
 import {
