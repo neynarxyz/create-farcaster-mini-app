@@ -128,9 +128,9 @@ export function SignIn() {
 
       {/* Session Information */}
       {session && (
-        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 mb-1">Session</div>
-          <div className="whitespace-pre">
+        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 dark:bg-gray-900 rounded-lg font-mono">
+          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">Session</div>
+          <div className="whitespace-pre text-gray-700 dark:text-gray-200">
             {JSON.stringify(session, null, 2)}
           </div>
         </div>
@@ -138,17 +138,17 @@ export function SignIn() {
 
       {/* Error Display */}
       {signInFailure && !authState.signingIn && (
-        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
-          <div className="whitespace-pre">{signInFailure}</div>
+        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 dark:bg-gray-900 rounded-lg font-mono">
+          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">SIWF Result</div>
+          <div className="whitespace-pre text-gray-700 dark:text-gray-200">{signInFailure}</div>
         </div>
       )}
 
       {/* Success Result Display */}
       {signInResult && !authState.signingIn && (
-        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
-          <div className="whitespace-pre">
+        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 dark:bg-gray-900 rounded-lg font-mono">
+          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">SIWF Result</div>
+          <div className="whitespace-pre text-gray-700 dark:text-gray-200">
             {JSON.stringify(signInResult, null, 2)}
           </div>
         </div>
