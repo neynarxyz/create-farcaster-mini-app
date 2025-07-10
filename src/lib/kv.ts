@@ -1,4 +1,4 @@
-import { FrameNotificationDetails } from "@farcaster/frame-sdk";
+import { FrameNotificationDetails } from "@farcaster/miniapp-sdk";
 import { Redis } from "@upstash/redis";
 import { APP_NAME } from "./constants";
 

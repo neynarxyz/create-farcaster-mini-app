@@ -388,10 +388,9 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
   packageJson.dependencies = {
     "@farcaster/auth-client": ">=0.3.0 <1.0.0",
     "@farcaster/auth-kit": ">=0.6.0 <1.0.0",
-    "@farcaster/frame-core": ">=0.0.29 <1.0.0",
-    "@farcaster/frame-node": ">=0.0.18 <1.0.0",
-    "@farcaster/frame-sdk": ">=0.0.31 <1.0.0",
-    "@farcaster/frame-wagmi-connector": ">=0.0.19 <1.0.0",
+    "@farcaster/miniapp-node": ">=0.1.5 <1.0.0",
+    "@farcaster/miniapp-sdk": ">=0.1.6 <1.0.0",
+    "@farcaster/miniapp-wagmi-connector": "^1.0.0",
     "@farcaster/mini-app-solana": ">=0.0.17 <1.0.0",
     "@neynar/react": "^1.2.5",
     "@radix-ui/react-label": "^2.1.1",

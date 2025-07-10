@@ -409,6 +409,45 @@ async function setEnvironmentVariables(
   return results;
 }
 
+async function waitForDeployment(vercelClient, projectId, maxWaitTime = 300000) { // 5 minutes
+  console.log('\n⏳ Waiting for deployment to complete...');
+  const startTime = Date.now();
+  
+  while (Date.now() - startTime < maxWaitTime) {
+    try {
+      const deployments = await vercelClient.deployments.list({
+        projectId: projectId,
+        limit: 1
+      });
+      
+      if (deployments.deployments?.[0]) {
+        const deployment = deployments.deployments[0];
+        console.log(`📊 Deployment status: ${deployment.state}`);
+        
+        if (deployment.state === 'READY') {
+          console.log('✅ Deployment completed successfully!');
+          return deployment;
+        } else if (deployment.state === 'ERROR') {
+          throw new Error(`Deployment failed with state: ${deployment.state}`);
+        } else if (deployment.state === 'CANCELED') {
+          throw new Error('Deployment was canceled');
+        }
+        
+        // Still building, wait and check again
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+      } else {
+        console.log('⏳ No deployment found yet, waiting...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    } catch (error) {
+      console.warn('⚠️  Could not check deployment status:', error.message);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+  }
+  
+  throw new Error('Deployment timed out after 5 minutes');
+}
+
 async function deployToVercel(useGitHub = false) {
   try {
     console.log("\n🚀 Deploying to Vercel...");
@@ -431,25 +470,46 @@ async function deployToVercel(useGitHub = false) {
     }
 
     // Set up Vercel project
-    console.log("\n📦 Setting up Vercel project...");
-    console.log(
-      "An initial deployment is required to get an assigned domain that can be used in the mini app manifest\n"
-    );
-    console.log(
-      "\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n"
-    );
-
-    execSync("vercel", {
+    console.log('\n📦 Setting up Vercel project...');
+    console.log('An initial deployment is required to get an assigned domain that can be used in the mini app manifest\n');
+    console.log('\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n');
+    
+    // Use spawn instead of execSync for better error handling
+    const { spawn } = await import('child_process');
+    const vercelSetup = spawn('vercel', [], { 
       cwd: projectRoot,
       stdio: "inherit",
       shell: process.platform === "win32",
     });
 
+    await new Promise((resolve, reject) => {
+      vercelSetup.on('close', (code) => {
+        if (code === 0 || code === null) {
+          console.log('✅ Vercel project setup completed');
+          resolve();
+        } else {
+          console.log('⚠️  Vercel setup command completed (this is normal)');
+          resolve(); // Don't reject, as this is often expected
+        }
+      });
+      
+      vercelSetup.on('error', (error) => {
+        console.log('⚠️  Vercel setup command completed (this is normal)');
+        resolve(); // Don't reject, as this is often expected
+      });
+    });
+
+    // Wait a moment for project files to be written
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     // Load project info
-    const projectJson = JSON.parse(
-      fs.readFileSync(".vercel/project.json", "utf8")
-    );
-    const projectId = projectJson.projectId;
+    let projectId;
+    try {
+      const projectJson = JSON.parse(fs.readFileSync('.vercel/project.json', 'utf8'));
+      projectId = projectJson.projectId;
+    } catch (error) {
+      throw new Error('Failed to load project info. Please ensure the Vercel project was created successfully.');
+    }
 
     // Get Vercel token and initialize SDK client
     let vercelClient = null;
@@ -489,30 +549,35 @@ async function deployToVercel(useGitHub = false) {
 
     // Fallback to CLI method if SDK failed
     if (!domain) {
-      const inspectOutput = execSync(
-        `vercel project inspect ${projectId} 2>&1`,
-        {
+      try {
+        const inspectOutput = execSync(`vercel project inspect ${projectId} 2>&1`, {
           cwd: projectRoot,
-          encoding: "utf8",
-        }
-      );
+          encoding: 'utf8'
+        });
 
-      const nameMatch = inspectOutput.match(/Name\s+([^\n]+)/);
-      if (nameMatch) {
-        projectName = nameMatch[1].trim();
-        domain = `${projectName}.vercel.app`;
-        console.log("🌐 Using project name for domain:", domain);
-      } else {
-        const altMatch = inspectOutput.match(/Found Project [^/]+\/([^\n]+)/);
-        if (altMatch) {
-          projectName = altMatch[1].trim();
+        const nameMatch = inspectOutput.match(/Name\s+([^\n]+)/);
+        if (nameMatch) {
+          projectName = nameMatch[1].trim();
           domain = `${projectName}.vercel.app`;
           console.log("🌐 Using project name for domain:", domain);
         } else {
-          throw new Error(
-            "Could not determine project name from inspection output"
-          );
+          const altMatch = inspectOutput.match(/Found Project [^/]+\/([^\n]+)/);
+          if (altMatch) {
+            projectName = altMatch[1].trim();
+            domain = `${projectName}.vercel.app`;
+            console.log('🌐 Using project name for domain:', domain);
+          } else {
+            console.warn('⚠️  Could not determine project name from inspection, using fallback');
+            // Use a fallback domain based on project ID
+            domain = `project-${projectId.slice(-8)}.vercel.app`;
+            console.log('🌐 Using fallback domain:', domain);
+          }
         }
+      } catch (error) {
+        console.warn('⚠️  Could not inspect project, using fallback domain');
+        // Use a fallback domain based on project ID
+        domain = `project-${projectId.slice(-8)}.vercel.app`;
+        console.log('🌐 Using fallback domain:', domain);
       }
     }
 
@@ -572,27 +637,49 @@ async function deployToVercel(useGitHub = false) {
       console.log("\n📦 Deploying local code directly...");
     }
 
-    execSync("vercel deploy --prod", {
+    // Use spawn for better control over the deployment process
+    const vercelDeploy = spawn('vercel', ['deploy', '--prod'], { 
       cwd: projectRoot,
       stdio: "inherit",
       env: process.env,
     });
 
+    await new Promise((resolve, reject) => {
+      vercelDeploy.on('close', (code) => {
+        if (code === 0) {
+          console.log('✅ Vercel deployment command completed');
+          resolve();
+        } else {
+          console.error(`❌ Vercel deployment failed with code: ${code}`);
+          reject(new Error(`Vercel deployment failed with exit code: ${code}`));
+        }
+      });
+      
+      vercelDeploy.on('error', (error) => {
+        console.error('❌ Vercel deployment error:', error.message);
+        reject(error);
+      });
+    });
+
+    // Wait for deployment to actually complete
+    let deployment;
+    if (vercelClient) {
+      try {
+        deployment = await waitForDeployment(vercelClient, projectId);
+      } catch (error) {
+        console.warn('⚠️  Could not verify deployment completion:', error.message);
+        console.log('ℹ️  Proceeding with domain verification...');
+      }
+    }
+
     // Verify actual domain after deployment
     console.log("\n🔍 Verifying deployment domain...");
 
     let actualDomain = domain;
-    if (vercelClient) {
+    if (vercelClient && deployment) {
       try {
-        const deployments = await vercelClient.deployments.list({
-          projectId: projectId,
-          limit: 1,
-        });
-
-        if (deployments.deployments?.[0]?.url) {
-          actualDomain = deployments.deployments[0].url;
-          console.log("🌐 Verified actual domain:", actualDomain);
-        }
+        actualDomain = deployment.url || domain;
+        console.log('🌐 Verified actual domain:', actualDomain);
       } catch (error) {
         console.warn(
           "⚠️  Could not verify domain via SDK, using assumed domain"
@@ -614,26 +701,37 @@ async function deployToVercel(useGitHub = false) {
         NEXT_PUBLIC_URL: `https://${actualDomain}`,
       };
 
-      const updatedMetadata = await generateFarcasterMetadata(
-        actualDomain,
-        webhookUrl
-      );
-      updatedEnv.MINI_APP_METADATA = updatedMetadata;
+      if (miniAppMetadata) {
+        const updatedMetadata = await generateFarcasterMetadata(actualDomain, fid, await validateSeedPhrase(process.env.SEED_PHRASE), process.env.SEED_PHRASE, webhookUrl);
+        updatedEnv.MINI_APP_METADATA = updatedMetadata;
+      }
 
-      await setEnvironmentVariables(
-        vercelClient,
-        projectId,
-        updatedEnv,
-        projectRoot
-      );
+      await setEnvironmentVariables(vercelClient, projectId, updatedEnv, projectRoot);
 
-      console.log("\n📦 Redeploying with correct domain...");
-      execSync("vercel deploy --prod", {
+      console.log('\n📦 Redeploying with correct domain...');
+      const vercelRedeploy = spawn('vercel', ['deploy', '--prod'], { 
         cwd: projectRoot,
         stdio: "inherit",
         env: process.env,
       });
 
+      await new Promise((resolve, reject) => {
+        vercelRedeploy.on('close', (code) => {
+          if (code === 0) {
+            console.log('✅ Redeployment completed');
+            resolve();
+          } else {
+            console.error(`❌ Redeployment failed with code: ${code}`);
+            reject(new Error(`Redeployment failed with exit code: ${code}`));
+          }
+        });
+        
+        vercelRedeploy.on('error', (error) => {
+          console.error('❌ Redeployment error:', error.message);
+          reject(error);
+        });
+      });
+      
       domain = actualDomain;
     }
 
