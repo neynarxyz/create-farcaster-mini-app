@@ -77,7 +77,7 @@ export function SignIn() {
       const nonce = await getNonce();
       const result = await sdk.actions.signIn({ nonce });
       setSignInResult(result);
-      await signIn('credentials', {
+      await signIn('farcaster', {
         message: result.message,
         signature: result.signature,
         redirect: false,
@@ -96,41 +96,46 @@ export function SignIn() {
   /**
    * Handles the sign-out process.
    *
-   * This function clears the NextAuth session and resets the local
-   * sign-in result state to complete the sign-out flow.
+   * This function clears the NextAuth session only if the current session
+   * is using the Farcaster provider, and resets the local sign-in result state.
    *
    * @returns Promise<void>
    */
   const handleSignOut = useCallback(async () => {
     try {
       setAuthState((prev) => ({ ...prev, signingOut: true }));
-      await signOut({ redirect: false });
+      // Only sign out if the current session is from Farcaster provider
+      if (session?.user?.provider === 'farcaster') {
+        await signOut({ redirect: false });
+      }
       setSignInResult(undefined);
     } finally {
       setAuthState((prev) => ({ ...prev, signingOut: false }));
     }
-  }, []);
+  }, [session]);
 
   // --- Render ---
   return (
     <>
       {/* Authentication Buttons */}
-      {status !== 'authenticated' && (
+      {(status !== 'authenticated' ||
+        session?.user?.provider !== 'farcaster') && (
         <Button onClick={handleSignIn} disabled={authState.signingIn}>
           Sign In with Farcaster
         </Button>
       )}
-      {status === 'authenticated' && (
-        <Button onClick={handleSignOut} disabled={authState.signingOut}>
-          Sign out
-        </Button>
-      )}
+      {status === 'authenticated' &&
+        session?.user?.provider === 'farcaster' && (
+          <Button onClick={handleSignOut} disabled={authState.signingOut}>
+            Sign out
+          </Button>
+        )}
 
       {/* Session Information */}
       {session && (
-        <div className='my-2 p-2 text-xs overflow-x-scroll rounded-lg font-mono border border-secondary-100'>
-          <div className='font-semibold text-gray-500 mb-1'>Session</div>
-          <div className='whitespace-pre'>
+        <div className="my-2 p-2 text-xs overflow-x-scroll rounded-lg font-mono border border-secondary-100">
+          <div className="font-semibold text-gray-500 mb-1">Session</div>
+          <div className="whitespace-pre">
             {JSON.stringify(session, null, 2)}
           </div>
         </div>
@@ -138,17 +143,17 @@ export function SignIn() {
 
       {/* Error Display */}
       {signInFailure && !authState.signingIn && (
-        <div className='my-2 p-2 text-xs overflow-x-scroll rounded-lg font-mono border border-secondary-100'>
-          <div className='font-semibold text-gray-500 mb-1'>SIWF Result</div>
-          <div className='whitespace-pre'>{signInFailure}</div>
+        <div className="my-2 p-2 text-xs overflow-x-scroll rounded-lg font-mono border border-secondary-100">
+          <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
+          <div className="whitespace-pre">{signInFailure}</div>
         </div>
       )}
 
       {/* Success Result Display */}
       {signInResult && !authState.signingIn && (
-        <div className='my-2 p-2 text-xs overflow-x-scroll rounded-lg font-mono border border-secondary-100'>
-          <div className='font-semibold text-gray-500 mb-1'>SIWF Result</div>
-          <div className='whitespace-pre'>
+        <div className="my-2 p-2 text-xs overflow-x-scroll rounded-lg font-mono border border-secondary-100">
+          <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
+          <div className="whitespace-pre">
             {JSON.stringify(signInResult, null, 2)}
           </div>
         </div>

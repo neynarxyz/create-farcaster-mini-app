@@ -13,8 +13,17 @@ import { useMiniApp } from '@neynar/react';
 import {
   signIn as backendSignIn,
   signOut as backendSignOut,
+  useSession,
 } from 'next-auth/react';
 import sdk, { SignIn as SignInCore } from '@farcaster/frame-sdk';
+
+type User = {
+  fid: number;
+  username: string;
+  display_name: string;
+  pfp_url: string;
+  // Add other user properties as needed
+};
 
 const STORAGE_KEY = 'neynar_authenticated_user';
 const FARCASTER_FID = 9152;
@@ -90,6 +99,7 @@ export function NeynarAuthButton() {
   const [storedAuth, setStoredAuth] = useState<StoredAuthState | null>(null);
   const [signersLoading, setSignersLoading] = useState(false);
   const { context } = useMiniApp();
+  const { data: session } = useSession();
   // New state for unified dialog flow
   const [showDialog, setShowDialog] = useState(false);
   const [dialogStep, setDialogStep] = useState<'signin' | 'access' | 'loading'>(
@@ -468,7 +478,7 @@ export function NeynarAuthButton() {
         nonce: nonce,
       };
 
-      const nextAuthResult = await backendSignIn('credentials', signInData);
+      const nextAuthResult = await backendSignIn('neynar', signInData);
       if (nextAuthResult?.ok) {
         setMessage(result.message);
         setSignature(result.signature);
@@ -503,7 +513,10 @@ export function NeynarAuthButton() {
       setSignersLoading(true);
 
       if (useBackendFlow) {
-        await backendSignOut({ redirect: false });
+        // Only sign out from NextAuth if the current session is from Neynar provider
+        if (session?.user?.provider === 'neynar') {
+          await backendSignOut({ redirect: false });
+        }
       } else {
         frontendSignOut();
       }
@@ -528,7 +541,7 @@ export function NeynarAuthButton() {
     } finally {
       setSignersLoading(false);
     }
-  }, [useBackendFlow, frontendSignOut, pollingInterval]);
+  }, [useBackendFlow, frontendSignOut, pollingInterval, session]);
 
   // The key fix: match the original library's authentication logic exactly
   const authenticated =
