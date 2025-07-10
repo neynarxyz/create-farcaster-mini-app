@@ -349,34 +349,6 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
       },
     ]);
     answers.enableAnalytics = analyticsAnswer.enableAnalytics;
-
-    // Ask about SEED_PHRASE
-    const seedPhraseAnswer = await inquirer.prompt([
-      {
-        type: 'password',
-        name: 'seedPhrase',
-        message:
-          '⚠️  If SEED_PHRASE is not provided, you will not be able to use Sign In With Neynar.\n\n' +
-          'Enter your SEED_PHRASE (or press enter to skip):',
-        default: null,
-      },
-    ]);
-    answers.seedPhrase = seedPhraseAnswer.seedPhrase;
-
-    // Ask about sponsor signer if SEED_PHRASE is provided
-    if (answers.seedPhrase) {
-      const sponsorSignerAnswer = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'sponsorSigner',
-          message:
-            'Do you want to sponsor the signer? (This will be used in Sign In With Neynar)\n' +
-            'Note: If you choose to sponsor the signer, Neynar will sponsor it for you and you will be charged in CUs.',
-          default: false,
-        },
-      ]);
-      answers.sponsorSigner = sponsorSignerAnswer.sponsorSigner;
-    }
   }
 
   const finalProjectName = answers.projectName;
@@ -438,32 +410,32 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
 
   // Add dependencies
   packageJson.dependencies = {
-    "@farcaster/auth-client": ">=0.3.0 <1.0.0",
-    "@farcaster/auth-kit": ">=0.6.0 <1.0.0",
-    "@farcaster/miniapp-node": ">=0.1.5 <1.0.0",
-    "@farcaster/miniapp-sdk": ">=0.1.6 <1.0.0",
-    "@farcaster/miniapp-wagmi-connector": "^1.0.0",
-    "@farcaster/mini-app-solana": ">=0.0.17 <1.0.0",
-    "@neynar/react": "^1.2.5",
-    "@radix-ui/react-label": "^2.1.1",
-    "@solana/wallet-adapter-react": "^0.15.38",
-    "@tanstack/react-query": "^5.61.0",
-    "@upstash/redis": "^1.34.3",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "dotenv": "^16.4.7",
-    "lucide-react": "^0.469.0",
-    "mipd": "^0.0.7",
-    "next": "^15",
-    "next-auth": "^4.24.11",
-    "react": "^19",
-    "react-dom": "^19",
-    "tailwind-merge": "^2.6.0",
-    "tailwindcss-animate": "^1.0.7",
-    "viem": "^2.23.6",
-    "wagmi": "^2.14.12",
-    "zod": "^3.24.2",
-    "siwe": '^3.0.0',
+    '@farcaster/auth-client': '>=0.3.0 <1.0.0',
+    '@farcaster/auth-kit': '>=0.6.0 <1.0.0',
+    '@farcaster/miniapp-node': '>=0.1.5 <1.0.0',
+    '@farcaster/miniapp-sdk': '>=0.1.6 <1.0.0',
+    '@farcaster/miniapp-wagmi-connector': '^1.0.0',
+    '@farcaster/mini-app-solana': '>=0.0.17 <1.0.0',
+    '@neynar/react': '^1.2.5',
+    '@radix-ui/react-label': '^2.1.1',
+    '@solana/wallet-adapter-react': '^0.15.38',
+    '@tanstack/react-query': '^5.61.0',
+    '@upstash/redis': '^1.34.3',
+    'class-variance-authority': '^0.7.1',
+    clsx: '^2.1.1',
+    dotenv: '^16.4.7',
+    'lucide-react': '^0.469.0',
+    mipd: '^0.0.7',
+    next: '^15',
+    'next-auth': '^4.24.11',
+    react: '^19',
+    'react-dom': '^19',
+    'tailwind-merge': '^2.6.0',
+    'tailwindcss-animate': '^1.0.7',
+    viem: '^2.23.6',
+    wagmi: '^2.14.12',
+    zod: '^3.24.2',
+    siwe: '^3.0.0',
   };
 
   packageJson.devDependencies = {
