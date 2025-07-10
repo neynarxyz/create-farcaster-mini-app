@@ -22,18 +22,13 @@ export async function GET(request: Request) {
 
     // Fetch user data if signers exist
     let user = null;
-    if (signers && signers.length > 0) {
-      try {
-        const userResponse = await fetch(
-          `${process.env.NEXTAUTH_URL}/api/users?fids=${signers[0].fid}`
-        );
-        if (userResponse.ok) {
-          const userDataResponse = await userResponse.json();
-          user = userDataResponse.users?.[0] || null;
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
+    if (signers && signers.length > 0 && signers[0].fid) {
+      const {
+        users: [fetchedUser],
+      } = await client.fetchBulkUsers({
+        fids: [signers[0].fid],
+      });
+      user = fetchedUser;
     }
 
     return NextResponse.json({
