@@ -12,7 +12,7 @@ export function AuthDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  url: string;
+  url?: string;
   isError: boolean;
   error?: Error | null;
   step: 'signin' | 'access' | 'loading';
@@ -47,49 +47,49 @@ export function AuthDialog({
         return {
           title: 'Grant Access',
           description: (
-            <div className='space-y-3'>
-              <p className='text-gray-600 dark:text-gray-400'>
+            <div className="space-y-3">
+              <p className="text-gray-600 dark:text-gray-400">
                 Allow this app to access your Farcaster account:
               </p>
-              <div className='space-y-2 text-sm'>
-                <div className='flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg'>
-                  <div className='w-6 h-6 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center'>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="w-6 h-6 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
                     <svg
-                      className='w-3 h-3 text-green-600 dark:text-green-400'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
+                      className="w-3 h-3 text-green-600 dark:text-green-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
                     >
                       <path
-                        fillRule='evenodd'
-                        d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                        clipRule='evenodd'
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
                       />
                     </svg>
                   </div>
                   <div>
-                    <div className='font-medium text-gray-900 dark:text-gray-100'>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
                       Read Access
                     </div>
-                    <div className='text-gray-500 dark:text-gray-400'>
+                    <div className="text-gray-500 dark:text-gray-400">
                       View your profile and public information
                     </div>
                   </div>
                 </div>
-                <div className='flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg'>
-                  <div className='w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center'>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
                     <svg
-                      className='w-3 h-3 text-blue-600 dark:text-blue-400'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
+                      className="w-3 h-3 text-blue-600 dark:text-blue-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
                     >
-                      <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                     </svg>
                   </div>
                   <div>
-                    <div className='font-medium text-gray-900 dark:text-gray-100'>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
                       Write Access
                     </div>
-                    <div className='text-gray-500 dark:text-gray-400'>
+                    <div className="text-gray-500 dark:text-gray-400">
                       Post casts, likes, and update your profile
                     </div>
                   </div>
@@ -118,43 +118,43 @@ export function AuthDialog({
   const content = getStepContent();
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
-      <div className='bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700'>
-        <div className='flex justify-between items-center mb-4'>
-          <h2 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {isError ? 'Error' : content.title}
           </h2>
           <button
             onClick={onClose}
-            className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <svg
-              className='w-6 h-6'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
               <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 strokeWidth={2}
-                d='M6 18L18 6M6 6l12 12'
+                d="M6 18L18 6M6 6l12 12"
               />
             </svg>
           </button>
         </div>
 
         {isError ? (
-          <div className='text-center'>
-            <div className='text-red-600 dark:text-red-400 mb-4'>
+          <div className="text-center">
+            <div className="text-red-600 dark:text-red-400 mb-4">
               {error?.message || 'Unknown error, please try again.'}
             </div>
           </div>
         ) : (
-          <div className='text-center'>
-            <div className='mb-6'>
+          <div className="text-center">
+            <div className="mb-6">
               {typeof content.description === 'string' ? (
-                <p className='text-gray-600 dark:text-gray-400'>
+                <p className="text-gray-600 dark:text-gray-400">
                   {content.description}
                 </p>
               ) : (
@@ -162,23 +162,23 @@ export function AuthDialog({
               )}
             </div>
 
-            <div className='mb-6 flex justify-center'>
+            <div className="mb-6 flex justify-center">
               {content.showQR && content.qrUrl ? (
-                <div className='p-4 bg-white rounded-lg'>
+                <div className="p-4 bg-white rounded-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
                       content.qrUrl
                     )}`}
-                    alt='QR Code'
-                    className='w-48 h-48'
+                    alt="QR Code"
+                    className="w-48 h-48"
                   />
                 </div>
               ) : step === 'loading' || isLoading ? (
-                <div className='w-48 h-48 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg'>
-                  <div className='flex flex-col items-center gap-3'>
-                    <div className='spinner w-8 h-8' />
-                    <span className='text-sm text-gray-500 dark:text-gray-400'>
+                <div className="w-48 h-48 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="spinner w-8 h-8" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {step === 'loading'
                         ? 'Setting up access...'
                         : 'Loading...'}
@@ -204,7 +204,7 @@ export function AuthDialog({
                     '_blank'
                   )
                 }
-                className='btn btn-outline flex items-center justify-center gap-2 w-full'
+                className="btn btn-outline flex items-center justify-center gap-2 w-full"
               >
                 I&apos;m using my phone →
               </button>

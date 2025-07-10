@@ -10,25 +10,78 @@ import { ProfileButton } from '~/components/ui/NeynarAuthButton/ProfileButton';
 import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
 import { getItem, removeItem, setItem } from '~/lib/localStorage';
 import { useMiniApp } from '@neynar/react';
+import {
+  signIn as backendSignIn,
+  signOut as backendSignOut,
+} from 'next-auth/react';
+import sdk, { SignIn as SignInCore } from '@farcaster/frame-sdk';
 
 const STORAGE_KEY = 'neynar_authenticated_user';
 const FARCASTER_FID = 9152;
 
 interface StoredAuthState {
   isAuthenticated: boolean;
-  userData?: {
-    fid?: number;
-    pfpUrl?: string;
-    username?: string;
-  };
-  lastSignInTime?: number;
-  signers?: {
+  user: {
+    object: 'user';
+    fid: number;
+    username: string;
+    display_name: string;
+    pfp_url: string;
+    custody_address: string;
+    profile: {
+      bio: {
+        text: string;
+        mentioned_profiles?: Array<{
+          object: 'user_dehydrated';
+          fid: number;
+          username: string;
+          display_name: string;
+          pfp_url: string;
+          custody_address: string;
+        }>;
+        mentioned_profiles_ranges?: Array<{
+          start: number;
+          end: number;
+        }>;
+      };
+      location?: {
+        latitude: number;
+        longitude: number;
+        address: {
+          city: string;
+          state: string;
+          country: string;
+          country_code: string;
+        };
+      };
+    };
+    follower_count: number;
+    following_count: number;
+    verifications: string[];
+    verified_addresses: {
+      eth_addresses: string[];
+      sol_addresses: string[];
+      primary: {
+        eth_address: string;
+        sol_address: string;
+      };
+    };
+    verified_accounts: Array<Record<string, unknown>>;
+    power_badge: boolean;
+    url?: string;
+    experimental?: {
+      neynar_user_score: number;
+      deprecation_notice: string;
+    };
+    score: number;
+  } | null;
+  signers: {
     object: 'signer';
     signer_uuid: string;
     public_key: string;
     status: 'approved';
     fid: number;
-  }[]; // Store the list of signers
+  }[];
 }
 
 // Main Custom SignInButton Component
@@ -48,6 +101,12 @@ export function NeynarAuthButton() {
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
     null
   );
+  const [message, setMessage] = useState<string | null>(null);
+  const [signature, setSignature] = useState<string | null>(null);
+  const [debugState, setDebugState] = useState<string | null>(null);
+
+  // Determine which flow to use based on context
+  const useBackendFlow = context !== undefined;
 
   // Helper function to create a signer
   const createSigner = useCallback(async () => {
@@ -67,6 +126,24 @@ export function NeynarAuthButton() {
       // throw error;
     }
   }, []);
+
+  // Helper function to fetch user data from Neynar API
+  const fetchUserData = useCallback(
+    async (fid: number): Promise<User | null> => {
+      try {
+        const response = await fetch(`/api/users?fids=${fid}`);
+        if (response.ok) {
+          const data = await response.json();
+          return data.users?.[0] || null;
+        }
+        return null;
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        return null;
+      }
+    },
+    []
+  );
 
   // Helper function to generate signed key request
   const generateSignedKeyRequest = useCallback(
@@ -123,13 +200,19 @@ export function NeynarAuthButton() {
         const signerData = await response.json();
 
         if (response.ok) {
+          let user: StoredAuthState['user'] | null = null;
+
+          if (signerData.signers && signerData.signers.length > 0) {
+            user = await fetchUserData(signerData.signers[0].fid);
+          }
+
           // Store signers in localStorage, preserving existing auth data
           const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
           const updatedState: StoredAuthState = {
             ...existingAuth,
-            isAuthenticated: true,
+            isAuthenticated: !!user,
             signers: signerData.signers || [],
-            lastSignInTime: existingAuth?.lastSignInTime || Date.now(),
+            user,
           };
           setItem<StoredAuthState>(STORAGE_KEY, updatedState);
           setStoredAuth(updatedState);
@@ -225,8 +308,7 @@ export function NeynarAuthButton() {
     const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
     const authState: StoredAuthState = {
       isAuthenticated: true,
-      userData: res as StoredAuthState['userData'],
-      lastSignInTime: Date.now(),
+      user: res as StoredAuthState['user'],
       signers: existingAuth?.signers || [], // Preserve existing signers
     };
     setItem<StoredAuthState>(STORAGE_KEY, authState);
@@ -246,8 +328,8 @@ export function NeynarAuthButton() {
   });
 
   const {
-    signIn,
-    signOut,
+    signIn: frontendSignIn,
+    signOut: frontendSignOut,
     connect,
     reconnect,
     isSuccess,
@@ -259,35 +341,44 @@ export function NeynarAuthButton() {
     validSignature,
   } = signInState;
 
-  // Connect when component mounts and we have a nonce
   useEffect(() => {
-    if (nonce && !channelToken) {
+    setMessage(data?.message || null);
+    setSignature(data?.signature || null);
+  }, [data?.message, data?.signature]);
+
+  // Connect for frontend flow when nonce is available
+  useEffect(() => {
+    if (!useBackendFlow && nonce && !channelToken) {
       connect();
     }
-  }, [nonce, channelToken, connect]);
+  }, [useBackendFlow, nonce, channelToken, connect]);
 
   // Handle fetching signers after successful authentication
   useEffect(() => {
-    if (data?.message && data?.signature) {
+    if (message && signature) {
       const handleSignerFlow = async () => {
         try {
-          // Ensure we have message and signature
-          if (!data.message || !data.signature) {
-            console.error('❌ Missing message or signature');
-            return;
-          }
+          // // Ensure we have message and signature
+          // if (!message || !signature) {
+          //   console.error('❌ Missing message or signature');
+          //   return;
+          // }
 
           // Step 1: Change to loading state
           setDialogStep('loading');
           setSignersLoading(true);
 
           // First, fetch existing signers
-          const signers = await fetchAllSigners(data.message, data.signature);
+          const signers = await fetchAllSigners(message, signature);
+
+          setDebugState('Fetched signers...');
 
           // Check if no signers exist or if we have empty signers
           if (!signers || signers.length === 0) {
             // Step 1: Create a signer
             const newSigner = await createSigner();
+
+            setDebugState('Created new signer...');
 
             // Step 2: Generate signed key request
             const signedKeyData = await generateSignedKeyRequest(
@@ -295,27 +386,52 @@ export function NeynarAuthButton() {
               newSigner.public_key
             );
 
+            setDebugState('Generated signed key request...');
+
             // Step 3: Show QR code in access dialog for signer approval
             if (signedKeyData.signer_approval_url) {
+              setDebugState('Setting signer approval URL...');
               setSignerApprovalUrl(signedKeyData.signer_approval_url);
               setSignersLoading(false); // Stop loading, show QR code
-              if (isMobile() && context?.client?.clientFid === FARCASTER_FID) {
+              if (
+                context?.client?.platformType === 'mobile' &&
+                context?.client?.clientFid === FARCASTER_FID
+              ) {
+                setDebugState('Opening mobile app...');
                 setShowDialog(false);
-                window.open(signedKeyData.signer_approval_url, '_blank');
+                await sdk.actions.openUrl(
+                  signedKeyData.signer_approval_url.replace(
+                    'https://client.farcaster.xyz/deeplinks/',
+                    'farcaster://'
+                  )
+                );
               } else {
-                setDialogStep('access'); // Switch to access step to show QR
+                setDebugState(
+                  'Opening access dialog...' +
+                    ` ${context?.client?.platformType}` +
+                    ` ${context?.client?.clientFid}`
+                );
+                setDialogStep('access');
+                setShowDialog(true);
+                setDebugState(
+                  'Opening access dialog...2' +
+                    ` ${dialogStep}` +
+                    ` ${showDialog}`
+                );
               }
 
               // Step 4: Start polling for signer approval
-              startPolling(newSigner.signer_uuid, data.message, data.signature);
+              startPolling(newSigner.signer_uuid, message, signature);
             }
           } else {
+            setDebugState('Signers already exist, proceeding to signin...');
             // If signers exist, close the dialog
             setSignersLoading(false);
             setShowDialog(false);
             setDialogStep('signin');
           }
         } catch (error) {
+          setDebugState('Error in signer flow:');
           console.error('❌ Error in signer flow:', error);
           // On error, reset to signin step
           setDialogStep('signin');
@@ -326,48 +442,111 @@ export function NeynarAuthButton() {
       handleSignerFlow();
     }
   }, [
-    data?.message,
-    data?.signature,
+    message,
+    signature,
     fetchAllSigners,
     createSigner,
     generateSignedKeyRequest,
     startPolling,
   ]);
 
-  const handleSignIn = useCallback(() => {
+  // Backend flow using NextAuth
+  const handleBackendSignIn = useCallback(async () => {
+    if (!nonce) {
+      console.error('❌ No nonce available for backend sign-in');
+      return;
+    }
+
+    try {
+      setSignersLoading(true);
+      const result = await sdk.actions.signIn({ nonce });
+
+      const signInData = {
+        message: result.message,
+        signature: result.signature,
+        redirect: false,
+        nonce: nonce,
+      };
+
+      const nextAuthResult = await backendSignIn('credentials', signInData);
+      if (nextAuthResult?.ok) {
+        setMessage(result.message);
+        setSignature(result.signature);
+      } else {
+        console.error('❌ NextAuth sign-in failed:', nextAuthResult);
+      }
+    } catch (e) {
+      if (e instanceof SignInCore.RejectedByUser) {
+        console.log('ℹ️ Sign-in rejected by user');
+      } else {
+        console.error('❌ Backend sign-in error:', e);
+      }
+    }
+  }, [nonce]);
+
+  const handleFrontEndSignIn = useCallback(() => {
     if (isError) {
       reconnect();
     }
     setDialogStep('signin');
     setShowDialog(true);
-    signIn();
+    frontendSignIn();
 
     // Open mobile app if on mobile and URL is available
     if (url && isMobile()) {
       window.open(url, '_blank');
     }
-  }, [isError, reconnect, signIn, url]);
+  }, [isError, reconnect, frontendSignIn, url]);
 
-  const handleSignOut = useCallback(() => {
-    setShowDialog(false);
-    signOut();
-    removeItem(STORAGE_KEY);
-    setStoredAuth(null);
-  }, [signOut]);
+  const handleSignOut = useCallback(async () => {
+    try {
+      setSignersLoading(true);
+
+      if (useBackendFlow) {
+        await backendSignOut({ redirect: false });
+      } else {
+        frontendSignOut();
+      }
+
+      removeItem(STORAGE_KEY);
+      setStoredAuth(null);
+      setShowDialog(false);
+      setDialogStep('signin');
+      setSignerApprovalUrl(null);
+      setMessage(null);
+      setSignature(null);
+      setDebugState(null);
+
+      // Reset polling interval
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        setPollingInterval(null);
+      }
+    } catch (error) {
+      console.error('❌ Error during sign out:', error);
+      // Optionally handle error state
+    } finally {
+      setSignersLoading(false);
+    }
+  }, [useBackendFlow, frontendSignOut, pollingInterval]);
 
   // The key fix: match the original library's authentication logic exactly
   const authenticated =
     ((isSuccess && validSignature) || storedAuth?.isAuthenticated) &&
     !!(storedAuth?.signers && storedAuth.signers.length > 0);
-  const userData = data || storedAuth?.userData;
+  const userData = {
+    fid: storedAuth?.user?.fid,
+    username: storedAuth?.user?.username || '',
+    pfpUrl: storedAuth?.user?.pfp_url || '',
+  };
 
   // Show loading state while nonce is being fetched or signers are loading
   if (!nonce || signersLoading) {
     return (
-      <div className='flex items-center justify-center'>
-        <div className='flex items-center gap-3 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg'>
-          <div className='spinner w-4 h-4' />
-          <span className='text-sm text-gray-600 dark:text-gray-400'>
+      <div className="flex items-center justify-center">
+        <div className="flex items-center gap-3 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <div className="spinner w-4 h-4" />
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             Loading...
           </span>
         </div>
@@ -381,32 +560,32 @@ export function NeynarAuthButton() {
         <ProfileButton userData={userData} onSignOut={handleSignOut} />
       ) : (
         <Button
-          onClick={handleSignIn}
-          disabled={!url}
+          onClick={useBackendFlow ? handleBackendSignIn : handleFrontEndSignIn}
+          disabled={!useBackendFlow && !url}
           className={cn(
             'btn btn-primary flex items-center gap-3',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             'transform transition-all duration-200 active:scale-[0.98]',
-            !url && 'cursor-not-allowed'
+            !url && !useBackendFlow && 'cursor-not-allowed'
           )}
         >
-          {!url ? (
+          {!useBackendFlow && !url ? (
             <>
-              <div className='spinner-primary w-5 h-5' />
+              <div className="spinner-primary w-5 h-5" />
               <span>Initializing...</span>
             </>
           ) : (
             <>
-              <span>Sign in with Neynar</span>
+              <span>{debugState || 'Sign in with Neynar'}</span>
             </>
           )}
         </Button>
       )}
 
       {/* Unified Auth Dialog */}
-      {url && (
+      {
         <AuthDialog
-          open={showDialog && !isMobile()}
+          open={showDialog}
           onClose={() => {
             setShowDialog(false);
             setDialogStep('signin');
@@ -423,7 +602,7 @@ export function NeynarAuthButton() {
           isLoading={signersLoading}
           signerApprovalUrl={signerApprovalUrl}
         />
-      )}
+      }
     </>
   );
 }
