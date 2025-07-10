@@ -105,7 +105,7 @@ export function SignIn() {
     try {
       setAuthState((prev) => ({ ...prev, signingOut: true }));
       // Only sign out if the current session is from Farcaster provider
-      if (session?.user?.provider === 'farcaster') {
+      if (session?.provider === 'farcaster') {
         await signOut({ redirect: false });
       }
       setSignInResult(undefined);
@@ -118,18 +118,16 @@ export function SignIn() {
   return (
     <>
       {/* Authentication Buttons */}
-      {(status !== 'authenticated' ||
-        session?.user?.provider !== 'farcaster') && (
+      {(status !== 'authenticated' || session?.provider !== 'farcaster') && (
         <Button onClick={handleSignIn} disabled={authState.signingIn}>
           Sign In with Farcaster
         </Button>
       )}
-      {status === 'authenticated' &&
-        session?.user?.provider === 'farcaster' && (
-          <Button onClick={handleSignOut} disabled={authState.signingOut}>
-            Sign out
-          </Button>
-        )}
+      {status === 'authenticated' && session?.provider === 'farcaster' && (
+        <Button onClick={handleSignOut} disabled={authState.signingOut}>
+          Sign out
+        </Button>
+      )}
 
       {/* Session Information */}
       {session && (

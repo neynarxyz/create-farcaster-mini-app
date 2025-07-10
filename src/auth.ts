@@ -4,16 +4,198 @@ import { createAppClient, viemConnector } from '@farcaster/auth-client';
 
 declare module 'next-auth' {
   interface Session {
-    user: {
+    provider?: string;
+    user?: {
       fid: number;
-      provider?: string;
+      object?: 'user';
       username?: string;
+      display_name?: string;
+      pfp_url?: string;
+      custody_address?: string;
+      profile?: {
+        bio: {
+          text: string;
+          mentioned_profiles?: Array<{
+            object: 'user_dehydrated';
+            fid: number;
+            username: string;
+            display_name: string;
+            pfp_url: string;
+            custody_address: string;
+          }>;
+          mentioned_profiles_ranges?: Array<{
+            start: number;
+            end: number;
+          }>;
+        };
+        location?: {
+          latitude: number;
+          longitude: number;
+          address: {
+            city: string;
+            state: string;
+            country: string;
+            country_code: string;
+          };
+        };
+      };
+      follower_count?: number;
+      following_count?: number;
+      verifications?: string[];
+      verified_addresses?: {
+        eth_addresses: string[];
+        sol_addresses: string[];
+        primary: {
+          eth_address: string;
+          sol_address: string;
+        };
+      };
+      verified_accounts?: Array<Record<string, unknown>>;
+      power_badge?: boolean;
+      url?: string;
+      experimental?: {
+        neynar_user_score: number;
+        deprecation_notice: string;
+      };
+      score?: number;
     };
+    signers?: {
+      object: 'signer';
+      signer_uuid: string;
+      public_key: string;
+      status: 'approved';
+      fid: number;
+    }[];
   }
 
   interface User {
     provider?: string;
-    username?: string;
+    signers?: Array<{
+      object: 'signer';
+      signer_uuid: string;
+      public_key: string;
+      status: 'approved';
+      fid: number;
+    }>;
+    user?: {
+      object: 'user';
+      fid: number;
+      username: string;
+      display_name: string;
+      pfp_url: string;
+      custody_address: string;
+      profile: {
+        bio: {
+          text: string;
+          mentioned_profiles?: Array<{
+            object: 'user_dehydrated';
+            fid: number;
+            username: string;
+            display_name: string;
+            pfp_url: string;
+            custody_address: string;
+          }>;
+          mentioned_profiles_ranges?: Array<{
+            start: number;
+            end: number;
+          }>;
+        };
+        location?: {
+          latitude: number;
+          longitude: number;
+          address: {
+            city: string;
+            state: string;
+            country: string;
+            country_code: string;
+          };
+        };
+      };
+      follower_count: number;
+      following_count: number;
+      verifications: string[];
+      verified_addresses: {
+        eth_addresses: string[];
+        sol_addresses: string[];
+        primary: {
+          eth_address: string;
+          sol_address: string;
+        };
+      };
+      verified_accounts: Array<Record<string, unknown>>;
+      power_badge: boolean;
+      url?: string;
+      experimental?: {
+        neynar_user_score: number;
+        deprecation_notice: string;
+      };
+      score: number;
+    };
+  }
+
+  interface JWT {
+    provider?: string;
+    signers?: Array<{
+      object: 'signer';
+      signer_uuid: string;
+      public_key: string;
+      status: 'approved';
+      fid: number;
+    }>;
+    user?: {
+      object: 'user';
+      fid: number;
+      username: string;
+      display_name: string;
+      pfp_url: string;
+      custody_address: string;
+      profile: {
+        bio: {
+          text: string;
+          mentioned_profiles?: Array<{
+            object: 'user_dehydrated';
+            fid: number;
+            username: string;
+            display_name: string;
+            pfp_url: string;
+            custody_address: string;
+          }>;
+          mentioned_profiles_ranges?: Array<{
+            start: number;
+            end: number;
+          }>;
+        };
+        location?: {
+          latitude: number;
+          longitude: number;
+          address: {
+            city: string;
+            state: string;
+            country: string;
+            country_code: string;
+          };
+        };
+      };
+      follower_count: number;
+      following_count: number;
+      verifications: string[];
+      verified_addresses: {
+        eth_addresses: string[];
+        sol_addresses: string[];
+        primary: {
+          eth_address: string;
+          sol_address: string;
+        };
+      };
+      verified_accounts?: Array<Record<string, unknown>>;
+      power_badge?: boolean;
+      url?: string;
+      experimental?: {
+        neynar_user_score: number;
+        deprecation_notice: string;
+      };
+      score?: number;
+    };
   }
 }
 
@@ -127,20 +309,15 @@ export const authOptions: AuthOptions = {
           type: 'text',
           placeholder: '0',
         },
-        username: {
-          label: 'Username',
+        signers: {
+          label: 'Signers',
           type: 'text',
-          placeholder: 'username',
+          placeholder: 'JSON string of signers',
         },
-        displayName: {
-          label: 'Display Name',
+        user: {
+          label: 'User Data',
           type: 'text',
-          placeholder: 'Display Name',
-        },
-        pfpUrl: {
-          label: 'Profile Picture URL',
-          type: 'text',
-          placeholder: 'https://...',
+          placeholder: 'JSON string of user data',
         },
       },
       async authorize(credentials) {
@@ -182,13 +359,11 @@ export const authOptions: AuthOptions = {
 
           return {
             id: fid.toString(),
-            name:
-              credentials?.displayName ||
-              credentials?.username ||
-              `User ${fid}`,
-            image: credentials?.pfpUrl || null,
             provider: 'neynar',
-            username: credentials?.username || undefined,
+            signers: credentials?.signers
+              ? JSON.parse(credentials.signers)
+              : undefined,
+            user: credentials?.user ? JSON.parse(credentials.user) : undefined,
           };
         } catch (error) {
           console.error('Error in Neynar auth:', error);
@@ -199,18 +374,27 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     session: async ({ session, token }) => {
-      if (session?.user) {
-        session.user.fid = parseInt(token.sub ?? '');
-        // Add provider information to session
-        session.user.provider = token.provider as string;
-        session.user.username = token.username as string;
+      // Set provider at the root level
+      session.provider = token.provider as string;
+
+      if (token.provider === 'farcaster') {
+        // For Farcaster, simple structure
+        session.user = {
+          fid: parseInt(token.sub ?? ''),
+        };
+      } else if (token.provider === 'neynar') {
+        // For Neynar, use full user data structure from user
+        session.user = token.user as typeof session.user;
+        session.signers = token.signers as typeof session.signers;
       }
+
       return session;
     },
     jwt: async ({ token, user }) => {
       if (user) {
         token.provider = user.provider;
-        token.username = user.username;
+        token.signers = user.signers;
+        token.user = user.user;
       }
       return token;
     },

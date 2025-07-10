@@ -137,6 +137,36 @@ export function NeynarAuthButton() {
     }
   }, []);
 
+  // Helper function to update session with signers (backend flow only)
+  const updateSessionWithSigners = useCallback(
+    async (
+      signers: StoredAuthState['signers'],
+      user: StoredAuthState['user']
+    ) => {
+      if (!useBackendFlow) return;
+
+      try {
+        // For backend flow, we need to sign in again with the additional data
+        if (message && signature) {
+          const signInData = {
+            message,
+            signature,
+            redirect: false,
+            nonce: nonce || '',
+            fid: user?.fid?.toString() || '',
+            signers: JSON.stringify(signers),
+            user: JSON.stringify(user),
+          };
+
+          await backendSignIn('neynar', signInData);
+        }
+      } catch (error) {
+        console.error('❌ Error updating session with signers:', error);
+      }
+    },
+    [useBackendFlow, message, signature, nonce]
+  );
+
   // Helper function to fetch user data from Neynar API
   const fetchUserData = useCallback(
     async (fid: number): Promise<User | null> => {
@@ -201,33 +231,51 @@ export function NeynarAuthButton() {
       try {
         setSignersLoading(true);
 
-        const response = await fetch(
-          `/api/auth/signers?message=${encodeURIComponent(
-            message
-          )}&signature=${signature}`
-        );
+        const endpoint = useBackendFlow
+          ? `/api/auth/session-signers?message=${encodeURIComponent(
+              message
+            )}&signature=${signature}`
+          : `/api/auth/signers?message=${encodeURIComponent(
+              message
+            )}&signature=${signature}`;
 
+        const response = await fetch(endpoint);
         const signerData = await response.json();
 
         if (response.ok) {
-          let user: StoredAuthState['user'] | null = null;
+          if (useBackendFlow) {
+            // For backend flow, update session with signers
+            if (signerData.signers && signerData.signers.length > 0) {
+              const user =
+                signerData.user ||
+                (await fetchUserData(signerData.signers[0].fid));
+              await updateSessionWithSigners(signerData.signers, user);
+            }
+            return signerData.signers;
+          } else {
+            // For frontend flow, store in localStorage
+            let user: StoredAuthState['user'] | null = null;
 
-          if (signerData.signers && signerData.signers.length > 0) {
-            user = await fetchUserData(signerData.signers[0].fid);
+            if (signerData.signers && signerData.signers.length > 0) {
+              const fetchedUser = (await fetchUserData(
+                signerData.signers[0].fid
+              )) as StoredAuthState['user'];
+              user = fetchedUser;
+            }
+
+            // Store signers in localStorage, preserving existing auth data
+            const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
+            const updatedState: StoredAuthState = {
+              ...existingAuth,
+              isAuthenticated: !!user,
+              signers: signerData.signers || [],
+              user,
+            };
+            setItem<StoredAuthState>(STORAGE_KEY, updatedState);
+            setStoredAuth(updatedState);
+
+            return signerData.signers;
           }
-
-          // Store signers in localStorage, preserving existing auth data
-          const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
-          const updatedState: StoredAuthState = {
-            ...existingAuth,
-            isAuthenticated: !!user,
-            signers: signerData.signers || [],
-            user,
-          };
-          setItem<StoredAuthState>(STORAGE_KEY, updatedState);
-          setStoredAuth(updatedState);
-
-          return signerData.signers;
         } else {
           console.error('❌ Failed to fetch signers');
           // throw new Error('Failed to fetch signers');
@@ -239,7 +287,7 @@ export function NeynarAuthButton() {
         setSignersLoading(false);
       }
     },
-    []
+    [useBackendFlow, fetchUserData, updateSessionWithSigners]
   );
 
   // Helper function to poll signer status
@@ -305,26 +353,34 @@ export function NeynarAuthButton() {
     generateNonce();
   }, []);
 
-  // Load stored auth state on mount
+  // Load stored auth state on mount (only for frontend flow)
   useEffect(() => {
-    const stored = getItem<StoredAuthState>(STORAGE_KEY);
-    if (stored && stored.isAuthenticated) {
-      setStoredAuth(stored);
+    if (!useBackendFlow) {
+      const stored = getItem<StoredAuthState>(STORAGE_KEY);
+      if (stored && stored.isAuthenticated) {
+        setStoredAuth(stored);
+      }
     }
-  }, []);
+  }, [useBackendFlow]);
 
   // Success callback - this is critical!
-  const onSuccessCallback = useCallback((res: unknown) => {
-    const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
-    const authState: StoredAuthState = {
-      isAuthenticated: true,
-      user: res as StoredAuthState['user'],
-      signers: existingAuth?.signers || [], // Preserve existing signers
-    };
-    setItem<StoredAuthState>(STORAGE_KEY, authState);
-    setStoredAuth(authState);
-    // setShowDialog(false);
-  }, []);
+  const onSuccessCallback = useCallback(
+    (res: unknown) => {
+      if (!useBackendFlow) {
+        // Only handle localStorage for frontend flow
+        const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
+        const authState: StoredAuthState = {
+          isAuthenticated: true,
+          user: res as StoredAuthState['user'],
+          signers: existingAuth?.signers || [], // Preserve existing signers
+        };
+        setItem<StoredAuthState>(STORAGE_KEY, authState);
+        setStoredAuth(authState);
+      }
+      // For backend flow, the session will be handled by NextAuth
+    },
+    [useBackendFlow]
+  );
 
   // Error callback
   const onErrorCallback = useCallback((error?: Error | null) => {
@@ -368,12 +424,6 @@ export function NeynarAuthButton() {
     if (message && signature) {
       const handleSignerFlow = async () => {
         try {
-          // // Ensure we have message and signature
-          // if (!message || !signature) {
-          //   console.error('❌ Missing message or signature');
-          //   return;
-          // }
-
           // Step 1: Change to loading state
           setDialogStep('loading');
           setSignersLoading(true);
@@ -403,10 +453,13 @@ export function NeynarAuthButton() {
               setDebugState('Setting signer approval URL...');
               setSignerApprovalUrl(signedKeyData.signer_approval_url);
               setSignersLoading(false); // Stop loading, show QR code
-              if (
-                context?.client?.platformType === 'mobile' &&
-                context?.client?.clientFid === FARCASTER_FID
-              ) {
+              // Check if we're in a mobile context
+              const clientContext = context?.client as Record<string, unknown>;
+              const isMobileContext =
+                clientContext?.platformType === 'mobile' &&
+                clientContext?.clientFid === FARCASTER_FID;
+
+              if (isMobileContext) {
                 setDebugState('Opening mobile app...');
                 setShowDialog(false);
                 await sdk.actions.openUrl(
@@ -418,16 +471,11 @@ export function NeynarAuthButton() {
               } else {
                 setDebugState(
                   'Opening access dialog...' +
-                    ` ${context?.client?.platformType}` +
-                    ` ${context?.client?.clientFid}`
+                    ` ${clientContext?.platformType}` +
+                    ` ${clientContext?.clientFid}`
                 );
                 setDialogStep('access');
                 setShowDialog(true);
-                setDebugState(
-                  'Opening access dialog...2' +
-                    ` ${dialogStep}` +
-                    ` ${showDialog}`
-                );
               }
 
               // Step 4: Start polling for signer approval
@@ -514,15 +562,17 @@ export function NeynarAuthButton() {
 
       if (useBackendFlow) {
         // Only sign out from NextAuth if the current session is from Neynar provider
-        if (session?.user?.provider === 'neynar') {
+        if (session?.provider === 'neynar') {
           await backendSignOut({ redirect: false });
         }
       } else {
+        // Frontend flow sign out
         frontendSignOut();
+        removeItem(STORAGE_KEY);
+        setStoredAuth(null);
       }
 
-      removeItem(STORAGE_KEY);
-      setStoredAuth(null);
+      // Common cleanup for both flows
       setShowDialog(false);
       setDialogStep('signin');
       setSignerApprovalUrl(null);
@@ -543,15 +593,27 @@ export function NeynarAuthButton() {
     }
   }, [useBackendFlow, frontendSignOut, pollingInterval, session]);
 
-  // The key fix: match the original library's authentication logic exactly
-  const authenticated =
-    ((isSuccess && validSignature) || storedAuth?.isAuthenticated) &&
-    !!(storedAuth?.signers && storedAuth.signers.length > 0);
-  const userData = {
-    fid: storedAuth?.user?.fid,
-    username: storedAuth?.user?.username || '',
-    pfpUrl: storedAuth?.user?.pfp_url || '',
-  };
+  const authenticated = useBackendFlow
+    ? !!(
+        session?.provider === 'neynar' &&
+        session?.user?.fid &&
+        session?.signers &&
+        session.signers.length > 0
+      )
+    : ((isSuccess && validSignature) || storedAuth?.isAuthenticated) &&
+      !!(storedAuth?.signers && storedAuth.signers.length > 0);
+
+  const userData = useBackendFlow
+    ? {
+        fid: session?.user?.fid,
+        username: session?.user?.username || '',
+        pfpUrl: session?.user?.pfp_url || '',
+      }
+    : {
+        fid: storedAuth?.user?.fid,
+        username: storedAuth?.user?.username || '',
+        pfpUrl: storedAuth?.user?.pfp_url || '',
+      };
 
   // Show loading state while nonce is being fetched or signers are loading
   if (!nonce || signersLoading) {
@@ -589,11 +651,14 @@ export function NeynarAuthButton() {
             </>
           ) : (
             <>
-              <span>{debugState || 'Sign in with Neynar'}</span>
+              <span>Sign in with Neynar</span>
             </>
           )}
         </Button>
       )}
+
+      <p>LocalStorage state</p>
+      {window && JSON.stringify(window.localStorage.getItem(STORAGE_KEY))}
 
       {/* Unified Auth Dialog */}
       {
