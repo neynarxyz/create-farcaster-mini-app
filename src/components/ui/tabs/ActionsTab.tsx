@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { useMiniApp } from '@neynar/react';
-import { ShareButton } from '../Share';
-import { Button } from '../Button';
-import { SignIn } from '../wallet/SignIn';
-import { type Haptics } from '@farcaster/frame-sdk';
+import { useCallback, useState } from "react";
+import { useMiniApp } from "@neynar/react";
+import { ShareButton } from "../Share";
+import { Button } from "../Button";
+import { SignIn } from "../wallet/SignIn";
+import { type Haptics } from "@farcaster/miniapp-sdk";
 import { NeynarAuthButton } from '../NeynarAuthButton/index';
 
 /**
