@@ -113,7 +113,6 @@ export function NeynarAuthButton() {
   );
   const [message, setMessage] = useState<string | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
-  const [debugState, setDebugState] = useState<string | null>(null);
 
   // Determine which flow to use based on context
   const useBackendFlow = context !== undefined;
@@ -264,9 +263,7 @@ export function NeynarAuthButton() {
             }
 
             // Store signers in localStorage, preserving existing auth data
-            const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
             const updatedState: StoredAuthState = {
-              ...existingAuth,
               isAuthenticated: !!user,
               signers: signerData.signers || [],
               user,
@@ -365,13 +362,15 @@ export function NeynarAuthButton() {
 
   // Success callback - this is critical!
   const onSuccessCallback = useCallback(
-    (res: unknown) => {
+    async (res: unknown) => {
       if (!useBackendFlow) {
         // Only handle localStorage for frontend flow
         const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
+        const user = await fetchUserData(res.fid);
         const authState: StoredAuthState = {
+          ...existingAuth,
           isAuthenticated: true,
-          user: res as StoredAuthState['user'],
+          user: user as StoredAuthState['user'],
           signers: existingAuth?.signers || [], // Preserve existing signers
         };
         setItem<StoredAuthState>(STORAGE_KEY, authState);
@@ -424,21 +423,14 @@ export function NeynarAuthButton() {
     if (message && signature) {
       const handleSignerFlow = async () => {
         try {
-          // Step 1: Change to loading state
-          setDialogStep('loading');
-          setSignersLoading(true);
-
           // First, fetch existing signers
           const signers = await fetchAllSigners(message, signature);
-
-          setDebugState('Fetched signers...');
+          setSignersLoading(true);
 
           // Check if no signers exist or if we have empty signers
           if (!signers || signers.length === 0) {
             // Step 1: Create a signer
             const newSigner = await createSigner();
-
-            setDebugState('Created new signer...');
 
             // Step 2: Generate signed key request
             const signedKeyData = await generateSignedKeyRequest(
@@ -446,13 +438,9 @@ export function NeynarAuthButton() {
               newSigner.public_key
             );
 
-            setDebugState('Generated signed key request...');
-
             // Step 3: Show QR code in access dialog for signer approval
             if (signedKeyData.signer_approval_url) {
-              setDebugState('Setting signer approval URL...');
               setSignerApprovalUrl(signedKeyData.signer_approval_url);
-              setSignersLoading(false); // Stop loading, show QR code
               // Check if we're in a mobile context
               const clientContext = context?.client as Record<string, unknown>;
               const isMobileContext =
@@ -460,7 +448,6 @@ export function NeynarAuthButton() {
                 clientContext?.clientFid === FARCASTER_FID;
 
               if (isMobileContext) {
-                setDebugState('Opening mobile app...');
                 setShowDialog(false);
                 await sdk.actions.openUrl(
                   signedKeyData.signer_approval_url.replace(
@@ -469,11 +456,6 @@ export function NeynarAuthButton() {
                   )
                 );
               } else {
-                setDebugState(
-                  'Opening access dialog...' +
-                    ` ${clientContext?.platformType}` +
-                    ` ${clientContext?.clientFid}`
-                );
                 setDialogStep('access');
                 setShowDialog(true);
               }
@@ -482,14 +464,11 @@ export function NeynarAuthButton() {
               startPolling(newSigner.signer_uuid, message, signature);
             }
           } else {
-            setDebugState('Signers already exist, proceeding to signin...');
-            // If signers exist, close the dialog
             setSignersLoading(false);
             setShowDialog(false);
             setDialogStep('signin');
           }
         } catch (error) {
-          setDebugState('Error in signer flow:');
           console.error('❌ Error in signer flow:', error);
           // On error, reset to signin step
           setDialogStep('signin');
@@ -578,7 +557,6 @@ export function NeynarAuthButton() {
       setSignerApprovalUrl(null);
       setMessage(null);
       setSignature(null);
-      setDebugState(null);
 
       // Reset polling interval
       if (pollingInterval) {
@@ -656,9 +634,6 @@ export function NeynarAuthButton() {
           )}
         </Button>
       )}
-
-      <p>LocalStorage state</p>
-      {window && JSON.stringify(window.localStorage.getItem(STORAGE_KEY))}
 
       {/* Unified Auth Dialog */}
       {

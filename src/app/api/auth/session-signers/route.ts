@@ -5,15 +5,6 @@ import { getNeynarClient } from '~/lib/neynar';
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.fid) {
-      return NextResponse.json(
-        { error: 'No authenticated session found' },
-        { status: 401 }
-      );
-    }
-
     const { searchParams } = new URL(request.url);
     const message = searchParams.get('message');
     const signature = searchParams.get('signature');
