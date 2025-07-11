@@ -423,9 +423,21 @@ export function NeynarAuthButton() {
     if (message && signature) {
       const handleSignerFlow = async () => {
         try {
+          const clientContext = context?.client as Record<string, unknown>;
+          const isMobileContext =
+            clientContext?.platformType === 'mobile' &&
+            clientContext?.clientFid === FARCASTER_FID;
+
+          // Step 1: Change to loading state
+          setDialogStep('loading');
+
+          // Show dialog if not using backend flow or in browser farcaster
+          if ((useBackendFlow && !isMobileContext) || !useBackendFlow)
+            setShowDialog(true);
+
           // First, fetch existing signers
           const signers = await fetchAllSigners(message, signature);
-          setSignersLoading(true);
+          if (useBackendFlow && isMobileContext) setSignersLoading(true);
 
           // Check if no signers exist or if we have empty signers
           if (!signers || signers.length === 0) {
@@ -439,40 +451,36 @@ export function NeynarAuthButton() {
             );
 
             // Step 3: Show QR code in access dialog for signer approval
-            if (signedKeyData.signer_approval_url) {
-              setSignerApprovalUrl(signedKeyData.signer_approval_url);
-              // Check if we're in a mobile context
-              const clientContext = context?.client as Record<string, unknown>;
-              const isMobileContext =
-                clientContext?.platformType === 'mobile' &&
-                clientContext?.clientFid === FARCASTER_FID;
+            setSignerApprovalUrl(signedKeyData.signer_approval_url);
 
-              if (isMobileContext) {
-                setShowDialog(false);
-                await sdk.actions.openUrl(
-                  signedKeyData.signer_approval_url.replace(
-                    'https://client.farcaster.xyz/deeplinks/',
-                    'farcaster://'
-                  )
-                );
-              } else {
-                setDialogStep('access');
-                setShowDialog(true);
-              }
-
-              // Step 4: Start polling for signer approval
-              startPolling(newSigner.signer_uuid, message, signature);
+            if (isMobileContext) {
+              setShowDialog(false);
+              await sdk.actions.openUrl(
+                signedKeyData.signer_approval_url.replace(
+                  'https://client.farcaster.xyz/deeplinks/',
+                  'farcaster://'
+                )
+              );
+            } else {
+              setShowDialog(true); // Ensure dialog is shown during loading
+              setDialogStep('access');
             }
+
+            // Step 4: Start polling for signer approval
+            startPolling(newSigner.signer_uuid, message, signature);
           } else {
+            // If signers exist, close the dialog
             setSignersLoading(false);
             setShowDialog(false);
             setDialogStep('signin');
           }
         } catch (error) {
           console.error('❌ Error in signer flow:', error);
-          // On error, reset to signin step
+          // On error, reset to signin step and hide dialog
           setDialogStep('signin');
           setSignersLoading(false);
+          setShowDialog(false);
+          setSignerApprovalUrl(null);
         }
       };
 
@@ -485,6 +493,8 @@ export function NeynarAuthButton() {
     createSigner,
     generateSignedKeyRequest,
     startPolling,
+    context,
+    useBackendFlow,
   ]);
 
   // Backend flow using NextAuth
