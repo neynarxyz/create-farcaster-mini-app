@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useCallback, useState } from "react";
 import { signIn, signOut, getCsrfToken } from "next-auth/react";
@@ -8,17 +8,17 @@ import { Button } from "../Button";
 
 /**
  * SignIn component handles Farcaster authentication using Sign-In with Farcaster (SIWF).
- * 
+ *
  * This component provides a complete authentication flow for Farcaster users:
  * - Generates nonces for secure authentication
  * - Handles the SIWF flow using the Farcaster SDK
  * - Manages NextAuth session state
  * - Provides sign-out functionality
  * - Displays authentication status and results
- * 
+ *
  * The component integrates with both the Farcaster Frame SDK and NextAuth
  * to provide seamless authentication within mini apps.
- * 
+ *
  * @example
  * ```tsx
  * <SignIn />
@@ -45,29 +45,29 @@ export function SignIn() {
   // --- Handlers ---
   /**
    * Generates a nonce for the sign-in process.
-   * 
+   *
    * This function retrieves a CSRF token from NextAuth to use as a nonce
    * for the SIWF authentication flow. The nonce ensures the authentication
    * request is fresh and prevents replay attacks.
-   * 
+   *
    * @returns Promise<string> - The generated nonce token
    * @throws Error if unable to generate nonce
    */
   const getNonce = useCallback(async () => {
     const nonce = await getCsrfToken();
-    if (!nonce) throw new Error("Unable to generate nonce");
+    if (!nonce) throw new Error('Unable to generate nonce');
     return nonce;
   }, []);
 
   /**
    * Handles the sign-in process using Farcaster SDK.
-   * 
+   *
    * This function orchestrates the complete SIWF flow:
    * 1. Generates a nonce for security
    * 2. Calls the Farcaster SDK to initiate sign-in
    * 3. Submits the result to NextAuth for session management
    * 4. Handles various error conditions including user rejection
-   * 
+   *
    * @returns Promise<void>
    */
   const handleSignIn = useCallback(async () => {
@@ -77,17 +77,17 @@ export function SignIn() {
       const nonce = await getNonce();
       const result = await sdk.actions.signIn({ nonce });
       setSignInResult(result);
-      await signIn("credentials", {
+      await signIn('farcaster', {
         message: result.message,
         signature: result.signature,
         redirect: false,
       });
     } catch (e) {
       if (e instanceof SignInCore.RejectedByUser) {
-        setSignInFailure("Rejected by user");
+        setSignInFailure('Rejected by user');
         return;
       }
-      setSignInFailure("Unknown error");
+      setSignInFailure('Unknown error');
     } finally {
       setAuthState((prev) => ({ ...prev, signingIn: false }));
     }
@@ -95,32 +95,35 @@ export function SignIn() {
 
   /**
    * Handles the sign-out process.
-   * 
-   * This function clears the NextAuth session and resets the local
-   * sign-in result state to complete the sign-out flow.
-   * 
+   *
+   * This function clears the NextAuth session only if the current session
+   * is using the Farcaster provider, and resets the local sign-in result state.
+   *
    * @returns Promise<void>
    */
   const handleSignOut = useCallback(async () => {
     try {
       setAuthState((prev) => ({ ...prev, signingOut: true }));
-      await signOut({ redirect: false });
+      // Only sign out if the current session is from Farcaster provider
+      if (session?.provider === 'farcaster') {
+        await signOut({ redirect: false });
+      }
       setSignInResult(undefined);
     } finally {
       setAuthState((prev) => ({ ...prev, signingOut: false }));
     }
-  }, []);
+  }, [session]);
 
   // --- Render ---
   return (
     <>
       {/* Authentication Buttons */}
-      {status !== "authenticated" && (
+      {(status !== 'authenticated' || session?.provider !== 'farcaster') && (
         <Button onClick={handleSignIn} disabled={authState.signingIn}>
           Sign In with Farcaster
         </Button>
       )}
-      {status === "authenticated" && (
+      {status === 'authenticated' && session?.provider === 'farcaster' && (
         <Button onClick={handleSignOut} disabled={authState.signingOut}>
           Sign out
         </Button>
@@ -155,4 +158,4 @@ export function SignIn() {
       )}
     </>
   );
-} 
+}

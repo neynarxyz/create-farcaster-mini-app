@@ -46,6 +46,9 @@ async function loadEnvLocal() {
         fs.writeFileSync(".env", newEnvContent);
         console.log("✅ Values from .env.local have been written to .env");
       }
+      if (localEnv.SPONSOR_SIGNER) {
+        process.env.SPONSOR_SIGNER = localEnv.SPONSOR_SIGNER;
+      }
     }
   } catch (error) {
     // Error reading .env.local, which is fine
@@ -290,6 +293,8 @@ async function main() {
         ? [`NEYNAR_API_KEY="${process.env.NEYNAR_API_KEY}"`]
         : []),
       ...(neynarClientId ? [`NEYNAR_CLIENT_ID="${neynarClientId}"`] : []),
+      ...(process.env.SPONSOR_SIGNER ? 
+        [`SPONSOR_SIGNER="${process.env.SPONSOR_SIGNER}"`] : []),
 
       // FID (if it exists in current env)
       ...(process.env.FID ? [`FID="${process.env.FID}"`] : []),
