@@ -118,9 +118,9 @@ export function AuthDialog({
   const content = getStepContent();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
-        <div className="flex justify-between items-center mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[80vh] sm:max-h-[90vh] flex flex-col">
+        <div className="flex justify-between items-center p-4 sm:p-6 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {isError ? 'Error' : content.title}
           </h2>
@@ -144,73 +144,75 @@ export function AuthDialog({
           </button>
         </div>
 
-        {isError ? (
-          <div className="text-center">
-            <div className="text-red-600 dark:text-red-400 mb-4">
-              {error?.message || 'Unknown error, please try again.'}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-3 sm:pt-4 min-h-0">
+          {isError ? (
+            <div className="text-center">
+              <div className="text-red-600 dark:text-red-400 mb-4">
+                {error?.message || 'Unknown error, please try again.'}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="text-center">
-            <div className="mb-6">
-              {typeof content.description === 'string' ? (
-                <p className="text-gray-600 dark:text-gray-400">
-                  {content.description}
-                </p>
-              ) : (
-                content.description
+          ) : (
+            <div className="text-center">
+              <div className="mb-6">
+                {typeof content.description === 'string' ? (
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {content.description}
+                  </p>
+                ) : (
+                  content.description
+                )}
+              </div>
+
+              <div className="mb-6 flex justify-center">
+                {content.showQR && content.qrUrl ? (
+                  <div className="p-4 bg-white rounded-lg">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                        content.qrUrl
+                      )}`}
+                      alt="QR Code"
+                      className="w-48 h-48"
+                    />
+                  </div>
+                ) : step === 'loading' || isLoading ? (
+                  <div className="w-48 h-48 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="spinner w-8 h-8" />
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {step === 'loading'
+                          ? 'Setting up access...'
+                          : 'Loading...'}
+                      </span>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              {content.showOpenButton && content.qrUrl && (
+                <button
+                  onClick={() =>
+                    window.open(
+                      content.qrUrl
+                        .replace(
+                          'https://farcaster.xyz/',
+                          'https://client.farcaster.xyz/deeplinks/'
+                        )
+                        .replace(
+                          'https://client.farcaster.xyz/deeplinks/',
+                          'farcaster://'
+                        ),
+                      '_blank'
+                    )
+                  }
+                  className="btn btn-outline flex items-center justify-center gap-2 w-full"
+                >
+                  I&apos;m using my phone →
+                </button>
               )}
             </div>
-
-            <div className="mb-6 flex justify-center">
-              {content.showQR && content.qrUrl ? (
-                <div className="p-4 bg-white rounded-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                      content.qrUrl
-                    )}`}
-                    alt="QR Code"
-                    className="w-48 h-48"
-                  />
-                </div>
-              ) : step === 'loading' || isLoading ? (
-                <div className="w-48 h-48 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="spinner w-8 h-8" />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {step === 'loading'
-                        ? 'Setting up access...'
-                        : 'Loading...'}
-                    </span>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            {content.showOpenButton && content.qrUrl && (
-              <button
-                onClick={() =>
-                  window.open(
-                    content.qrUrl
-                      .replace(
-                        'https://farcaster.xyz/',
-                        'https://client.farcaster.xyz/deeplinks/'
-                      )
-                      .replace(
-                        'https://client.farcaster.xyz/deeplinks/',
-                        'farcaster://'
-                      ),
-                    '_blank'
-                  )
-                }
-                className="btn btn-outline flex items-center justify-center gap-2 w-full"
-              >
-                I&apos;m using my phone →
-              </button>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

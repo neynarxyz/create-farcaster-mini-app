@@ -378,7 +378,7 @@ export function NeynarAuthButton() {
       }
       // For backend flow, the session will be handled by NextAuth
     },
-    [useBackendFlow]
+    [useBackendFlow, fetchUserData]
   );
 
   // Error callback
@@ -538,12 +538,7 @@ export function NeynarAuthButton() {
     setDialogStep('signin');
     setShowDialog(true);
     frontendSignIn();
-
-    // Open mobile app if on mobile and URL is available
-    if (url && isMobile()) {
-      window.open(url, '_blank');
-    }
-  }, [isError, reconnect, frontendSignIn, url]);
+  }, [isError, reconnect, frontendSignIn]);
 
   const handleSignOut = useCallback(async () => {
     try {
