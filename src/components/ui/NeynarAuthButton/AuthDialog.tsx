@@ -25,9 +25,9 @@ export function AuthDialog({
     switch (step) {
       case 'signin':
         return {
-          title: 'Signin',
+          title: 'Sign in',
           description:
-            "To signin, scan the code below with your phone's camera.",
+            "To sign in, scan the code below with your phone's camera.",
           showQR: true,
           qrUrl: url,
           showOpenButton: true,
