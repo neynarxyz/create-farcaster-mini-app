@@ -6,6 +6,7 @@ import { ShareButton } from "../Share";
 import { Button } from "../Button";
 import { SignIn } from "../wallet/SignIn";
 import { type Haptics } from "@farcaster/miniapp-sdk";
+import { APP_URL } from "~/lib/constants";
 
 /**
  * ActionsTab component handles mini app actions like sharing, notifications, and haptic feedback.
@@ -90,7 +91,7 @@ export function ActionsTab() {
    */
   const copyUserShareUrl = useCallback(async () => {
     if (context?.user?.fid) {
-      const userShareUrl = `${process.env.NEXT_PUBLIC_URL}/share/${context.user.fid}`;
+      const userShareUrl = `${APP_URL}/share/${context.user.fid}`;
       await navigator.clipboard.writeText(userShareUrl);
       setNotificationState((prev) => ({ ...prev, shareUrlCopied: true }));
       setTimeout(() => setNotificationState((prev) => ({ ...prev, shareUrlCopied: false })), 2000);
@@ -120,7 +121,7 @@ export function ActionsTab() {
         cast={{
           text: "Check out this awesome frame @1 @2 @3! 🚀🪐",
           bestFriends: true,
-          embeds: [`${process.env.NEXT_PUBLIC_URL}/share/${context?.user?.fid || ''}`]
+          embeds: [`${APP_URL}/share/${context?.user?.fid || ''}`]
         }}
         className="w-full"
       />

@@ -1,32 +1,19 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { mnemonicToAccount } from 'viem/accounts';
-import { APP_BUTTON_TEXT, APP_DESCRIPTION, APP_ICON_URL, APP_NAME, APP_OG_IMAGE_URL, APP_PRIMARY_CATEGORY, APP_SPLASH_BACKGROUND_COLOR, APP_TAGS, APP_URL, APP_WEBHOOK_URL } from './constants';
-import { APP_SPLASH_URL } from './constants';
-
-interface MiniAppMetadata {
-  version: string;
-  name: string;
-  iconUrl: string;
-  homeUrl: string;
-  imageUrl?: string;
-  buttonTitle?: string;
-  splashImageUrl?: string;
-  splashBackgroundColor?: string;
-  webhookUrl?: string;
-  description?: string;
-  primaryCategory?: string;
-  tags?: string[];
-};
-
-interface MiniAppManifest {
-  accountAssociation?: {
-    header: string;
-    payload: string;
-    signature: string;
-  };
-  frame: MiniAppMetadata;
-}
+import { type Manifest } from '@farcaster/miniapp-node';
+import {
+  APP_BUTTON_TEXT,
+  APP_DESCRIPTION,
+  APP_ICON_URL,
+  APP_NAME,
+  APP_OG_IMAGE_URL,
+  APP_PRIMARY_CATEGORY,
+  APP_SPLASH_BACKGROUND_COLOR,
+  APP_SPLASH_URL,
+  APP_TAGS, APP_URL,
+  APP_WEBHOOK_URL,
+  APP_ACCOUNT_ASSOCIATION,
+} from './constants';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -64,64 +51,10 @@ export function getMiniAppEmbedMetadata(ogImageUrl?: string) {
   };
 }
 
-export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
-  // First check for MINI_APP_METADATA in .env and use that if it exists
-  if (process.env.MINI_APP_METADATA) {
-    try {
-      const metadata = JSON.parse(process.env.MINI_APP_METADATA);
-      console.log('Using pre-signed mini app metadata from environment');
-      return metadata;
-    } catch (error) {
-      console.warn('Failed to parse MINI_APP_METADATA from environment:', error);
-    }
-  }
-
-  if (!APP_URL) {
-    throw new Error('NEXT_PUBLIC_URL not configured');
-  }
-
-  // Get the domain from the URL (without https:// prefix)
-  const domain = new URL(APP_URL).hostname;
-  console.log('Using domain for manifest:', domain);
-
-  const secretEnvVars = getSecretEnvVars();
-  if (!secretEnvVars) {
-    console.warn('No seed phrase or FID found in environment variables -- generating unsigned metadata');
-  }
-
-  let accountAssociation;
-  if (secretEnvVars) {
-    // Generate account from seed phrase
-    const account = mnemonicToAccount(secretEnvVars.seedPhrase);
-    const custodyAddress = account.address;
-
-    const header = {
-      fid: parseInt(secretEnvVars.fid),
-      type: 'custody',
-      key: custodyAddress,
-    };
-    const encodedHeader = Buffer.from(JSON.stringify(header), 'utf-8').toString('base64');
-
-    const payload = {
-      domain
-    };
-    const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf-8').toString('base64url');
-
-    const signature = await account.signMessage({ 
-      message: `${encodedHeader}.${encodedPayload}`
-    });
-    const encodedSignature = Buffer.from(signature, 'utf-8').toString('base64url');
-
-    accountAssociation = {
-      header: encodedHeader,
-      payload: encodedPayload,
-      signature: encodedSignature
-    };
-  }
-
+export async function getFarcasterDomainManifest(): Promise<Manifest> {
   return {
-    accountAssociation,
-    frame: {
+    accountAssociation: APP_ACCOUNT_ASSOCIATION,
+    miniapp: {
       version: "1",
       name: APP_NAME ?? "Neynar Starter Kit",
       iconUrl: APP_ICON_URL,

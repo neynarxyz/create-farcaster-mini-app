@@ -425,7 +425,8 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
     "pino-pretty": "^13.0.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "ts-node": "^10.9.2"
   };
 
   // Add Neynar SDK if selected

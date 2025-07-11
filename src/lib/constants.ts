@@ -1,3 +1,5 @@
+import { type AccountAssociation } from '@farcaster/miniapp-node';
+
 /**
  * Application constants and configuration values.
  * 
@@ -14,63 +16,70 @@
  * The base URL of the application.
  * Used for generating absolute URLs for assets and API endpoints.
  */
-export const APP_URL = process.env.NEXT_PUBLIC_URL!;
+export const APP_URL: string = process.env.NEXT_PUBLIC_URL!;
 
 /**
  * The name of the mini app as displayed to users.
  * Used in titles, headers, and app store listings.
  */
-export const APP_NAME = 'Starter Kit';
+export const APP_NAME: string = 'Starter Kit';
 
 /**
  * A brief description of the mini app's functionality.
  * Used in app store listings and metadata.
  */
-export const APP_DESCRIPTION = 'A demo of the Neynar Starter Kit';
+export const APP_DESCRIPTION: string = 'A demo of the Neynar Starter Kit';
 
 /**
  * The primary category for the mini app.
  * Used for app store categorization and discovery.
  */
-export const APP_PRIMARY_CATEGORY = 'developer-tools';
+export const APP_PRIMARY_CATEGORY: string = 'developer-tools';
 
 /**
  * Tags associated with the mini app.
  * Used for search and discovery in app stores.
  */
-export const APP_TAGS = ['neynar', 'starter-kit', 'demo'];
+export const APP_TAGS: string[] = ['neynar', 'starter-kit', 'demo'];
 
 // --- Asset URLs ---
 /**
  * URL for the app's icon image.
  * Used in app store listings and UI elements.
  */
-export const APP_ICON_URL = `${APP_URL}/icon.png`;
+export const APP_ICON_URL: string = `${APP_URL}/icon.png`;
 
 /**
  * URL for the app's Open Graph image.
  * Used for social media sharing and previews.
  */
-export const APP_OG_IMAGE_URL = `${APP_URL}/api/opengraph-image`;
+export const APP_OG_IMAGE_URL: string = `${APP_URL}/api/opengraph-image`;
 
 /**
  * URL for the app's splash screen image.
  * Displayed during app loading.
  */
-export const APP_SPLASH_URL = `${APP_URL}/splash.png`;
+export const APP_SPLASH_URL: string = `${APP_URL}/splash.png`;
 
 /**
  * Background color for the splash screen.
  * Used as fallback when splash image is loading.
  */
-export const APP_SPLASH_BACKGROUND_COLOR = "#f7f7f7";
+export const APP_SPLASH_BACKGROUND_COLOR: string = "#f7f7f7";
+
+/**
+ * Account association for the mini app.
+ * Used to associate the mini app with a Farcaster account.
+ * If not provided, the mini app will be unsigned and have limited capabilities.
+ */
+export const APP_ACCOUNT_ASSOCIATION: AccountAssociation | undefined = undefined;
 
 // --- UI Configuration ---
 /**
  * Text displayed on the main action button.
  * Used for the primary call-to-action in the mini app.
  */
-export const APP_BUTTON_TEXT = 'Launch NSK';
+export const APP_BUTTON_TEXT: string = 'Launch NSK';
 
 // --- Integration Configuration ---
 /**
@@ -80,7 +89,7 @@ export const APP_BUTTON_TEXT = 'Launch NSK';
  * Neynar webhook endpoint. Otherwise, falls back to a local webhook
  * endpoint for development and testing.
  */
-export const APP_WEBHOOK_URL = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
+export const APP_WEBHOOK_URL: string = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
     ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
     : `${APP_URL}/api/webhook`;
 
@@ -91,7 +100,7 @@ export const APP_WEBHOOK_URL = process.env.NEYNAR_API_KEY && process.env.NEYNAR_
  * When false, wallet functionality is completely hidden from the UI.
  * Useful for mini apps that don't require wallet integration.
  */
-export const USE_WALLET = true;
+export const USE_WALLET: boolean = true;
 
 /**
  * Flag to enable/disable analytics tracking.
@@ -100,4 +109,4 @@ export const USE_WALLET = true;
  * When false, analytics collection is disabled.
  * Useful for privacy-conscious users or development environments.
  */
-export const ANALYTICS_ENABLED = true;
+export const ANALYTICS_ENABLED: boolean = true;
