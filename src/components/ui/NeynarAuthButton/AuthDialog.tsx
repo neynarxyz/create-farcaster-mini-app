@@ -191,20 +191,22 @@ export function AuthDialog({
 
               {content.showOpenButton && content.qrUrl && (
                 <button
-                  onClick={() =>
-                    window.open(
-                      content.qrUrl
-                        .replace(
-                          'https://farcaster.xyz/',
-                          'https://client.farcaster.xyz/deeplinks/'
-                        )
-                        .replace(
-                          'https://client.farcaster.xyz/deeplinks/',
-                          'farcaster://'
-                        ),
-                      '_blank'
-                    )
-                  }
+                  onClick={() => {
+                    if (content.qrUrl) {
+                      window.open(
+                        content.qrUrl
+                          .replace(
+                            'https://farcaster.xyz/',
+                            'https://client.farcaster.xyz/deeplinks/'
+                          )
+                          .replace(
+                            'https://client.farcaster.xyz/deeplinks/signed-key-request',
+                            'https://farcaster.xyz/~/connect'
+                          ),
+                        '_blank'
+                      )
+                    }
+                  }}
                   className="btn btn-outline flex items-center justify-center gap-2 w-full"
                 >
                   I&apos;m using my phone →

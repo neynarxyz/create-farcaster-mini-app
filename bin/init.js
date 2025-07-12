@@ -338,6 +338,43 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
     ]);
     answers.useTunnel = hostingAnswer.useTunnel;
 
+    // Ask about Neynar Sponsored Signers / SIWN
+    const sponsoredSignerAnswer = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'useSponsoredSigner',
+        message:
+          'Would you like to use Neynar Sponsored Signers and/or Sign In With Neynar (SIWN)?\n' +
+          'This enables the simplest, most secure, and most user-friendly Farcaster authentication for your app.\n\n' +
+          'Benefits of using Neynar Sponsored Signers/SIWN:\n' +
+          '- No auth buildout or signer management required for developers\n' +
+          '- Cost-effective for users (no gas for signers)\n' +
+          '- Users can revoke signers at any time\n' +
+          '- Plug-and-play for web and React Native\n' +
+          '- Recommended for most developers\n' +
+          '\n⚠️ A seed phrase is required for this option.\n',
+        default: false,
+      },
+    ]);
+    answers.useSponsoredSigner = sponsoredSignerAnswer.useSponsoredSigner;
+
+    if (answers.useSponsoredSigner) {
+      const { seedPhrase } = await inquirer.prompt([
+        {
+          type: 'password',
+          name: 'seedPhrase',
+          message: 'Enter your Farcaster custody account seed phrase (required for Neynar Sponsored Signers/SIWN):',
+          validate: (input) => {
+            if (!input || input.trim().split(' ').length < 12) {
+              return 'Seed phrase must be at least 12 words';
+            }
+            return true;
+          },
+        },
+      ]);
+      answers.seedPhrase = seedPhrase;
+    }
+
     // Ask about analytics opt-out
     const analyticsAnswer = await inquirer.prompt([
       {
@@ -601,7 +638,6 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
     }
     if (answers.seedPhrase) {
       fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
-      fs.appendFileSync(envPath, `\nSPONSOR_SIGNER="${answers.sponsorSigner}"`);
     }
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
 
