@@ -63,7 +63,7 @@ async function queryNeynarApp(apiKey) {
 }
 
 // Export the main CLI function for programmatic use
-export async function init(projectName = null, autoAcceptDefaults = false) {
+export async function init(projectName = null, autoAcceptDefaults = false, apiKey = null) {
   printWelcomeMessage();
 
   // Ask about Neynar usage
@@ -101,52 +101,59 @@ export async function init(projectName = null, autoAcceptDefaults = false) {
       break;
     }
 
-    console.log(
-      '\n🪐 Find your Neynar API key at: https://dev.neynar.com/app\n'
-    );
-
-    let neynarKeyAnswer;
-    if (autoAcceptDefaults) {
-      neynarKeyAnswer = { neynarApiKey: null };
+    // Use provided API key if available, otherwise prompt for it
+    if (apiKey) {
+      neynarApiKey = apiKey;
     } else {
-      neynarKeyAnswer = await inquirer.prompt([
-        {
-          type: 'password',
-          name: 'neynarApiKey',
-          message: 'Enter your Neynar API key (or press enter to skip):',
-          default: null,
-        },
-      ]);
-    }
+      if (!autoAcceptDefaults) {
+        console.log(
+          '\n🪐 Find your Neynar API key at: https://dev.neynar.com/app\n'
+        );
+      }
 
-    if (neynarKeyAnswer.neynarApiKey) {
-      neynarApiKey = neynarKeyAnswer.neynarApiKey;
-    } else {
-      let useDemoKey;
+      let neynarKeyAnswer;
       if (autoAcceptDefaults) {
-        useDemoKey = { useDemo: true };
+        neynarKeyAnswer = { neynarApiKey: null };
       } else {
-        useDemoKey = await inquirer.prompt([
+        neynarKeyAnswer = await inquirer.prompt([
           {
-            type: 'confirm',
-            name: 'useDemo',
-            message: 'Would you like to try the demo Neynar API key?',
-            default: true,
+            type: 'password',
+            name: 'neynarApiKey',
+            message: 'Enter your Neynar API key (or press enter to skip):',
+            default: null,
           },
         ]);
       }
 
-      if (useDemoKey.useDemo) {
-        console.warn(
-          '\n⚠️ Note: the demo key is for development purposes only and is aggressively rate limited.'
-        );
-        console.log(
-          'For production, please sign up for a Neynar account at https://neynar.com/ and configure the API key in your .env or .env.local file with NEYNAR_API_KEY.'
-        );
-        console.log(
-          `\n${purple}${bright}${italic}Neynar now has a free tier! See https://neynar.com/#pricing for details.\n${reset}`
-        );
-        neynarApiKey = 'FARCASTER_V2_FRAMES_DEMO';
+      if (neynarKeyAnswer.neynarApiKey) {
+        neynarApiKey = neynarKeyAnswer.neynarApiKey;
+      } else {
+        let useDemoKey;
+        if (autoAcceptDefaults) {
+          useDemoKey = { useDemo: true };
+        } else {
+          useDemoKey = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'useDemo',
+              message: 'Would you like to try the demo Neynar API key?',
+              default: true,
+            },
+          ]);
+        }
+
+        if (useDemoKey.useDemo) {
+          console.warn(
+            '\n⚠️ Note: the demo key is for development purposes only and is aggressively rate limited.'
+          );
+          console.log(
+            'For production, please sign up for a Neynar account at https://neynar.com/ and configure the API key in your .env or .env.local file with NEYNAR_API_KEY.'
+          );
+          console.log(
+            `\n${purple}${bright}${italic}Neynar now has a free tier! See https://neynar.com/#pricing for details.\n${reset}`
+          );
+          neynarApiKey = 'FARCASTER_V2_FRAMES_DEMO';
+        }
       }
     }
 
