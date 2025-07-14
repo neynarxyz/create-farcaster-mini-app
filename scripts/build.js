@@ -1,36 +1,37 @@
-import { execSync } from "child_process";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import inquirer from "inquirer";
-import dotenv from "dotenv";
-import crypto from "crypto";
+import { execSync } from 'child_process';
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import inquirer from 'inquirer';
 
 // Load environment variables in specific order
 // First load .env for main config
-dotenv.config({ path: ".env" });
+dotenv.config({ path: '.env' });
 
 async function loadEnvLocal() {
   try {
-    if (fs.existsSync(".env.local")) {
+    if (fs.existsSync('.env.local')) {
       const { loadLocal } = await inquirer.prompt([
         {
-          type: "confirm",
-          name: "loadLocal",
+          type: 'confirm',
+          name: 'loadLocal',
           message:
-            "Found .env.local, likely created by the install script - would you like to load its values?",
+            'Found .env.local, likely created by the install script - would you like to load its values?',
           default: false,
         },
       ]);
 
+      const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
+
       if (loadLocal) {
-        console.log("Loading values from .env.local...");
-        const localEnv = dotenv.parse(fs.readFileSync(".env.local"));
+        console.log('Loading values from .env.local...');
 
         // Copy all values to .env
-        const envContent = fs.existsSync(".env")
-          ? fs.readFileSync(".env", "utf8") + "\n"
-          : "";
+        const envContent = fs.existsSync('.env')
+          ? fs.readFileSync('.env', 'utf8') + '\n'
+          : '';
         let newEnvContent = envContent;
 
         for (const [key, value] of Object.entries(localEnv)) {
@@ -43,8 +44,8 @@ async function loadEnvLocal() {
         }
 
         // Write updated content to .env
-        fs.writeFileSync(".env", newEnvContent);
-        console.log("✅ Values from .env.local have been written to .env");
+        fs.writeFileSync('.env', newEnvContent);
+        console.log('✅ Values from .env.local have been written to .env');
       }
       if (localEnv.SPONSOR_SIGNER) {
         process.env.SPONSOR_SIGNER = localEnv.SPONSOR_SIGNER;
@@ -52,26 +53,26 @@ async function loadEnvLocal() {
     }
   } catch (error) {
     // Error reading .env.local, which is fine
-    console.log("Note: No .env.local file found");
+    console.log('Note: No .env.local file found');
   }
 }
 
 // TODO: make sure rebuilding is supported
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.join(__dirname, "..");
+const projectRoot = path.join(__dirname, '..');
 
 async function validateDomain(domain) {
   // Remove http:// or https:// if present
-  const cleanDomain = domain.replace(/^https?:\/\//, "");
+  const cleanDomain = domain.replace(/^https?:\/\//, '');
 
   // Basic domain validation
   if (
     !cleanDomain.match(
-      /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/
+      /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/,
     )
   ) {
-    throw new Error("Invalid domain format");
+    throw new Error('Invalid domain format');
   }
 
   return cleanDomain;
@@ -83,39 +84,39 @@ async function queryNeynarApp(apiKey) {
   }
   try {
     const response = await fetch(
-      `https://api.neynar.com/portal/app_by_api_key`,
+      'https://api.neynar.com/portal/app_by_api_key',
       {
         headers: {
-          "x-api-key": apiKey,
+          'x-api-key': apiKey,
         },
-      }
+      },
     );
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error querying Neynar app data:", error);
+    console.error('Error querying Neynar app data:', error);
     return null;
   }
 }
 
 async function generateFarcasterMetadata(domain, webhookUrl) {
-  const tags = process.env.NEXT_PUBLIC_MINI_APP_TAGS?.split(",");
+  const tags = process.env.NEXT_PUBLIC_MINI_APP_TAGS?.split(',');
 
   return {
     accountAssociation: {
-      header: "",
-      payload: "",
-      signature: "",
+      header: '',
+      payload: '',
+      signature: '',
     },
     frame: {
-      version: "1",
+      version: '1',
       name: process.env.NEXT_PUBLIC_MINI_APP_NAME,
       iconUrl: `https://${domain}/icon.png`,
       homeUrl: `https://${domain}`,
       imageUrl: `https://${domain}/api/opengraph-image`,
       buttonTitle: process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT,
       splashImageUrl: `https://${domain}/splash.png`,
-      splashBackgroundColor: "#f7f7f7",
+      splashBackgroundColor: '#f7f7f7',
       webhookUrl,
       description: process.env.NEXT_PUBLIC_MINI_APP_DESCRIPTION,
       primaryCategory: process.env.NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY,
@@ -126,8 +127,8 @@ async function generateFarcasterMetadata(domain, webhookUrl) {
 
 async function main() {
   try {
-    console.log("\n📝 Checking environment variables...");
-    console.log("Loading values from .env...");
+    console.log('\n📝 Checking environment variables...');
+    console.log('Loading values from .env...');
 
     // Load .env.local if user wants to
     await loadEnvLocal();
@@ -135,11 +136,11 @@ async function main() {
     // Get domain from user
     const { domain } = await inquirer.prompt([
       {
-        type: "input",
-        name: "domain",
+        type: 'input',
+        name: 'domain',
         message:
-          "Enter the domain where your mini app will be deployed (e.g., example.com):",
-        validate: async (input) => {
+          'Enter the domain where your mini app will be deployed (e.g., example.com):',
+        validate: async input => {
           try {
             await validateDomain(input);
             return true;
@@ -153,13 +154,13 @@ async function main() {
     // Get frame name from user
     const { frameName } = await inquirer.prompt([
       {
-        type: "input",
-        name: "frameName",
-        message: "Enter the name for your mini app (e.g., My Cool Mini App):",
+        type: 'input',
+        name: 'frameName',
+        message: 'Enter the name for your mini app (e.g., My Cool Mini App):',
         default: process.env.NEXT_PUBLIC_MINI_APP_NAME,
-        validate: (input) => {
-          if (input.trim() === "") {
-            return "Mini app name cannot be empty";
+        validate: input => {
+          if (input.trim() === '') {
+            return 'Mini app name cannot be empty';
           }
           return true;
         },
@@ -169,14 +170,14 @@ async function main() {
     // Get button text from user
     const { buttonText } = await inquirer.prompt([
       {
-        type: "input",
-        name: "buttonText",
-        message: "Enter the text for your mini app button:",
+        type: 'input',
+        name: 'buttonText',
+        message: 'Enter the text for your mini app button:',
         default:
-          process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT || "Launch Mini App",
-        validate: (input) => {
-          if (input.trim() === "") {
-            return "Button text cannot be empty";
+          process.env.NEXT_PUBLIC_MINI_APP_BUTTON_TEXT || 'Launch Mini App',
+        validate: input => {
+          if (input.trim() === '') {
+            return 'Button text cannot be empty';
           }
           return true;
         },
@@ -192,16 +193,16 @@ async function main() {
       if (!neynarApiKey) {
         const { neynarApiKey: inputNeynarApiKey } = await inquirer.prompt([
           {
-            type: "password",
-            name: "neynarApiKey",
+            type: 'password',
+            name: 'neynarApiKey',
             message:
-              "Enter your Neynar API key (optional - leave blank to skip):",
+              'Enter your Neynar API key (optional - leave blank to skip):',
             default: null,
           },
         ]);
         neynarApiKey = inputNeynarApiKey;
       } else {
-        console.log("Using existing Neynar API key from .env");
+        console.log('Using existing Neynar API key from .env');
       }
 
       if (!neynarApiKey) {
@@ -214,7 +215,7 @@ async function main() {
         const appInfo = await queryNeynarApp(neynarApiKey);
         if (appInfo) {
           neynarClientId = appInfo.app_uuid;
-          console.log("✅ Fetched Neynar app client ID");
+          console.log('✅ Fetched Neynar app client ID');
           break;
         }
       }
@@ -226,13 +227,13 @@ async function main() {
 
       // If we get here, the API key was invalid
       console.log(
-        "\n⚠️  Could not find Neynar app information. The API key may be incorrect."
+        '\n⚠️  Could not find Neynar app information. The API key may be incorrect.',
       );
       const { retry } = await inquirer.prompt([
         {
-          type: "confirm",
-          name: "retry",
-          message: "Would you like to try a different API key?",
+          type: 'confirm',
+          name: 'retry',
+          message: 'Would you like to try a different API key?',
           default: true,
         },
       ]);
@@ -248,7 +249,7 @@ async function main() {
     }
 
     // Generate manifest
-    console.log("\n🔨 Generating mini app manifest...");
+    console.log('\n🔨 Generating mini app manifest...');
 
     // Determine webhook URL based on environment variables
     const webhookUrl =
@@ -257,13 +258,13 @@ async function main() {
         : `https://${domain}/api/webhook`;
 
     const metadata = await generateFarcasterMetadata(domain, webhookUrl);
-    console.log("\n✅ Mini app manifest generated");
+    console.log('\n✅ Mini app manifest generated');
 
     // Read existing .env file or create new one
-    const envPath = path.join(projectRoot, ".env");
+    const envPath = path.join(projectRoot, '.env');
     let envContent = fs.existsSync(envPath)
-      ? fs.readFileSync(envPath, "utf8")
-      : "";
+      ? fs.readFileSync(envPath, 'utf8')
+      : '';
 
     // Add or update environment variables
     const newEnvVars = [
@@ -273,19 +274,19 @@ async function main() {
       // Mini app metadata
       `NEXT_PUBLIC_MINI_APP_NAME="${frameName}"`,
       `NEXT_PUBLIC_MINI_APP_DESCRIPTION="${
-        process.env.NEXT_PUBLIC_MINI_APP_DESCRIPTION || ""
+        process.env.NEXT_PUBLIC_MINI_APP_DESCRIPTION || ''
       }"`,
       `NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY="${
-        process.env.NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY || ""
+        process.env.NEXT_PUBLIC_MINI_APP_PRIMARY_CATEGORY || ''
       }"`,
       `NEXT_PUBLIC_MINI_APP_TAGS="${
-        process.env.NEXT_PUBLIC_MINI_APP_TAGS || ""
+        process.env.NEXT_PUBLIC_MINI_APP_TAGS || ''
       }"`,
       `NEXT_PUBLIC_MINI_APP_BUTTON_TEXT="${buttonText}"`,
 
       // Analytics
       `NEXT_PUBLIC_ANALYTICS_ENABLED="${
-        process.env.NEXT_PUBLIC_ANALYTICS_ENABLED || "false"
+        process.env.NEXT_PUBLIC_ANALYTICS_ENABLED || 'false'
       }"`,
 
       // Neynar configuration (if it exists in current env)
@@ -293,18 +294,19 @@ async function main() {
         ? [`NEYNAR_API_KEY="${process.env.NEYNAR_API_KEY}"`]
         : []),
       ...(neynarClientId ? [`NEYNAR_CLIENT_ID="${neynarClientId}"`] : []),
-      ...(process.env.SPONSOR_SIGNER ? 
-        [`SPONSOR_SIGNER="${process.env.SPONSOR_SIGNER}"`] : []),
+      ...(process.env.SPONSOR_SIGNER
+        ? [`SPONSOR_SIGNER="${process.env.SPONSOR_SIGNER}"`]
+        : []),
 
       // FID (if it exists in current env)
       ...(process.env.FID ? [`FID="${process.env.FID}"`] : []),
       `NEXT_PUBLIC_USE_WALLET="${
-        process.env.NEXT_PUBLIC_USE_WALLET || "false"
+        process.env.NEXT_PUBLIC_USE_WALLET || 'false'
       }"`,
 
       // NextAuth configuration
       `NEXTAUTH_SECRET="${
-        process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString("hex")
+        process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('hex')
       }"`,
       `NEXTAUTH_URL="https://${domain}"`,
 
@@ -313,14 +315,14 @@ async function main() {
     ];
 
     // Filter out empty values and join with newlines
-    const validEnvVars = newEnvVars.filter((line) => {
-      const [, value] = line.split("=");
+    const validEnvVars = newEnvVars.filter(line => {
+      const [, value] = line.split('=');
       return value && value !== '""';
     });
 
     // Update or append each environment variable
-    validEnvVars.forEach((varLine) => {
-      const [key] = varLine.split("=");
+    validEnvVars.forEach(varLine => {
+      const [key] = varLine.split('=');
       if (envContent.includes(`${key}=`)) {
         envContent = envContent.replace(new RegExp(`${key}=.*`), varLine);
       } else {
@@ -331,27 +333,27 @@ async function main() {
     // Write updated .env file
     fs.writeFileSync(envPath, envContent);
 
-    console.log("\n✅ Environment variables updated");
+    console.log('\n✅ Environment variables updated');
 
     // Run next build
-    console.log("\nBuilding Next.js application...");
+    console.log('\nBuilding Next.js application...');
     const nextBin = path.normalize(
-      path.join(projectRoot, "node_modules", ".bin", "next")
+      path.join(projectRoot, 'node_modules', '.bin', 'next'),
     );
     execSync(`"${nextBin}" build`, {
       cwd: projectRoot,
-      stdio: "inherit",
-      shell: process.platform === "win32",
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
     });
 
     console.log(
-      "\n✨ Build complete! Your mini app is ready for deployment. 🪐"
+      '\n✨ Build complete! Your mini app is ready for deployment. 🪐',
     );
     console.log(
-      "📝 Make sure to configure the environment variables from .env in your hosting provider"
+      '📝 Make sure to configure the environment variables from .env in your hosting provider',
     );
   } catch (error) {
-    console.error("\n❌ Error:", error.message);
+    console.error('\n❌ Error:', error.message);
     process.exit(1);
   }
 }

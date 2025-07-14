@@ -1,6 +1,6 @@
+import { createAppClient, viemConnector } from '@farcaster/auth-client';
 import { AuthOptions, getServerSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { createAppClient, viemConnector } from '@farcaster/auth-client';
 
 declare module 'next-auth' {
   interface Session {
@@ -401,7 +401,7 @@ export const authOptions: AuthOptions = {
   },
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: 'next-auth.session-token',
       options: {
         httpOnly: true,
         sameSite: 'none',
@@ -410,7 +410,7 @@ export const authOptions: AuthOptions = {
       },
     },
     callbackUrl: {
-      name: `next-auth.callback-url`,
+      name: 'next-auth.callback-url',
       options: {
         sameSite: 'none',
         path: '/',
@@ -418,7 +418,7 @@ export const authOptions: AuthOptions = {
       },
     },
     csrfToken: {
-      name: `next-auth.csrf-token`,
+      name: 'next-auth.csrf-token',
       options: {
         httpOnly: true,
         sameSite: 'none',

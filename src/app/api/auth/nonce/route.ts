@@ -10,7 +10,7 @@ export async function GET() {
     console.error('Error fetching nonce:', error);
     return NextResponse.json(
       { error: 'Failed to fetch nonce' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

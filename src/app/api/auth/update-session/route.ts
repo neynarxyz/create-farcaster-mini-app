@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     if (!session?.user?.fid) {
       return NextResponse.json(
         { error: 'No authenticated session found' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     if (!signers || !user) {
       return NextResponse.json(
         { error: 'Signers and user are required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     console.error('Error preparing session update:', error);
     return NextResponse.json(
       { error: 'Failed to prepare session update' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
