@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
-import { Button } from './Button';
-import { useMiniApp } from '@neynar/react';
 import { type ComposeCast } from '@farcaster/miniapp-sdk';
+import { useMiniApp } from '@neynar/react';
 import { APP_URL } from '~/lib/constants';
+import { Button } from './Button';
 
 interface EmbedConfig {
   path?: string;

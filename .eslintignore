@@ -90,3 +90,6 @@ build/Release
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
+
+# Scripts that should be ignored by eslint
+scripts/deploy.ts

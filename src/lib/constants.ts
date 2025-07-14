@@ -65,14 +65,15 @@ export const APP_SPLASH_URL: string = `${APP_URL}/splash.png`;
  * Background color for the splash screen.
  * Used as fallback when splash image is loading.
  */
-export const APP_SPLASH_BACKGROUND_COLOR: string = "#f7f7f7";
+export const APP_SPLASH_BACKGROUND_COLOR: string = '#f7f7f7';
 
 /**
  * Account association for the mini app.
  * Used to associate the mini app with a Farcaster account.
  * If not provided, the mini app will be unsigned and have limited capabilities.
  */
-export const APP_ACCOUNT_ASSOCIATION: AccountAssociation | undefined = undefined;
+export const APP_ACCOUNT_ASSOCIATION: AccountAssociation | undefined =
+  undefined;
 
 // --- UI Configuration ---
 /**
@@ -89,7 +90,8 @@ export const APP_BUTTON_TEXT: string = 'Launch NSK';
  * Neynar webhook endpoint. Otherwise, falls back to a local webhook
  * endpoint for development and testing.
  */
-export const APP_WEBHOOK_URL: string = process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID 
+export const APP_WEBHOOK_URL: string =
+  process.env.NEYNAR_API_KEY && process.env.NEYNAR_CLIENT_ID
     ? `https://api.neynar.com/f/app/${process.env.NEYNAR_CLIENT_ID}/event`
     : `${APP_URL}/api/webhook`;
 

@@ -1,6 +1,6 @@
+import { type Manifest } from '@farcaster/miniapp-node';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { type Manifest } from '@farcaster/miniapp-node';
 import {
   APP_BUTTON_TEXT,
   APP_DESCRIPTION,
