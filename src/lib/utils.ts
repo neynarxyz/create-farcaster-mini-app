@@ -19,17 +19,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getSecretEnvVars() {
-  const seedPhrase = process.env.SEED_PHRASE;
-  const fid = process.env.FID;
-  
-  if (!seedPhrase || !fid) {
-    return null;
-  }
-
-  return { seedPhrase, fid };
-}
-
 export function getMiniAppEmbedMetadata(ogImageUrl?: string) {
   return {
     version: "next",

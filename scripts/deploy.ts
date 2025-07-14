@@ -6,9 +6,7 @@ import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
-// Add fallback type for Vercel if type is missing
-// @ts-ignore
-import { Vercel as VercelSDKType } from '@vercel/sdk';
+import { Vercel } from '@vercel/sdk';
 import { APP_NAME, APP_BUTTON_TEXT } from '../src/lib/constants';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,33 +22,37 @@ async function loadEnvLocal(): Promise<void> {
         {
           type: 'confirm',
           name: 'loadLocal',
-          message: 'Found .env.local - would you like to load its values in addition to .env values? (except for SEED_PHRASE, values will be written to .env)',
-          default: true
-        }
+          message:
+            'Found .env.local - would you like to load its values in addition to .env values?',
+          default: true,
+        },
       ]);
 
       if (loadLocal) {
         console.log('Loading values from .env.local...');
         const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
-        
+
         const allowedVars = [
           'SEED_PHRASE',
           'NEYNAR_API_KEY',
-          'NEYNAR_CLIENT_ID'
+          'NEYNAR_CLIENT_ID',
+          'SPONSOR_SIGNER',
         ];
-        
-        const envContent = fs.existsSync('.env') ? fs.readFileSync('.env', 'utf8') + '\n' : '';
+
+        const envContent = fs.existsSync('.env')
+          ? fs.readFileSync('.env', 'utf8') + '\n'
+          : '';
         let newEnvContent = envContent;
-        
+
         for (const [key, value] of Object.entries(localEnv)) {
           if (allowedVars.includes(key)) {
             process.env[key] = value;
-            if (key !== 'SEED_PHRASE' && !envContent.includes(`${key}=`)) {
+            if (!envContent.includes(`${key}=`)) {
               newEnvContent += `${key}="${value}"\n`;
             }
           }
         }
-        
+
         fs.writeFileSync('.env', newEnvContent);
         console.log('✅ Values from .env.local have been written to .env');
       }
@@ -63,7 +65,7 @@ async function loadEnvLocal(): Promise<void> {
 async function checkRequiredEnvVars(): Promise<void> {
   console.log('\n📝 Checking environment variables...');
   console.log('Loading values from .env...');
-  
+
   await loadEnvLocal();
 
   const requiredVars = [
@@ -81,10 +83,12 @@ async function checkRequiredEnvVars(): Promise<void> {
     }
   ];
 
-  const missingVars = requiredVars.filter(varConfig => !process.env[varConfig.name]);
-  
+  const missingVars = requiredVars.filter(
+    (varConfig) => !process.env[varConfig.name]
+  );
+
   if (missingVars.length > 0) {
-    console.log('\n⚠️  Some required information is missing. Let\'s set it up:');
+    console.log("\n⚠️  Some required information is missing. Let's set it up:");
     for (const varConfig of missingVars) {
       const { value } = await inquirer.prompt([
         {
@@ -92,27 +96,69 @@ async function checkRequiredEnvVars(): Promise<void> {
           name: 'value',
           message: varConfig.message,
           default: varConfig.default,
-          validate: varConfig.validate
-        }
+          validate: varConfig.validate,
+        },
       ]);
-      
+
       process.env[varConfig.name] = value;
-      
-      const envContent = fs.existsSync('.env') ? fs.readFileSync('.env', 'utf8') : '';
-      
+
+      const envContent = fs.existsSync('.env')
+        ? fs.readFileSync('.env', 'utf8')
+        : '';
+
       if (!envContent.includes(`${varConfig.name}=`)) {
         const newLine = envContent ? '\n' : '';
-        fs.appendFileSync('.env', `${newLine}${varConfig.name}="${value.trim()}"`);
+        fs.appendFileSync(
+          '.env',
+          `${newLine}${varConfig.name}="${value.trim()}"`
+        );
       }
+
+      // Ask about sponsor signer if SEED_PHRASE is provided
+      if (!process.env.SPONSOR_SIGNER) {
+        const { sponsorSigner } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'sponsorSigner',
+            message:
+              'Do you want to sponsor the signer? (This will be used in Sign In With Neynar)\n' +
+              'Note: If you choose to sponsor the signer, Neynar will sponsor it for you and you will be charged in CUs.\n' +
+              'For more information, see https://docs.neynar.com/docs/two-ways-to-sponsor-a-farcaster-signer-via-neynar#sponsor-signers',
+            default: false,
+          },
+        ]);
+
+        process.env.SPONSOR_SIGNER = sponsorSigner.toString();
+
+        if (storeSeedPhrase) {
+          fs.appendFileSync(
+            '.env.local',
+            `\nSPONSOR_SIGNER="${sponsorSigner}"`
+          );
+          console.log('✅ Sponsor signer preference stored in .env.local');
+        }
+      }
+    }
+  }
+
+  // Load SPONSOR_SIGNER from .env.local if SEED_PHRASE exists but SPONSOR_SIGNER doesn't
+  if (
+    process.env.SEED_PHRASE &&
+    !process.env.SPONSOR_SIGNER &&
+    fs.existsSync('.env.local')
+  ) {
+    const localEnv = dotenv.parse(fs.readFileSync('.env.local'));
+    if (localEnv.SPONSOR_SIGNER) {
+      process.env.SPONSOR_SIGNER = localEnv.SPONSOR_SIGNER;
     }
   }
 }
 
 async function getGitRemote(): Promise<string | null> {
   try {
-    const remoteUrl = execSync('git remote get-url origin', { 
+    const remoteUrl = execSync('git remote get-url origin', {
       cwd: projectRoot,
-      encoding: 'utf8'
+      encoding: 'utf8',
     }).trim();
     return remoteUrl;
   } catch (error: unknown) {
@@ -157,19 +203,19 @@ async function getVercelToken(): Promise<string | null> {
       console.warn('Could not read Vercel token from config file');
     }
   }
-  
+
   // Try environment variable
   if (process.env.VERCEL_TOKEN) {
     return process.env.VERCEL_TOKEN;
   }
-  
+
   // Try to extract from vercel whoami
   try {
-    const whoamiOutput = execSync('vercel whoami', { 
+    const whoamiOutput = execSync('vercel whoami', {
       encoding: 'utf8',
-      stdio: 'pipe'
+      stdio: 'pipe',
     });
-    
+
     // If we can get whoami, we're logged in, but we need the actual token
     // The token isn't directly exposed, so we'll need to use CLI for some operations
     console.log('✅ Verified Vercel CLI authentication');
@@ -192,10 +238,12 @@ async function loginToVercel(): Promise<boolean> {
   console.log('2. Authorize GitHub access');
   console.log('3. Complete the Vercel account setup in your browser');
   console.log('4. Return here once your Vercel account is created\n');
-  console.log('\nNote: you may need to cancel this script with ctrl+c and run it again if creating a new vercel account');
-  
+  console.log(
+    '\nNote: you may need to cancel this script with ctrl+c and run it again if creating a new vercel account'
+  );
+
   const child = spawn('vercel', ['login'], {
-    stdio: 'inherit'
+    stdio: 'inherit',
   });
 
   await new Promise<void>((resolve, reject) => {
@@ -205,8 +253,10 @@ async function loginToVercel(): Promise<boolean> {
   });
 
   console.log('\n📱 Waiting for login to complete...');
-  console.log('If you\'re creating a new account, please complete the Vercel account setup in your browser first.');
-  
+  console.log(
+    "If you're creating a new account, please complete the Vercel account setup in your browser first."
+  );
+
   for (let i = 0; i < 150; i++) {
     try {
       execSync('vercel whoami', { stdio: 'ignore' });
@@ -216,7 +266,7 @@ async function loginToVercel(): Promise<boolean> {
       if (error instanceof Error && error.message.includes('Account not found')) {
         console.log('ℹ️  Waiting for Vercel account setup to complete...');
       }
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
 
@@ -227,7 +277,7 @@ async function loginToVercel(): Promise<boolean> {
   return false;
 }
 
-async function setVercelEnvVarSDK(vercelClient: VercelSDKType, projectId: string, key: string, value: string | object): Promise<boolean> {
+async function setVercelEnvVarSDK(vercelClient: Vercel, projectId: string, key: string, value: string | object): Promise<boolean> {
   try {
     let processedValue: string;
     if (typeof value === 'object') {
@@ -238,7 +288,7 @@ async function setVercelEnvVarSDK(vercelClient: VercelSDKType, projectId: string
 
     // Get existing environment variables
     const existingVars = await vercelClient.projects.getEnvironmentVariables({
-      idOrName: projectId
+      idOrName: projectId,
     });
 
     const existingVar = existingVars.envs?.find((env: any) => 
@@ -252,8 +302,8 @@ async function setVercelEnvVarSDK(vercelClient: VercelSDKType, projectId: string
         id: existingVar.id,
         requestBody: {
           value: processedValue,
-          target: ['production']
-        }
+          target: ['production'],
+        },
       });
       console.log(`✅ Updated environment variable: ${key}`);
     } else {
@@ -264,12 +314,12 @@ async function setVercelEnvVarSDK(vercelClient: VercelSDKType, projectId: string
           key: key,
           value: processedValue,
           type: 'encrypted',
-          target: ['production']
-        }
+          target: ['production'],
+        },
       });
       console.log(`✅ Created environment variable: ${key}`);
     }
-    
+
     return true;
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -287,7 +337,7 @@ async function setVercelEnvVarCLI(key: string, value: string | object, projectRo
       execSync(`vercel env rm ${key} production -y`, {
         cwd: projectRoot,
         stdio: 'ignore',
-        env: process.env
+        env: process.env,
       });
     } catch (error: unknown) {
       // Ignore errors from removal
@@ -334,55 +384,57 @@ async function setVercelEnvVarCLI(key: string, value: string | object, projectRo
   }
 }
 
-async function setEnvironmentVariables(vercelClient: VercelSDKType | null, projectId: string | null, envVars: Record<string, string | object>, projectRoot: string): Promise<Array<{ key: string; success: boolean }>> {
+async function setEnvironmentVariables(vercelClient: Vercel | null, projectId: string | null, envVars: Record<string, string | object>, projectRoot: string): Promise<Array<{ key: string; success: boolean }>> {
   console.log('\n📝 Setting up environment variables...');
   
   const results: Array<{ key: string; success: boolean }> = [];
   
   for (const [key, value] of Object.entries(envVars)) {
     if (!value) continue;
-    
+
     let success = false;
-    
+
     // Try SDK approach first if we have a Vercel client
     if (vercelClient && projectId) {
       success = await setVercelEnvVarSDK(vercelClient, projectId, key, value);
     }
-    
+
     // Fallback to CLI approach
     if (!success) {
       success = await setVercelEnvVarCLI(key, value, projectRoot);
     }
-    
+
     results.push({ key, success });
   }
-  
+
   // Report results
-  const failed = results.filter(r => !r.success);
+  const failed = results.filter((r) => !r.success);
   if (failed.length > 0) {
     console.warn(`\n⚠️  Failed to set ${failed.length} environment variables:`);
-    failed.forEach(r => console.warn(`   - ${r.key}`));
-    console.warn('\nYou may need to set these manually in the Vercel dashboard.');
+    failed.forEach((r) => console.warn(`   - ${r.key}`));
+    console.warn(
+      '\nYou may need to set these manually in the Vercel dashboard.'
+    );
   }
-  
+
   return results;
 }
 
-async function waitForDeployment(vercelClient: VercelSDKType | null, projectId: string, maxWaitTime = 300000): Promise<any> { // 5 minutes
+async function waitForDeployment(vercelClient: Vercel | null, projectId: string, maxWaitTime = 300000): Promise<any> { // 5 minutes
   console.log('\n⏳ Waiting for deployment to complete...');
   const startTime = Date.now();
-  
+
   while (Date.now() - startTime < maxWaitTime) {
     try {
       const deployments = await vercelClient?.deployments.list({
         projectId: projectId,
-        limit: 1
+        limit: 1,
       });
       
       if (deployments?.deployments?.[0]) {
         const deployment = deployments.deployments[0];
         console.log(`📊 Deployment status: ${deployment.state}`);
-        
+
         if (deployment.state === 'READY') {
           console.log('✅ Deployment completed successfully!');
           return deployment;
@@ -391,12 +443,12 @@ async function waitForDeployment(vercelClient: VercelSDKType | null, projectId: 
         } else if (deployment.state === 'CANCELED') {
           throw new Error('Deployment was canceled');
         }
-        
+
         // Still building, wait and check again
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+        await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds
       } else {
         console.log('⏳ No deployment found yet, waiting...');
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -406,29 +458,40 @@ async function waitForDeployment(vercelClient: VercelSDKType | null, projectId: 
       throw error;
     }
   }
-  
+
   throw new Error('Deployment timed out after 5 minutes');
 }
 
 async function deployToVercel(useGitHub = false): Promise<void> {
   try {
     console.log('\n🚀 Deploying to Vercel...');
-    
+
     // Ensure vercel.json exists
     const vercelConfigPath = path.join(projectRoot, 'vercel.json');
     if (!fs.existsSync(vercelConfigPath)) {
       console.log('📝 Creating vercel.json configuration...');
-      fs.writeFileSync(vercelConfigPath, JSON.stringify({
-        buildCommand: "next build",
-        framework: "nextjs"
-      }, null, 2));
+      fs.writeFileSync(
+        vercelConfigPath,
+        JSON.stringify(
+          {
+            buildCommand: 'next build',
+            framework: 'nextjs',
+          },
+          null,
+          2
+        )
+      );
     }
 
     // Set up Vercel project
     console.log('\n📦 Setting up Vercel project...');
-    console.log('An initial deployment is required to get an assigned domain that can be used in the mini app manifest\n');
-    console.log('\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n');
-    
+    console.log(
+      'An initial deployment is required to get an assigned domain that can be used in the mini app manifest\n'
+    );
+    console.log(
+      '\n⚠️ Note: choosing a longer, more unique project name will help avoid conflicts with other existing domains\n'
+    );
+
     // Use spawn instead of execSync for better error handling
     const { spawn } = await import('child_process');
     const vercelSetup = spawn('vercel', [], { 
@@ -447,7 +510,7 @@ async function deployToVercel(useGitHub = false): Promise<void> {
           resolve(); // Don't reject, as this is often expected
         }
       });
-      
+
       vercelSetup.on('error', (error) => {
         console.log('⚠️  Vercel setup command completed (this is normal)');
         resolve(); // Don't reject, as this is often expected
@@ -455,12 +518,14 @@ async function deployToVercel(useGitHub = false): Promise<void> {
     });
 
     // Wait a moment for project files to be written
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Load project info
     let projectId: string;
     try {
-      const projectJson = JSON.parse(fs.readFileSync('.vercel/project.json', 'utf8'));
+      const projectJson = JSON.parse(
+        fs.readFileSync('.vercel/project.json', 'utf8')
+      );
       projectId = projectJson.projectId;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -470,11 +535,11 @@ async function deployToVercel(useGitHub = false): Promise<void> {
     }
 
     // Get Vercel token and initialize SDK client
-    let vercelClient: VercelSDKType | null = null;
+    let vercelClient: Vercel | null = null;
     try {
       const token = await getVercelToken();
       if (token) {
-        vercelClient = new VercelSDKType({
+        vercelClient = new Vercel({
           bearerToken: token
         });
         console.log('✅ Initialized Vercel SDK client');
@@ -494,7 +559,7 @@ async function deployToVercel(useGitHub = false): Promise<void> {
     if (vercelClient) {
       try {
         const project = await vercelClient.projects.get({
-          idOrName: projectId
+          idOrName: projectId,
         });
         projectName = project.name;
         domain = `${projectName}.vercel.app`;
@@ -510,10 +575,13 @@ async function deployToVercel(useGitHub = false): Promise<void> {
     // Fallback to CLI method if SDK failed
     if (!domain) {
       try {
-        const inspectOutput = execSync(`vercel project inspect ${projectId} 2>&1`, {
-          cwd: projectRoot,
-          encoding: 'utf8'
-        });
+        const inspectOutput = execSync(
+          `vercel project inspect ${projectId} 2>&1`,
+          {
+            cwd: projectRoot,
+            encoding: 'utf8',
+          }
+        );
 
         const nameMatch = inspectOutput.match(/Name\s+([^\n]+)/);
         if (nameMatch) {
@@ -527,7 +595,9 @@ async function deployToVercel(useGitHub = false): Promise<void> {
             domain = `${projectName}.vercel.app`;
             console.log('🌐 Using project name for domain:', domain);
           } else {
-            console.warn('⚠️  Could not determine project name from inspection, using fallback');
+            console.warn(
+              '⚠️  Could not determine project name from inspection, using fallback'
+            );
             // Use a fallback domain based on project ID
             domain = `project-${projectId.slice(-8)}.vercel.app`;
             console.log('🌐 Using fallback domain:', domain);
@@ -545,7 +615,8 @@ async function deployToVercel(useGitHub = false): Promise<void> {
     }
 
     // Prepare environment variables
-    const nextAuthSecret = process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('hex');
+    const nextAuthSecret =
+      process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('hex');
     const vercelEnv = {
       NEXTAUTH_SECRET: nextAuthSecret,
       AUTH_SECRET: nextAuthSecret,
@@ -554,23 +625,30 @@ async function deployToVercel(useGitHub = false): Promise<void> {
       
       ...(process.env.NEYNAR_API_KEY && { NEYNAR_API_KEY: process.env.NEYNAR_API_KEY }),
       ...(process.env.NEYNAR_CLIENT_ID && { NEYNAR_CLIENT_ID: process.env.NEYNAR_CLIENT_ID }),
+      ...(process.env.SPONSOR_SIGNER && { SPONSOR_SIGNER: process.env.SPONSOR_SIGNER }),
       
       ...Object.fromEntries(
-        Object.entries(process.env)
-          .filter(([key]) => key.startsWith('NEXT_PUBLIC_'))
-      )
+        Object.entries(process.env).filter(([key]) =>
+          key.startsWith('NEXT_PUBLIC_')
+        )
+      ),
     };
 
     // Set environment variables
-    await setEnvironmentVariables(vercelClient, projectId, vercelEnv, projectRoot);
+    await setEnvironmentVariables(
+      vercelClient,
+      projectId,
+      vercelEnv,
+      projectRoot
+    );
 
     // Deploy the project
     if (useGitHub) {
       console.log('\nSetting up GitHub integration...');
-      execSync('vercel link', { 
+      execSync('vercel link', {
         cwd: projectRoot,
         stdio: 'inherit',
-        env: process.env
+        env: process.env,
       });
       console.log('\n📦 Deploying with GitHub integration...');
     } else {
@@ -578,10 +656,10 @@ async function deployToVercel(useGitHub = false): Promise<void> {
     }
 
     // Use spawn for better control over the deployment process
-    const vercelDeploy = spawn('vercel', ['deploy', '--prod'], { 
+    const vercelDeploy = spawn('vercel', ['deploy', '--prod'], {
       cwd: projectRoot,
       stdio: 'inherit',
-      env: process.env
+      env: process.env,
     });
 
     await new Promise<void>((resolve, reject) => {
@@ -594,7 +672,7 @@ async function deployToVercel(useGitHub = false): Promise<void> {
           reject(new Error(`Vercel deployment failed with exit code: ${code}`));
         }
       });
-      
+
       vercelDeploy.on('error', (error) => {
         console.error('❌ Vercel deployment error:', error.message);
         reject(error);
@@ -617,7 +695,7 @@ async function deployToVercel(useGitHub = false): Promise<void> {
 
     // Verify actual domain after deployment
     console.log('\n🔍 Verifying deployment domain...');
-    
+
     let actualDomain = domain;
     if (vercelClient && deployment) {
       try {
@@ -637,16 +715,16 @@ async function deployToVercel(useGitHub = false): Promise<void> {
 
       const updatedEnv: Record<string, string | object> = {
         NEXTAUTH_URL: `https://${actualDomain}`,
-        NEXT_PUBLIC_URL: `https://${actualDomain}`
+        NEXT_PUBLIC_URL: `https://${actualDomain}`,
       };
 
       await setEnvironmentVariables(vercelClient, projectId, updatedEnv, projectRoot);
 
       console.log('\n📦 Redeploying with correct domain...');
-      const vercelRedeploy = spawn('vercel', ['deploy', '--prod'], { 
+      const vercelRedeploy = spawn('vercel', ['deploy', '--prod'], {
         cwd: projectRoot,
         stdio: 'inherit',
-        env: process.env
+        env: process.env,
       });
 
       await new Promise<void>((resolve, reject) => {
@@ -659,16 +737,16 @@ async function deployToVercel(useGitHub = false): Promise<void> {
             reject(new Error(`Redeployment failed with exit code: ${code}`));
           }
         });
-        
+
         vercelRedeploy.on('error', (error) => {
           console.error('❌ Redeployment error:', error.message);
           reject(error);
         });
       });
-      
+
       domain = actualDomain;
     }
-    
+
     console.log('\n✨ Deployment complete! Your mini app is now live at:');
     console.log(`🌐 https://${domain}`);
     console.log('\n📝 You can manage your project at https://vercel.com/dashboard');
@@ -725,7 +803,9 @@ async function deployToVercel(useGitHub = false): Promise<void> {
 async function main(): Promise<void> {
   try {
     console.log('🚀 Vercel Mini App Deployment (SDK Edition)');
-    console.log('This script will deploy your mini app to Vercel using the Vercel SDK.');
+    console.log(
+      'This script will deploy your mini app to Vercel using the Vercel SDK.'
+    );
     console.log('\nThe script will:');
     console.log('1. Check for required environment variables');
     console.log('2. Set up a Vercel project (new or existing)');
@@ -759,8 +839,8 @@ async function main(): Promise<void> {
           type: 'confirm',
           name: 'useGitHubDeploy',
           message: 'Would you like to deploy from the GitHub repository?',
-          default: true
-        }
+          default: true,
+        },
       ]);
       useGitHub = useGitHubDeploy;
     } else {
@@ -772,10 +852,10 @@ async function main(): Promise<void> {
           message: 'What would you like to do?',
           choices: [
             { name: 'Deploy local code directly', value: 'deploy' },
-            { name: 'Set up GitHub repository first', value: 'setup' }
+            { name: 'Set up GitHub repository first', value: 'setup' },
           ],
-          default: 'deploy'
-        }
+          default: 'deploy',
+        },
       ]);
 
       if (action === 'setup') {
@@ -789,12 +869,12 @@ async function main(): Promise<void> {
       }
     }
 
-    if (!await checkVercelCLI()) {
+    if (!(await checkVercelCLI())) {
       console.log('Vercel CLI not found. Installing...');
       await installVercelCLI();
     }
 
-    if (!await loginToVercel()) {
+    if (!(await loginToVercel())) {
       console.error('\n❌ Failed to log in to Vercel. Please try again.');
       process.exit(1);
     }
