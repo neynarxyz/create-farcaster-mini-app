@@ -483,18 +483,19 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
   };
 
   packageJson.devDependencies = {
-    '@types/node': '^20',
-    '@types/react': '^19',
-    '@types/react-dom': '^19',
-    '@vercel/sdk': '^1.9.0',
-    crypto: '^1.0.1',
-    eslint: '^8',
-    'eslint-config-next': '15.0.3',
-    localtunnel: '^2.0.2',
-    'pino-pretty': '^13.0.0',
-    postcss: '^8',
-    tailwindcss: '^3.4.1',
-    typescript: '^5',
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vercel/sdk": "^1.9.0",
+    "crypto": "^1.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "15.0.3",
+    "localtunnel": "^2.0.2",
+    "pino-pretty": "^13.0.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5",
+    "ts-node": "^10.9.2"
   };
 
   // Add Neynar SDK if selected
@@ -545,19 +546,19 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
         return content;
       };
 
-      // Regex patterns that match whole lines with export const
+      // Regex patterns that match whole lines with export const (with TypeScript types)
       const patterns = {
-        APP_NAME: /^export const APP_NAME\s*=\s*['"`][^'"`]*['"`];$/m,
+        APP_NAME: /^export const APP_NAME\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
         APP_DESCRIPTION:
-          /^export const APP_DESCRIPTION\s*=\s*['"`][^'"`]*['"`];$/m,
+          /^export const APP_DESCRIPTION\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
         APP_PRIMARY_CATEGORY:
-          /^export const APP_PRIMARY_CATEGORY\s*=\s*['"`][^'"`]*['"`];$/m,
-        APP_TAGS: /^export const APP_TAGS\s*=\s*\[[^\]]*\];$/m,
+          /^export const APP_PRIMARY_CATEGORY\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
+        APP_TAGS: /^export const APP_TAGS\s*:\s*string\[\]\s*=\s*\[[^\]]*\];$/m,
         APP_BUTTON_TEXT:
-          /^export const APP_BUTTON_TEXT\s*=\s*['"`][^'"`]*['"`];$/m,
-        USE_WALLET: /^export const USE_WALLET\s*=\s*(true|false);$/m,
+          /^export const APP_BUTTON_TEXT\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
+        USE_WALLET: /^export const USE_WALLET\s*:\s*boolean\s*=\s*(true|false);$/m,
         ANALYTICS_ENABLED:
-          /^export const ANALYTICS_ENABLED\s*=\s*(true|false);$/m,
+          /^export const ANALYTICS_ENABLED\s*:\s*boolean\s*=\s*(true|false);$/m,
       };
 
       // Update APP_NAME
