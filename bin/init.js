@@ -546,19 +546,19 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
         return content;
       };
 
-      // Regex patterns that match whole lines with export const
+      // Regex patterns that match whole lines with export const (with TypeScript types)
       const patterns = {
-        APP_NAME: /^export const APP_NAME\s*=\s*['"`][^'"`]*['"`];$/m,
+        APP_NAME: /^export const APP_NAME\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
         APP_DESCRIPTION:
-          /^export const APP_DESCRIPTION\s*=\s*['"`][^'"`]*['"`];$/m,
+          /^export const APP_DESCRIPTION\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
         APP_PRIMARY_CATEGORY:
-          /^export const APP_PRIMARY_CATEGORY\s*=\s*['"`][^'"`]*['"`];$/m,
-        APP_TAGS: /^export const APP_TAGS\s*=\s*\[[^\]]*\];$/m,
+          /^export const APP_PRIMARY_CATEGORY\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
+        APP_TAGS: /^export const APP_TAGS\s*:\s*string\[\]\s*=\s*\[[^\]]*\];$/m,
         APP_BUTTON_TEXT:
-          /^export const APP_BUTTON_TEXT\s*=\s*['"`][^'"`]*['"`];$/m,
-        USE_WALLET: /^export const USE_WALLET\s*=\s*(true|false);$/m,
+          /^export const APP_BUTTON_TEXT\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
+        USE_WALLET: /^export const USE_WALLET\s*:\s*boolean\s*=\s*(true|false);$/m,
         ANALYTICS_ENABLED:
-          /^export const ANALYTICS_ENABLED\s*=\s*(true|false);$/m,
+          /^export const ANALYTICS_ENABLED\s*:\s*boolean\s*=\s*(true|false);$/m,
       };
 
       // Update APP_NAME
