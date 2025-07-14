@@ -68,7 +68,6 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
   if (process.env.MINI_APP_METADATA) {
     try {
       const metadata = JSON.parse(process.env.MINI_APP_METADATA);
-      console.log('Using pre-signed mini app metadata from environment');
       return metadata;
     } catch (error) {
       console.warn(
@@ -81,10 +80,6 @@ export async function getFarcasterMetadata(): Promise<MiniAppManifest> {
   if (!APP_URL) {
     throw new Error('NEXT_PUBLIC_URL not configured');
   }
-
-  // Get the domain from the URL (without https:// prefix)
-  const domain = new URL(APP_URL).hostname;
-  console.log('Using domain for manifest:', domain);
 
   return {
     accountAssociation: {

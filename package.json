@@ -41,7 +41,6 @@
     "format:check": "prettier --check .",
     "format:fix": "prettier --write . && eslint --fix . --max-warnings 50",
     "type-check": "tsc --noEmit",
-    "type-check:dev": "tsc --project tsconfig.dev.json --noEmit",
     "check": "npm run type-check && npm run lint:check && npm run format:check",
     "check:dev": "npm run type-check:dev && npm run lint:check && npm run format:check",
     "deploy:vercel": "node scripts/deploy.js",

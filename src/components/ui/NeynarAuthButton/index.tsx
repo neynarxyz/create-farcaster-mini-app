@@ -565,7 +565,7 @@ export function NeynarAuthButton() {
       }
     } catch (e) {
       if (e instanceof SignInCore.RejectedByUser) {
-        console.log('ℹ️ Sign-in rejected by user');
+        console.error('ℹ️ Sign-in rejected by user');
       } else {
         console.error('❌ Backend sign-in error:', e);
       }

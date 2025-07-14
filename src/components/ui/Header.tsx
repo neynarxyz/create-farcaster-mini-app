@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import sdk from '@farcaster/miniapp-sdk';
 import { useMiniApp } from '@neynar/react';
 import { APP_NAME } from '~/lib/constants';
@@ -28,7 +29,7 @@ export function Header({ neynarUser }: HeaderProps) {
             }}
           >
             {context.user.pfpUrl && (
-              <img
+              <Image
                 src={context.user.pfpUrl}
                 alt="Profile"
                 className="w-10 h-10 rounded-full border-2 border-primary"
