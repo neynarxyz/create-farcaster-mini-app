@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
-import { type ComposeCast } from '@farcaster/miniapp-sdk';
-import { useMiniApp } from '@neynar/react';
 import { Button } from './Button';
+import { useMiniApp } from '@neynar/react';
+import { type ComposeCast } from '@farcaster/miniapp-sdk';
+import { APP_URL } from '~/lib/constants';
 
 interface EmbedConfig {
   path?: string;
@@ -79,8 +80,7 @@ export function ShareButton({
             return embed;
           }
           if (embed.path) {
-            const baseUrl =
-              process.env.NEXT_PUBLIC_URL || window.location.origin;
+            const baseUrl = APP_URL || window.location.origin;
             const url = new URL(`${baseUrl}${embed.path}`);
 
             // Add UTM parameters

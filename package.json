@@ -1,6 +1,6 @@
 {
   "name": "@neynar/create-farcaster-mini-app",
-  "version": "1.5.11",
+  "version": "1.6.2",
   "type": "module",
   "private": false,
   "access": "public",
@@ -31,16 +31,11 @@
   ],
   "scripts": {
     "dev": "node scripts/dev.js",
-    "build": "node scripts/build.js",
+    "build": "next build",
     "build:raw": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "format:fix": "prettier --write . && eslint --fix . --max-warnings 50",
-    "typecheck": "tsc --noEmit",
-    "deploy:vercel": "node scripts/deploy.js",
+    "deploy:vercel": "ts-node scripts/deploy.ts",
     "deploy:raw": "vercel --prod",
     "cleanup": "node scripts/cleanup.js"
   },
@@ -55,11 +50,6 @@
   "devDependencies": {
     "@neynar/nodejs-sdk": "^2.19.0",
     "@types/node": "^22.13.10",
-    "@typescript-eslint/eslint-plugin": "^8.35.1",
-    "@typescript-eslint/parser": "^8.35.1",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^15.0.0",
-    "prettier": "^3.3.3",
     "typescript": "^5.6.3"
   }
 }

@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { type Haptics } from '@farcaster/miniapp-sdk';
 import { useMiniApp } from '@neynar/react';
+import { APP_URL } from '~/lib/constants';
 import { Button } from '../Button';
 import { NeynarAuthButton } from '../NeynarAuthButton/index';
 import { ShareButton } from '../Share';
@@ -96,7 +97,7 @@ export function ActionsTab() {
    */
   const copyUserShareUrl = useCallback(async () => {
     if (context?.user?.fid) {
-      const userShareUrl = `${process.env.NEXT_PUBLIC_URL}/share/${context.user.fid}`;
+      const userShareUrl = `${APP_URL}/share/${context.user.fid}`;
       await navigator.clipboard.writeText(userShareUrl);
       setNotificationState(prev => ({ ...prev, shareUrlCopied: true }));
       setTimeout(
@@ -130,9 +131,7 @@ export function ActionsTab() {
         cast={{
           text: 'Check out this awesome frame @1 @2 @3! 🚀🪐',
           bestFriends: true,
-          embeds: [
-            `${process.env.NEXT_PUBLIC_URL}/share/${context?.user?.fid || ''}`,
-          ],
+          embeds: [`${APP_URL}/share/${context?.user?.fid || ''}`],
         }}
         className="w-full"
       />
