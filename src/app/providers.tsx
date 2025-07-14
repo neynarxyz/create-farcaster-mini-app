@@ -1,17 +1,18 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { MiniAppProvider } from '@neynar/react';
 import type { Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
+import { MiniAppProvider } from '@neynar/react';
 import { SafeFarcasterSolanaProvider } from '~/components/providers/SafeFarcasterSolanaProvider';
 import { ANALYTICS_ENABLED } from '~/lib/constants';
+import { AuthKitProvider } from '@farcaster/auth-kit';
 
 const WagmiProvider = dynamic(
   () => import('~/components/providers/WagmiProvider'),
   {
     ssr: false,
-  },
+  }
 );
 
 export function Providers({
@@ -31,7 +32,7 @@ export function Providers({
           backButtonEnabled={true}
         >
           <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
-            {children}
+            <AuthKitProvider config={{}}>{children}</AuthKitProvider>
           </SafeFarcasterSolanaProvider>
         </MiniAppProvider>
       </WagmiProvider>

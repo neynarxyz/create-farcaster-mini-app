@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import sdk, { SignIn as SignInCore } from '@farcaster/frame-sdk';
-import { signIn, signOut, getCsrfToken } from 'next-auth/react';
-import { useSession } from 'next-auth/react';
-import { Button } from '../Button';
+import { useCallback, useState } from "react";
+import { signIn, signOut, getCsrfToken } from "next-auth/react";
+import sdk, { SignIn as SignInCore } from "@farcaster/miniapp-sdk";
+import { useSession } from "next-auth/react";
+import { Button } from "../Button";
 
 /**
  * SignIn component handles Farcaster authentication using Sign-In with Farcaster (SIWF).
@@ -72,12 +72,12 @@ export function SignIn() {
    */
   const handleSignIn = useCallback(async () => {
     try {
-      setAuthState(prev => ({ ...prev, signingIn: true }));
+      setAuthState((prev) => ({ ...prev, signingIn: true }));
       setSignInFailure(undefined);
       const nonce = await getNonce();
       const result = await sdk.actions.signIn({ nonce });
       setSignInResult(result);
-      await signIn('credentials', {
+      await signIn('farcaster', {
         message: result.message,
         signature: result.signature,
         redirect: false,
@@ -89,38 +89,41 @@ export function SignIn() {
       }
       setSignInFailure('Unknown error');
     } finally {
-      setAuthState(prev => ({ ...prev, signingIn: false }));
+      setAuthState((prev) => ({ ...prev, signingIn: false }));
     }
   }, [getNonce]);
 
   /**
    * Handles the sign-out process.
    *
-   * This function clears the NextAuth session and resets the local
-   * sign-in result state to complete the sign-out flow.
+   * This function clears the NextAuth session only if the current session
+   * is using the Farcaster provider, and resets the local sign-in result state.
    *
    * @returns Promise<void>
    */
   const handleSignOut = useCallback(async () => {
     try {
-      setAuthState(prev => ({ ...prev, signingOut: true }));
-      await signOut({ redirect: false });
+      setAuthState((prev) => ({ ...prev, signingOut: true }));
+      // Only sign out if the current session is from Farcaster provider
+      if (session?.provider === 'farcaster') {
+        await signOut({ redirect: false });
+      }
       setSignInResult(undefined);
     } finally {
-      setAuthState(prev => ({ ...prev, signingOut: false }));
+      setAuthState((prev) => ({ ...prev, signingOut: false }));
     }
-  }, []);
+  }, [session]);
 
   // --- Render ---
   return (
     <>
       {/* Authentication Buttons */}
-      {status !== 'authenticated' && (
+      {(status !== 'authenticated' || session?.provider !== 'farcaster') && (
         <Button onClick={handleSignIn} disabled={authState.signingIn}>
           Sign In with Farcaster
         </Button>
       )}
-      {status === 'authenticated' && (
+      {status === 'authenticated' && session?.provider === 'farcaster' && (
         <Button onClick={handleSignOut} disabled={authState.signingOut}>
           Sign out
         </Button>
@@ -128,9 +131,9 @@ export function SignIn() {
 
       {/* Session Information */}
       {session && (
-        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 mb-1">Session</div>
-          <div className="whitespace-pre">
+        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 dark:bg-gray-900 rounded-lg font-mono">
+          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">Session</div>
+          <div className="whitespace-pre text-gray-700 dark:text-gray-200">
             {JSON.stringify(session, null, 2)}
           </div>
         </div>
@@ -138,17 +141,17 @@ export function SignIn() {
 
       {/* Error Display */}
       {signInFailure && !authState.signingIn && (
-        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
-          <div className="whitespace-pre">{signInFailure}</div>
+        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 dark:bg-gray-900 rounded-lg font-mono">
+          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">SIWF Result</div>
+          <div className="whitespace-pre text-gray-700 dark:text-gray-200">{signInFailure}</div>
         </div>
       )}
 
       {/* Success Result Display */}
       {signInResult && !authState.signingIn && (
-        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 mb-1">SIWF Result</div>
-          <div className="whitespace-pre">
+        <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 dark:bg-gray-900 rounded-lg font-mono">
+          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">SIWF Result</div>
+          <div className="whitespace-pre text-gray-700 dark:text-gray-200">
             {JSON.stringify(signInResult, null, 2)}
           </div>
         </div>
