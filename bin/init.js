@@ -460,6 +460,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     '@farcaster/miniapp-sdk': '>=0.1.6 <1.0.0',
     '@farcaster/miniapp-wagmi-connector': '^1.0.0',
     '@farcaster/mini-app-solana': '>=0.0.17 <1.0.0',
+    '@farcaster/quick-auth': '>=0.0.7 <1.0.0',
     '@neynar/react': '^1.2.5',
     '@radix-ui/react-label': '^2.1.1',
     '@solana/wallet-adapter-react': '^0.15.38',
@@ -471,7 +472,6 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     'lucide-react': '^0.469.0',
     mipd: '^0.0.7',
     next: '^15',
-    'next-auth': '^4.24.11',
     react: '^19',
     'react-dom': '^19',
     'tailwind-merge': '^2.6.0',
@@ -483,6 +483,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
   };
 
   packageJson.devDependencies = {
+    "@types/inquirer": "^9.0.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -494,8 +495,8 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     "pino-pretty": "^13.0.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
   };
 
   // Add Neynar SDK if selected

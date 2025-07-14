@@ -149,7 +149,7 @@ async function startDev() {
 
   nextDev = spawn(nextBin, ['dev', '-p', port.toString()], {
     stdio: 'inherit',
-    env: { ...process.env, NEXT_PUBLIC_URL: miniAppUrl, NEXTAUTH_URL: miniAppUrl },
+    env: { ...process.env, NEXT_PUBLIC_URL: miniAppUrl },
     cwd: projectRoot,
     shell: process.platform === 'win32' // Add shell option for Windows
   });
