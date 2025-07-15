@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import inquirer from 'inquirer';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { execSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
 import crypto from 'crypto';
+import fs from 'fs';
+import { dirname } from 'path';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import inquirer from 'inquirer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,7 +47,7 @@ async function queryNeynarApp(apiKey) {
   }
   try {
     const response = await fetch(
-      `https://api.neynar.com/portal/app_by_api_key?starter_kit=true`,
+      'https://api.neynar.com/portal/app_by_api_key?starter_kit=true',
       {
         headers: {
           'x-api-key': apiKey,
@@ -444,7 +444,7 @@ export async function init(
   // Update package.json
   console.log('\nUpdating package.json...');
   const packageJsonPath = path.join(projectPath, 'package.json');
-  let packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
   packageJson.name = finalProjectName;
   packageJson.version = '0.1.0';

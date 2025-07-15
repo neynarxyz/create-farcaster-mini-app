@@ -1,13 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { cn } from '~/lib/utils';
-import { Button } from '~/components/ui/Button';
-import { ProfileButton } from '~/components/ui/NeynarAuthButton/ProfileButton';
-import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
-import { useMiniApp } from '@neynar/react';
 import sdk, { SignIn as SignInCore } from '@farcaster/frame-sdk';
+import { useMiniApp } from '@neynar/react';
+import { Button } from '~/components/ui/Button';
+import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
+import { ProfileButton } from '~/components/ui/NeynarAuthButton/ProfileButton';
 import { useQuickAuth } from '~/hooks/useQuickAuth';
+import { cn } from '~/lib/utils';
 
 type User = {
   fid: number;
@@ -142,7 +142,7 @@ export function NeynarAuthButton() {
   const updateSessionWithSigners = useCallback(
     async (
       signers: StoredAuthState['signers'],
-      user: StoredAuthState['user'],
+      _user: StoredAuthState['user'],
     ) => {
       if (!useBackendFlow) return;
 
@@ -392,7 +392,7 @@ export function NeynarAuthButton() {
       setMessage(result.message);
       setSignature(result.signature);
       // Use QuickAuth to sign in
-      const signInResult = await quickAuthSignIn();
+      await quickAuthSignIn();
       // Fetch user profile after sign in
       if (quickAuthUser?.fid) {
         const user = await fetchUserData(quickAuthUser.fid);

@@ -1,9 +1,9 @@
-import localtunnel from 'localtunnel';
 import { spawn } from 'child_process';
 import { createServer } from 'net';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import localtunnel from 'localtunnel';
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
@@ -96,7 +96,7 @@ async function startDev() {
           ? `1. Run: netstat -ano | findstr :${port}\n` +
             '2. Note the PID (Process ID) from the output\n' +
             '3. Run: taskkill /PID <PID> /F\n'
-          : `On macOS/Linux, run:\nnpm run cleanup\n`) +
+          : 'On macOS/Linux, run:\nnpm run cleanup\n') +
         '\nThen try running this command again.',
     );
     process.exit(1);
