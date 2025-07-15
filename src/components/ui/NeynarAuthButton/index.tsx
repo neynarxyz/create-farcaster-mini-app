@@ -1,13 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { cn } from '~/lib/utils';
-import { Button } from '~/components/ui/Button';
-import { ProfileButton } from '~/components/ui/NeynarAuthButton/ProfileButton';
-import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
-import { useMiniApp } from '@neynar/react';
 import sdk, { SignIn as SignInCore } from '@farcaster/frame-sdk';
+import { useMiniApp } from '@neynar/react';
+import { Button } from '~/components/ui/Button';
+import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
+import { ProfileButton } from '~/components/ui/NeynarAuthButton/ProfileButton';
 import { useQuickAuth } from '~/hooks/useQuickAuth';
+import { cn } from '~/lib/utils';
 
 type User = {
   fid: number;
@@ -90,24 +90,31 @@ export function NeynarAuthButton() {
   const [storedAuth, setStoredAuth] = useState<StoredAuthState | null>(null);
   const [signersLoading, setSignersLoading] = useState(false);
   const { context } = useMiniApp();
-  const { authenticatedUser: quickAuthUser, signIn: quickAuthSignIn, signOut: quickAuthSignOut } = useQuickAuth();
-  
+  const {
+    authenticatedUser: quickAuthUser,
+    signIn: quickAuthSignIn,
+    signOut: quickAuthSignOut,
+  } = useQuickAuth();
+
   // New state for unified dialog flow
   const [showDialog, setShowDialog] = useState(false);
   const [dialogStep, setDialogStep] = useState<'signin' | 'access' | 'loading'>(
-    'loading'
+    'loading',
   );
   const [signerApprovalUrl, setSignerApprovalUrl] = useState<string | null>(
-    null
+    null,
   );
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
-    null
+    null,
   );
   const [message, setMessage] = useState<string | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [isSignerFlowRunning, setIsSignerFlowRunning] = useState(false);
   const signerFlowStartedRef = useRef(false);
-  const [backendUserProfile, setBackendUserProfile] = useState<{ username?: string; pfpUrl?: string }>({});
+  const [backendUserProfile, setBackendUserProfile] = useState<{
+    username?: string;
+    pfpUrl?: string;
+  }>({});
 
   // Determine which flow to use based on context
   const useBackendFlow = context !== undefined;
@@ -135,7 +142,7 @@ export function NeynarAuthButton() {
   const updateSessionWithSigners = useCallback(
     async (
       signers: StoredAuthState['signers'],
-      user: StoredAuthState['user']
+      _user: StoredAuthState['user'],
     ) => {
       if (!useBackendFlow) return;
 
@@ -148,7 +155,7 @@ export function NeynarAuthButton() {
         console.error('❌ Error updating session with signers:', error);
       }
     },
-    [useBackendFlow, quickAuthSignIn]
+    [useBackendFlow, quickAuthSignIn],
   );
 
   // Helper function to fetch user data from Neynar API
@@ -166,7 +173,7 @@ export function NeynarAuthButton() {
         return null;
       }
     },
-    []
+    [],
   );
 
   // Helper function to generate signed key request
@@ -194,7 +201,7 @@ export function NeynarAuthButton() {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            `Failed to generate signed key request: ${errorData.error}`
+            `Failed to generate signed key request: ${errorData.error}`,
           );
         }
 
@@ -206,7 +213,7 @@ export function NeynarAuthButton() {
         // throw error;
       }
     },
-    []
+    [],
   );
 
   // Helper function to fetch all signers
@@ -217,10 +224,10 @@ export function NeynarAuthButton() {
 
         const endpoint = useBackendFlow
           ? `/api/auth/session-signers?message=${encodeURIComponent(
-              message
+              message,
             )}&signature=${signature}`
           : `/api/auth/signers?message=${encodeURIComponent(
-              message
+              message,
             )}&signature=${signature}`;
 
         const response = await fetch(endpoint);
@@ -229,11 +236,13 @@ export function NeynarAuthButton() {
         if (response.ok) {
           if (useBackendFlow) {
             // For backend flow, update session with signers
-            if (signerData.signers && signerData.signers.length > 0) {             
+            if (signerData.signers && signerData.signers.length > 0) {
               // Get user data for the first signer
               let user: StoredAuthState['user'] | null = null;
               if (signerData.signers[0].fid) {
-                user = await fetchUserData(signerData.signers[0].fid) as StoredAuthState['user'];
+                user = (await fetchUserData(
+                  signerData.signers[0].fid,
+                )) as StoredAuthState['user'];
               }
               await updateSessionWithSigners(signerData.signers, user);
             }
@@ -244,7 +253,7 @@ export function NeynarAuthButton() {
 
             if (signerData.signers && signerData.signers.length > 0) {
               const fetchedUser = (await fetchUserData(
-                signerData.signers[0].fid
+                signerData.signers[0].fid,
               )) as StoredAuthState['user'];
               user = fetchedUser;
             }
@@ -270,7 +279,7 @@ export function NeynarAuthButton() {
         setSignersLoading(false);
       }
     },
-    [useBackendFlow, fetchUserData, updateSessionWithSigners]
+    [useBackendFlow, fetchUserData, updateSessionWithSigners],
   );
 
   // Helper function to poll signer status
@@ -293,10 +302,10 @@ export function NeynarAuthButton() {
           setPollingInterval(null);
           return;
         }
-        
+
         try {
           const response = await fetch(
-            `/api/auth/signer?signerUuid=${signerUuid}`
+            `/api/auth/signer?signerUuid=${signerUuid}`,
           );
 
           if (!response.ok) {
@@ -306,7 +315,7 @@ export function NeynarAuthButton() {
               setPollingInterval(null);
               return;
             }
-            
+
             // Increment retry count for other errors
             retryCount++;
             if (retryCount >= maxRetries) {
@@ -314,7 +323,7 @@ export function NeynarAuthButton() {
               setPollingInterval(null);
               return;
             }
-            
+
             throw new Error(`Failed to poll signer status: ${response.status}`);
           }
 
@@ -337,7 +346,7 @@ export function NeynarAuthButton() {
 
       setPollingInterval(interval);
     },
-    [fetchAllSigners, pollingInterval]
+    [fetchAllSigners, pollingInterval],
   );
 
   // Cleanup polling on unmount
@@ -383,7 +392,7 @@ export function NeynarAuthButton() {
       setMessage(result.message);
       setSignature(result.signature);
       // Use QuickAuth to sign in
-      const signInResult = await quickAuthSignIn();
+      await quickAuthSignIn();
       // Fetch user profile after sign in
       if (quickAuthUser?.fid) {
         const user = await fetchUserData(quickAuthUser.fid);
@@ -418,10 +427,10 @@ export function NeynarAuthButton() {
     try {
       setSignersLoading(true);
       const result = await sdk.actions.signIn({ nonce: nonce || '' });
-      
+
       setMessage(result.message);
       setSignature(result.signature);
-      
+
       // For frontend flow, we'll handle the signer flow in the useEffect
     } catch (e) {
       if (e instanceof SignInCore.RejectedByUser) {
@@ -458,7 +467,7 @@ export function NeynarAuthButton() {
         clearInterval(pollingInterval);
         setPollingInterval(null);
       }
-      
+
       // Reset signer flow flag
       signerFlowStartedRef.current = false;
     } catch (error) {
@@ -471,9 +480,14 @@ export function NeynarAuthButton() {
 
   // Handle fetching signers after successful authentication
   useEffect(() => {
-    if (message && signature && !isSignerFlowRunning && !signerFlowStartedRef.current) {
+    if (
+      message &&
+      signature &&
+      !isSignerFlowRunning &&
+      !signerFlowStartedRef.current
+    ) {
       signerFlowStartedRef.current = true;
-      
+
       const handleSignerFlow = async () => {
         setIsSignerFlowRunning(true);
         try {
@@ -491,7 +505,7 @@ export function NeynarAuthButton() {
 
           // First, fetch existing signers
           const signers = await fetchAllSigners(message, signature);
-          
+
           if (useBackendFlow && isMobileContext) setSignersLoading(true);
 
           // Check if no signers exist or if we have empty signers
@@ -502,7 +516,7 @@ export function NeynarAuthButton() {
             // Step 2: Generate signed key request
             const signedKeyData = await generateSignedKeyRequest(
               newSigner.signer_uuid,
-              newSigner.public_key
+              newSigner.public_key,
             );
 
             // Step 3: Show QR code in access dialog for signer approval
@@ -513,8 +527,8 @@ export function NeynarAuthButton() {
               await sdk.actions.openUrl(
                 signedKeyData.signer_approval_url.replace(
                   'https://client.farcaster.xyz/deeplinks/signed-key-request',
-                  'https://farcaster.xyz/~/connect'
-                )
+                  'https://farcaster.xyz/~/connect',
+                ),
               );
             } else {
               setShowDialog(true); // Ensure dialog is shown during loading
@@ -547,7 +561,8 @@ export function NeynarAuthButton() {
 
   const authenticated = useBackendFlow
     ? !!quickAuthUser?.fid
-    : storedAuth?.isAuthenticated && !!(storedAuth?.signers && storedAuth.signers.length > 0);
+    : storedAuth?.isAuthenticated &&
+      !!(storedAuth?.signers && storedAuth.signers.length > 0);
 
   const userData = useBackendFlow
     ? {
@@ -586,7 +601,7 @@ export function NeynarAuthButton() {
           className={cn(
             'btn btn-primary flex items-center gap-3',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'transform transition-all duration-200 active:scale-[0.98]'
+            'transform transition-all duration-200 active:scale-[0.98]',
           )}
         >
           {signersLoading ? (

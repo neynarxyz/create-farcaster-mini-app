@@ -1,0 +1,95 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.*
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Environment files
+.env*
+!.env.example
+
+# Generated files
+next-env.d.ts
+*.tsbuildinfo
+
+# Package manager lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Vercel
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage
+coverage/
+.nyc_output
+
+# Cache directories
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Storybook build outputs
+storybook-static
+
+# Database
+*.db
+*.sqlite
+
+# Documentation
+docs/
+
+# Auto-generated files
+*.d.ts
+!src/**/*.d.ts
+!types/**/*.d.ts
+
+# Test coverage
+*.lcov
+
+# Compiled binary addons
+build/Release
+
+# Yarn
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Scripts that should be ignored by eslint
+scripts/deploy.ts

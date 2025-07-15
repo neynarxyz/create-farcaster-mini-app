@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { APP_URL, APP_NAME, APP_DESCRIPTION } from "~/lib/constants";
-import { getMiniAppEmbedMetadata } from "~/lib/utils";
+import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
+import { APP_URL, APP_NAME, APP_DESCRIPTION } from '~/lib/constants';
+import { getMiniAppEmbedMetadata } from '~/lib/utils';
 export const revalidate = 300;
 
 // This is an example of how to generate a dynamically generated share page based on fid:
@@ -23,12 +23,12 @@ export async function generateMetadata({
       images: [imageUrl],
     },
     other: {
-      "fc:frame": JSON.stringify(getMiniAppEmbedMetadata(imageUrl)),
+      'fc:frame': JSON.stringify(getMiniAppEmbedMetadata(imageUrl)),
     },
   };
 }
 
 export default function SharePage() {
   // redirect to home page
-  redirect("/");
+  redirect('/');
 }
