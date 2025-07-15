@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process';
-import crypto from 'crypto';
-import fs from 'fs';
-import { dirname } from 'path';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,7 +47,7 @@ async function queryNeynarApp(apiKey) {
   }
   try {
     const response = await fetch(
-      'https://api.neynar.com/portal/app_by_api_key?starter_kit=true',
+      `https://api.neynar.com/portal/app_by_api_key?starter_kit=true`,
       {
         headers: {
           'x-api-key': apiKey,
@@ -444,7 +444,7 @@ export async function init(
   // Update package.json
   console.log('\nUpdating package.json...');
   const packageJsonPath = path.join(projectPath, 'package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  let packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
   packageJson.name = finalProjectName;
   packageJson.version = '0.1.0';
@@ -465,6 +465,7 @@ export async function init(
     '@farcaster/miniapp-sdk': '>=0.1.6 <1.0.0',
     '@farcaster/miniapp-wagmi-connector': '^1.0.0',
     '@farcaster/mini-app-solana': '>=0.0.17 <1.0.0',
+    '@farcaster/quick-auth': '>=0.0.7 <1.0.0',
     '@neynar/react': '^1.2.5',
     '@radix-ui/react-label': '^2.1.1',
     '@solana/wallet-adapter-react': '^0.15.38',
@@ -476,7 +477,6 @@ export async function init(
     'lucide-react': '^0.469.0',
     mipd: '^0.0.7',
     next: '^15',
-    'next-auth': '^4.24.11',
     react: '^19',
     'react-dom': '^19',
     'tailwind-merge': '^2.6.0',
@@ -488,6 +488,7 @@ export async function init(
   };
 
   packageJson.devDependencies = {
+    '@types/inquirer': '^9.0.8',
     '@types/node': '^20',
     '@types/react': '^19',
     '@types/react-dom': '^19',
@@ -499,8 +500,8 @@ export async function init(
     'pino-pretty': '^13.0.0',
     postcss: '^8',
     tailwindcss: '^3.4.1',
-    typescript: '^5',
     'ts-node': '^10.9.2',
+    typescript: '^5',
   };
 
   // Add Neynar SDK if selected

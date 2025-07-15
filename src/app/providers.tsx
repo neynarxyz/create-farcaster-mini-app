@@ -1,10 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { AuthKitProvider } from '@farcaster/auth-kit';
 import { MiniAppProvider } from '@neynar/react';
-import type { Session } from 'next-auth';
-import { SessionProvider } from 'next-auth/react';
 import { SafeFarcasterSolanaProvider } from '~/components/providers/SafeFarcasterSolanaProvider';
 import { ANALYTICS_ENABLED } from '~/lib/constants';
 
@@ -15,27 +12,19 @@ const WagmiProvider = dynamic(
   },
 );
 
-export function Providers({
-  session,
-  children,
-}: {
-  session: Session | null;
-  children: React.ReactNode;
-}) {
+export function Providers({ children }: { children: React.ReactNode }) {
   const solanaEndpoint =
     process.env.SOLANA_RPC_ENDPOINT || 'https://solana-rpc.publicnode.com';
   return (
-    <SessionProvider session={session}>
-      <WagmiProvider>
-        <MiniAppProvider
-          analyticsEnabled={ANALYTICS_ENABLED}
-          backButtonEnabled={true}
-        >
-          <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
-            <AuthKitProvider config={{}}>{children}</AuthKitProvider>
-          </SafeFarcasterSolanaProvider>
-        </MiniAppProvider>
-      </WagmiProvider>
-    </SessionProvider>
+    <WagmiProvider>
+      <MiniAppProvider
+        analyticsEnabled={ANALYTICS_ENABLED}
+        backButtonEnabled={true}
+      >
+        <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
+          {children}
+        </SafeFarcasterSolanaProvider>
+      </MiniAppProvider>
+    </WagmiProvider>
   );
 }

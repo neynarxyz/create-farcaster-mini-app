@@ -5,7 +5,6 @@ import os from 'os';
 import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
 import dotenv from 'dotenv';
-import crypto from 'crypto';
 import { Vercel } from '@vercel/sdk';
 import { APP_NAME, APP_BUTTON_TEXT } from '../src/lib/constants';
 
@@ -132,7 +131,7 @@ async function checkRequiredEnvVars(): Promise<void> {
 
         process.env.SPONSOR_SIGNER = sponsorSigner.toString();
 
-        if (storeSeedPhrase) {
+        if (process.env.SEED_PHRASE) {
           fs.appendFileSync(
             '.env.local',
             `\nSPONSOR_SIGNER="${sponsorSigner}"`,
@@ -299,17 +298,26 @@ async function setVercelEnvVarSDK(
     }
 
     // Get existing environment variables
-    const existingVars = await vercelClient.projects.getEnvironmentVariables({
+    const existingVars = await vercelClient.projects.filterProjectEnvs({
       idOrName: projectId,
     });
 
-    const existingVar = existingVars.envs?.find(
+    // Handle different response types
+    let envs: any[] = [];
+    if ('envs' in existingVars && Array.isArray(existingVars.envs)) {
+      envs = existingVars.envs;
+    } else if ('target' in existingVars && 'key' in existingVars) {
+      // Single environment variable response
+      envs = [existingVars];
+    }
+
+    const existingVar = envs.find(
       (env: any) => env.key === key && env.target?.includes('production'),
     );
 
-    if (existingVar) {
+    if (existingVar && existingVar.id) {
       // Update existing variable
-      await vercelClient.projects.editEnvironmentVariable({
+      await vercelClient.projects.editProjectEnv({
         idOrName: projectId,
         id: existingVar.id,
         requestBody: {
@@ -320,7 +328,7 @@ async function setVercelEnvVarSDK(
       console.log(`✅ Updated environment variable: ${key}`);
     } else {
       // Create new variable
-      await vercelClient.projects.createEnvironmentVariable({
+      await vercelClient.projects.createProjectEnv({
         idOrName: projectId,
         requestBody: {
           key: key,
@@ -458,7 +466,7 @@ async function waitForDeployment(
 
   while (Date.now() - startTime < maxWaitTime) {
     try {
-      const deployments = await vercelClient?.deployments.list({
+      const deployments = await vercelClient?.deployments.getDeployments({
         projectId: projectId,
         limit: 1,
       });
@@ -594,12 +602,17 @@ async function deployToVercel(useGitHub = false): Promise<void> {
 
     if (vercelClient) {
       try {
-        const project = await vercelClient.projects.get({
-          idOrName: projectId,
-        });
-        projectName = project.name;
-        domain = `${projectName}.vercel.app`;
-        console.log('🌐 Using project name for domain:', domain);
+        const projects = await vercelClient.projects.getProjects({});
+        const project = projects.projects.find(
+          p => p.id === projectId || p.name === projectId,
+        );
+        if (project) {
+          projectName = project.name;
+          domain = `${projectName}.vercel.app`;
+          console.log('🌐 Using project name for domain:', domain);
+        } else {
+          throw new Error('Project not found');
+        }
       } catch (error: unknown) {
         if (error instanceof Error) {
           console.warn(
@@ -653,12 +666,7 @@ async function deployToVercel(useGitHub = false): Promise<void> {
     }
 
     // Prepare environment variables
-    const nextAuthSecret =
-      process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('hex');
     const vercelEnv = {
-      NEXTAUTH_SECRET: nextAuthSecret,
-      AUTH_SECRET: nextAuthSecret,
-      NEXTAUTH_URL: `https://${domain}`,
       NEXT_PUBLIC_URL: `https://${domain}`,
 
       ...(process.env.NEYNAR_API_KEY && {
@@ -763,7 +771,6 @@ async function deployToVercel(useGitHub = false): Promise<void> {
       console.log('🔄 Updating environment variables with correct domain...');
 
       const updatedEnv: Record<string, string | object> = {
-        NEXTAUTH_URL: `https://${actualDomain}`,
         NEXT_PUBLIC_URL: `https://${actualDomain}`,
       };
 
