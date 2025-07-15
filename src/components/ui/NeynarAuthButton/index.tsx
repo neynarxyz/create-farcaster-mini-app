@@ -7,6 +7,7 @@ import { cn } from '~/lib/utils';
 import { Button } from '~/components/ui/Button';
 import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
 import { ProfileButton } from '~/components/ui/NeynarAuthButton/ProfileButton';
+import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
 import { getItem, removeItem, setItem } from '~/lib/localStorage';
 import { useMiniApp } from '@neynar/react';
 import {
