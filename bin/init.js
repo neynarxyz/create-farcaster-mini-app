@@ -354,15 +354,7 @@ export async function init(
       {
         type: 'confirm',
         name: 'useSponsoredSigner',
-        message:
-          'Would you like to use Neynar Sponsored Signers and/or Sign In With Neynar (SIWN)?\n' +
-          'This enables the simplest, most secure, and most user-friendly Farcaster authentication for your app.\n\n' +
-          'Benefits of using Neynar Sponsored Signers/SIWN:\n' +
-          '- No auth buildout or signer management required for developers\n' +
-          '- Cost-effective for users (no gas for signers)\n' +
-          '- Users can revoke signers at any time\n' +
-          '- Plug-and-play for web and React Native\n' +
-          '- Recommended for most developers\n' +
+        message: 'Do you want to write data to Farcaster?\n\nThis feature uses Neynar Sponsored Signers to sign messages on behalf of users.' + 
           '\n⚠️ A seed phrase is required for this option.\n',
         default: false,
       },
