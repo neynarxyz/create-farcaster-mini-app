@@ -460,7 +460,6 @@ export async function init(
   // Add dependencies
   packageJson.dependencies = {
     '@farcaster/auth-client': '>=0.3.0 <1.0.0',
-    '@farcaster/auth-kit': '>=0.6.0 <1.0.0',
     '@farcaster/miniapp-node': '>=0.1.5 <1.0.0',
     '@farcaster/miniapp-sdk': '>=0.1.6 <1.0.0',
     '@farcaster/miniapp-wagmi-connector': '^1.0.0',
@@ -486,6 +485,12 @@ export async function init(
     zod: '^3.24.2',
     siwe: '^3.0.0',
   };
+
+  // Add auth-kit and quick-auth dependencies if useSponsoredSigner is true
+  if (answers.useSponsoredSigner) {
+    packageJson.dependencies['@farcaster/auth-kit'] = '>=0.6.0 <1.0.0';
+    packageJson.dependencies['next-auth'] = '^4.24.11';
+  }
 
   packageJson.devDependencies = {
     '@types/inquirer': '^9.0.8',
@@ -697,6 +702,15 @@ export async function init(
   const binPath = path.join(projectPath, 'bin');
   if (fs.existsSync(binPath)) {
     fs.rmSync(binPath, { recursive: true, force: true });
+  }
+
+  // Remove NeynarAuthButton directory if useSponsoredSigner is false
+  if (!answers.useSponsoredSigner) {
+    console.log('\nRemoving NeynarAuthButton directory (useSponsoredSigner is false)...');
+    const neynarAuthButtonPath = path.join(projectPath, 'src', 'components', 'ui', 'NeynarAuthButton');
+    if (fs.existsSync(neynarAuthButtonPath)) {
+      fs.rmSync(neynarAuthButtonPath, { recursive: true, force: true });
+    }
   }
 
   // Initialize git repository

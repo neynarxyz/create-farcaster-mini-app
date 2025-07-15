@@ -5,9 +5,18 @@ import { type Haptics } from '@farcaster/miniapp-sdk';
 import { useMiniApp } from '@neynar/react';
 import { APP_URL } from '~/lib/constants';
 import { Button } from '../Button';
-import { NeynarAuthButton } from '../NeynarAuthButton/index';
 import { ShareButton } from '../Share';
 import { SignIn } from '../wallet/SignIn';
+
+// Optional import for NeynarAuthButton - may not exist in all templates
+let NeynarAuthButton: React.ComponentType | null = null;
+try {
+  const module = require('../NeynarAuthButton/index');
+  NeynarAuthButton = module.NeynarAuthButton;
+} catch (error) {
+  // Component doesn't exist, that's okay
+  console.log('NeynarAuthButton not available in this template');
+}
 
 /**
  * ActionsTab component handles mini app actions like sharing, notifications, and haptic feedback.
@@ -140,7 +149,7 @@ export function ActionsTab() {
       <SignIn />
 
       {/* Neynar Authentication */}
-      <NeynarAuthButton />
+      {NeynarAuthButton && <NeynarAuthButton />}
 
       {/* Mini app actions */}
       <Button
