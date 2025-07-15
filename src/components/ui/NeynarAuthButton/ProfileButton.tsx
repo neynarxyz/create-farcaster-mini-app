@@ -16,8 +16,14 @@ export function ProfileButton({
 
   useDetectClickOutside(ref, () => setShowDropdown(false));
 
-  const name = userData?.username && userData.username.trim() !== '' ? userData.username : `!${userData?.fid}`;
-  const pfpUrl = userData?.pfpUrl && userData.pfpUrl.trim() !== '' ? userData.pfpUrl : 'https://farcaster.xyz/avatar.png';
+  const name =
+    userData?.username && userData.username.trim() !== ''
+      ? userData.username
+      : `!${userData?.fid}`;
+  const pfpUrl =
+    userData?.pfpUrl && userData.pfpUrl.trim() !== ''
+      ? userData.pfpUrl
+      : 'https://farcaster.xyz/avatar.png';
 
   return (
     <div className="relative" ref={ref}>
@@ -27,7 +33,7 @@ export function ProfileButton({
           'flex items-center gap-3 px-4 py-2 min-w-0 rounded-lg',
           'bg-transparent border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100',
           'hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
-          'focus:outline-none focus:ring-1 focus:ring-primary'
+          'focus:outline-none focus:ring-1 focus:ring-primary',
         )}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -35,7 +41,7 @@ export function ProfileButton({
           src={pfpUrl}
           alt="Profile"
           className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-          onError={(e) => {
+          onError={e => {
             (e.target as HTMLImageElement).src =
               'https://farcaster.xyz/avatar.png';
           }}
@@ -46,7 +52,7 @@ export function ProfileButton({
         <svg
           className={cn(
             'w-4 h-4 transition-transform flex-shrink-0',
-            showDropdown && 'rotate-180'
+            showDropdown && 'rotate-180',
           )}
           fill="none"
           stroke="currentColor"

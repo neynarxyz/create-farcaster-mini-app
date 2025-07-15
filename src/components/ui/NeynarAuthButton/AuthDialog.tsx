@@ -169,7 +169,7 @@ export function AuthDialog({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                        content.qrUrl
+                        content.qrUrl,
                       )}`}
                       alt="QR Code"
                       className="w-48 h-48"
@@ -197,13 +197,13 @@ export function AuthDialog({
                         content.qrUrl
                           .replace(
                             'https://farcaster.xyz/',
-                            'https://client.farcaster.xyz/deeplinks/'
+                            'https://client.farcaster.xyz/deeplinks/',
                           )
                           .replace(
                             'https://client.farcaster.xyz/deeplinks/signed-key-request',
-                            'https://farcaster.xyz/~/connect'
+                            'https://farcaster.xyz/~/connect',
                           ),
-                        '_blank'
+                        '_blank',
                       );
                     }
                   }}

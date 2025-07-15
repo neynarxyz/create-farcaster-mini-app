@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getNeynarClient } from '~/lib/neynar';
 import { mnemonicToAccount } from 'viem/accounts';
 import {
   SIGNED_KEY_REQUEST_TYPE,
   SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN,
 } from '~/lib/constants';
+import { getNeynarClient } from '~/lib/neynar';
 
 const postRequiredFields = ['signerUuid', 'publicKey'];
 
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     if (!body[field]) {
       return NextResponse.json(
         { error: `${field} is required` },
-        { status: 400 }
+        { status: 400 },
       );
     }
   }
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   if (redirectUrl && typeof redirectUrl !== 'string') {
     return NextResponse.json(
       { error: 'redirectUrl must be a string' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     if (!seedPhrase) {
       return NextResponse.json(
         { error: 'App configuration missing (SEED_PHRASE or FID)' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     console.error('Error registering signed key:', error);
     return NextResponse.json(
       { error: 'Failed to register signed key' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

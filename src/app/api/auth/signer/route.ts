@@ -10,7 +10,7 @@ export async function POST() {
     console.error('Error fetching signer:', error);
     return NextResponse.json(
       { error: 'Failed to fetch signer' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   if (!signerUuid) {
     return NextResponse.json(
       { error: 'signerUuid is required' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     console.error('Error fetching signed key:', error);
     return NextResponse.json(
       { error: 'Failed to fetch signed key' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

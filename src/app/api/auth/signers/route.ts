@@ -13,7 +13,7 @@ export async function GET(request: Request) {
         {
           error: `${param} parameter is required`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
   }
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     console.error('Error fetching signers:', error);
     return NextResponse.json(
       { error: 'Failed to fetch signers' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
