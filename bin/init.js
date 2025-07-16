@@ -229,7 +229,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       useTunnel: true,
       enableAnalytics: true,
       seedPhrase: null,
-      sponsorSigner: false,
+      useSponsoredSigner: false,
     };
   } else {
     // If autoAcceptDefaults is false but we have a projectName, we still need to ask for other options
