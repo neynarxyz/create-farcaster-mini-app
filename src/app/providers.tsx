@@ -18,15 +18,17 @@ const WagmiProvider = dynamic(
 export function Providers({
   session,
   children,
+  shouldUseSession = false,
 }: {
   session: Session | null;
   children: React.ReactNode;
+  shouldUseSession?: boolean;
 }) {
   const solanaEndpoint =
     process.env.SOLANA_RPC_ENDPOINT || 'https://solana-rpc.publicnode.com';
-  
+
   // Only wrap with SessionProvider if next auth is used
-  if (process.env.SPONSOR_SIGNER === 'true' || process.env.SEED_PHRASE) {
+  if (shouldUseSession) {
     return (
       <SessionProvider session={session}>
         <WagmiProvider>
@@ -42,7 +44,7 @@ export function Providers({
       </SessionProvider>
     );
   }
-  
+
   // Return without SessionProvider if no session
   return (
     <WagmiProvider>
