@@ -140,6 +140,56 @@ async function checkRequiredEnvVars(): Promise<void> {
           console.log('✅ Sponsor signer preference stored in .env.local');
         }
       }
+
+      // Ask about required chains
+      const { useRequiredChains } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'useRequiredChains',
+          message:
+            'Does your mini app require support for specific blockchains?\n' +
+            'If yes, the host will only render your mini app if it supports all the chains you specify.\n' +
+            'If no, the mini app will be rendered regardless of chain support.',
+          default: false,
+        },
+      ]);
+
+      let requiredChains: string[] = [];
+      if (useRequiredChains) {
+        const { selectedChains } = await inquirer.prompt([
+          {
+            type: 'checkbox',
+            name: 'selectedChains',
+            message: 'Select the required chains (CAIP-2 identifiers):',
+            choices: [
+              { name: 'Ethereum Mainnet (eip155:1)', value: 'eip155:1' },
+              { name: 'Polygon (eip155:137)', value: 'eip155:137' },
+              { name: 'Arbitrum One (eip155:42161)', value: 'eip155:42161' },
+              { name: 'Optimism (eip155:10)', value: 'eip155:10' },
+              { name: 'Base (eip155:8453)', value: 'eip155:8453' },
+              { name: 'Solana (solana:mainnet)', value: 'solana:mainnet' },
+              { name: 'Solana Devnet (solana:devnet)', value: 'solana:devnet' },
+            ],
+          },
+        ]);
+        requiredChains = selectedChains;
+      }
+
+      // Update constants.ts with required chains
+      const constantsPath = path.join(projectRoot, 'src', 'lib', 'constants.ts');
+      if (fs.existsSync(constantsPath)) {
+        let constantsContent = fs.readFileSync(constantsPath, 'utf8');
+        
+        // Replace the APP_REQUIRED_CHAINS line
+        const requiredChainsString = JSON.stringify(requiredChains);
+        constantsContent = constantsContent.replace(
+          /^export const APP_REQUIRED_CHAINS\s*:\s*string\[\]\s*=\s*\[[^\]]*\];$/m,
+          `export const APP_REQUIRED_CHAINS: string[] = ${requiredChainsString};`,
+        );
+        
+        fs.writeFileSync(constantsPath, constantsContent);
+        console.log('✅ Required chains updated in constants.ts');
+      }
     }
   }
 
