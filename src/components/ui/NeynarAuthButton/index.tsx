@@ -5,8 +5,8 @@ import { useSignIn, UseSignInData } from '@farcaster/auth-kit';
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { cn } from '~/lib/utils';
 import { Button } from '~/components/ui/Button';
-import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
 import { ProfileButton } from '~/components/ui/NeynarAuthButton/ProfileButton';
+import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
 import { getItem, removeItem, setItem } from '~/lib/localStorage';
 import { useMiniApp } from '@neynar/react';
 import {
@@ -141,7 +141,7 @@ export function NeynarAuthButton() {
   const updateSessionWithSigners = useCallback(
     async (
       signers: StoredAuthState['signers'],
-      user: StoredAuthState['user'],
+      user: StoredAuthState['user']
     ) => {
       if (!useBackendFlow) return;
 
@@ -308,7 +308,7 @@ export function NeynarAuthButton() {
           setPollingInterval(null);
           return;
         }
-        
+
         try {
           const response = await fetch(
             `/api/auth/signer?signerUuid=${signerUuid}`
@@ -321,7 +321,7 @@ export function NeynarAuthButton() {
               setPollingInterval(null);
               return;
             }
-            
+
             // Increment retry count for other errors
             retryCount++;
             if (retryCount >= maxRetries) {
@@ -329,7 +329,7 @@ export function NeynarAuthButton() {
               setPollingInterval(null);
               return;
             }
-            
+
             throw new Error(`Failed to poll signer status: ${response.status}`);
           }
 
@@ -384,146 +384,7 @@ export function NeynarAuthButton() {
     generateNonce();
   }, []);
 
-  // Backend flow using QuickAuth
-  const handleBackendSignIn = useCallback(async () => {
-    if (!nonce) {
-      console.error('❌ No nonce available for backend sign-in');
-      return;
-    }
-
-    try {
-      setSignersLoading(true);
-      const result = await sdk.actions.signIn({ nonce });
-
-      setMessage(result.message);
-      setSignature(result.signature);
-      // Use QuickAuth to sign in
-      const signInResult = await quickAuthSignIn();
-      // Fetch user profile after sign in
-      if (quickAuthUser?.fid) {
-        const user = await fetchUserData(quickAuthUser.fid);
-        setBackendUserProfile({
-          username: user?.username || '',
-          pfpUrl: user?.pfp_url || '',
-        });
-      }
-    } catch (e) {
-      if (e instanceof SignInCore.RejectedByUser) {
-        console.log('ℹ️ Sign-in rejected by user');
-      } else {
-        console.error('❌ Backend sign-in error:', e);
-      }
-    }
-  }, [useBackendFlow]);
-
-  // Auth Kit data synchronization (only for browser flow)
-  useEffect(() => {
-    if (!useBackendFlow) {
-      setMessage(data?.message || null);
-      setSignature(data?.signature || null);
-      
-      // Reset the signer flow flag when message/signature change
-      if (data?.message && data?.signature) {
-        signerFlowStartedRef.current = false;
-      }
-    }
-  }, [useBackendFlow, data?.message, data?.signature]);
-
-  // Connect for frontend flow when nonce is available (only for browser flow)
-  useEffect(() => {
-    if (!useBackendFlow && nonce && !channelToken) {
-      connect();
-    }
-  }, [useBackendFlow, quickAuthUser?.fid, fetchUserData]);
-
-  const handleFrontEndSignIn = useCallback(async () => {
-    try {
-      setSignersLoading(true);
-      const result = await sdk.actions.signIn({ nonce: nonce || '' });
-      
-      setMessage(result.message);
-      setSignature(result.signature);
-      
-      // For frontend flow, we'll handle the signer flow in the useEffect
-    } catch (e) {
-      if (e instanceof SignInCore.RejectedByUser) {
-        console.log('ℹ️ Sign-in rejected by user');
-      } else {
-        console.error('❌ Frontend sign-in error:', e);
-      }
-    } finally {
-      setSignersLoading(false);
-    }
-  }, [nonce]);
-
-  const handleSignOut = useCallback(async () => {
-    try {
-      setSignersLoading(true);
-
-      if (useBackendFlow) {
-        // Use QuickAuth sign out
-        await quickAuthSignOut();
-      } else {
-        // Frontend flow sign out
-        setStoredAuth(null);
-      }
-
-      // Common cleanup for both flows
-      setShowDialog(false);
-      setDialogStep('signin');
-      setSignerApprovalUrl(null);
-      setMessage(null);
-      setSignature(null);
-
-      // Reset polling interval
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-        setPollingInterval(null);
-      }
-      
-      // Reset signer flow flag
-      signerFlowStartedRef.current = false;
-    } catch (error) {
-      console.error('❌ Error during sign out:', error);
-      // Optionally handle error state
-    } finally {
-      setSignersLoading(false);
-    }
-  }, [useBackendFlow, pollingInterval, quickAuthSignOut]);
-
-  // Backend flow using QuickAuth
-  const handleBackendSignIn = useCallback(async () => {
-    if (!nonce) {
-      console.error('❌ No nonce available for backend sign-in');
-      return;
-    }
-
-    try {
-      setSignersLoading(true);
-      const result = await sdk.actions.signIn({ nonce });
-
-      setMessage(result.message);
-      setSignature(result.signature);
-      // Use QuickAuth to sign in
-      const signInResult = await quickAuthSignIn();
-      // Fetch user profile after sign in
-      if (quickAuthUser?.fid) {
-        const user = await fetchUserData(quickAuthUser.fid);
-        setBackendUserProfile({
-          username: user?.username || '',
-          pfpUrl: user?.pfp_url || '',
-        });
-      }
-    } catch (e) {
-      if (e instanceof SignInCore.RejectedByUser) {
-        console.log('ℹ️ Sign-in rejected by user');
-      } else {
-        console.error('❌ Backend sign-in error:', e);
-      }
-    }
-  }, [nonce, quickAuthSignIn, quickAuthUser, fetchUserData]);
-
-  // Fetch user profile when quickAuthUser.fid changes (for backend flow)
+  // Load stored auth state on mount (only for frontend flow)
   useEffect(() => {
     if (!useBackendFlow) {
       const stored = getItem<StoredAuthState>(STORAGE_KEY);
@@ -582,7 +443,7 @@ export function NeynarAuthButton() {
   useEffect(() => {
     setMessage(data?.message || null);
     setSignature(data?.signature || null);
-    
+
     // Reset the signer flow flag when message/signature change
     if (data?.message && data?.signature) {
       signerFlowStartedRef.current = false;
@@ -598,9 +459,14 @@ export function NeynarAuthButton() {
 
   // Handle fetching signers after successful authentication
   useEffect(() => {
-    if (message && signature && !isSignerFlowRunning && !signerFlowStartedRef.current) {
+    if (
+      message &&
+      signature &&
+      !isSignerFlowRunning &&
+      !signerFlowStartedRef.current
+    ) {
       signerFlowStartedRef.current = true;
-      
+
       const handleSignerFlow = async () => {
         setIsSignerFlowRunning(true);
         try {
@@ -618,7 +484,7 @@ export function NeynarAuthButton() {
 
           // First, fetch existing signers
           const signers = await fetchAllSigners(message, signature);
-          
+
           if (useBackendFlow && isMobileContext) setSignersLoading(true);
 
           // Check if no signers exist or if we have empty signers
@@ -743,7 +609,7 @@ export function NeynarAuthButton() {
         clearInterval(pollingInterval);
         setPollingInterval(null);
       }
-      
+
       // Reset signer flow flag
       signerFlowStartedRef.current = false;
     } catch (error) {
