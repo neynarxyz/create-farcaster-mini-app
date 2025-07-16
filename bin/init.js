@@ -714,16 +714,6 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       }
     }
     
-    const updateSessionRoutePath = path.join(projectPath, 'src', 'app', 'api', 'auth', 'update-session', 'route.ts');
-    if (fs.existsSync(updateSessionRoutePath)) {
-      fs.rmSync(updateSessionRoutePath, { force: true });
-      // Remove the directory if it's empty
-      const updateSessionDir = path.dirname(updateSessionRoutePath);
-      if (fs.readdirSync(updateSessionDir).length === 0) {
-        fs.rmSync(updateSessionDir, { recursive: true, force: true });
-      }
-    }
-    
     // Remove src/auth.ts file
     const authFilePath = path.join(projectPath, 'src', 'auth.ts');
     if (fs.existsSync(authFilePath)) {
