@@ -482,12 +482,6 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     siwe: '^3.0.0',
   };
 
-  // Add auth-kit and next-auth dependencies if useSponsoredSigner is true
-  if (answers.useSponsoredSigner) {
-    packageJson.dependencies['@farcaster/auth-kit'] = '>=0.6.0 <1.0.0';
-    packageJson.dependencies['next-auth'] = '^4.24.11';
-  }
-
   packageJson.devDependencies = {
     "@types/inquirer": "^9.0.8",
     "@types/node": "^20",
@@ -655,9 +649,6 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
     }
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
-    if (answers.useSponsoredSigner) {
-      fs.appendFileSync(envPath, `\nSPONSOR_SIGNER="${answers.useSponsoredSigner}"`);
-    }
 
     fs.unlinkSync(envExamplePath);
   } else {
