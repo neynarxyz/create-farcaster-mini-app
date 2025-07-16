@@ -39,25 +39,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# IDE and editor files
-.vscode/settings.json
-.idea/
-*.swp
-*.swo
-*~
-
-# Linting and formatting cache
-.eslintcache
-.prettierignore.bak
-
-# OS generated files
-Thumbs.db
-
-# Package manager files
-.pnpm-debug.log*
-.yarn-integrity
-
-# Temporary files
-tmp/
-temp/

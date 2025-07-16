@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { SignIn as SignInCore } from '@farcaster/miniapp-sdk';
-import { useQuickAuth } from '~/hooks/useQuickAuth';
-import { Button } from '../Button';
+import { useCallback, useState } from "react";
+import sdk, { SignIn as SignInCore } from "@farcaster/miniapp-sdk";
+import { Button } from "../Button";
+import { useQuickAuth } from "~/hooks/useQuickAuth";
 
 /**
  * SignIn component handles Farcaster authentication using QuickAuth.
@@ -52,11 +52,11 @@ export function SignIn() {
    */
   const handleSignIn = useCallback(async () => {
     try {
-      setAuthState(prev => ({ ...prev, signingIn: true }));
+      setAuthState((prev) => ({ ...prev, signingIn: true }));
       setSignInFailure(undefined);
-
+      
       const success = await signIn();
-
+      
       if (!success) {
         setSignInFailure('Authentication failed');
       }
@@ -67,7 +67,7 @@ export function SignIn() {
       }
       setSignInFailure('Unknown error');
     } finally {
-      setAuthState(prev => ({ ...prev, signingIn: false }));
+      setAuthState((prev) => ({ ...prev, signingIn: false }));
     }
   }, [signIn]);
 
@@ -80,10 +80,10 @@ export function SignIn() {
    */
   const handleSignOut = useCallback(async () => {
     try {
-      setAuthState(prev => ({ ...prev, signingOut: true }));
+      setAuthState((prev) => ({ ...prev, signingOut: true }));
       await signOut();
     } finally {
-      setAuthState(prev => ({ ...prev, signingOut: false }));
+      setAuthState((prev) => ({ ...prev, signingOut: false }));
     }
   }, [signOut]);
 
@@ -105,9 +105,7 @@ export function SignIn() {
       {/* Session Information */}
       {authenticatedUser && (
         <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 dark:bg-gray-900 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">
-            Authenticated User
-          </div>
+          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">Authenticated User</div>
           <div className="whitespace-pre text-gray-700 dark:text-gray-200">
             {JSON.stringify(authenticatedUser, null, 2)}
           </div>
@@ -117,12 +115,8 @@ export function SignIn() {
       {/* Error Display */}
       {signInFailure && !authState.signingIn && (
         <div className="my-2 p-2 text-xs overflow-x-scroll bg-gray-100 dark:bg-gray-900 rounded-lg font-mono">
-          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">
-            Authentication Error
-          </div>
-          <div className="whitespace-pre text-gray-700 dark:text-gray-200">
-            {signInFailure}
-          </div>
+          <div className="font-semibold text-gray-500 dark:text-gray-300 mb-1">Authentication Error</div>
+          <div className="whitespace-pre text-gray-700 dark:text-gray-200">{signInFailure}</div>
         </div>
       )}
     </>

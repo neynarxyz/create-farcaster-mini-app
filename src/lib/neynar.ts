@@ -1,15 +1,11 @@
-import {
-  NeynarAPIClient,
-  Configuration,
-  WebhookUserCreated,
-} from '@neynar/nodejs-sdk';
+import { NeynarAPIClient, Configuration, WebhookUserCreated } from '@neynar/nodejs-sdk';
 import { APP_URL } from './constants';
 
 let neynarClient: NeynarAPIClient | null = null;
 
 // Example usage:
 // const client = getNeynarClient();
-// const user = await client.lookupUserByFid(fid);
+// const user = await client.lookupUserByFid(fid); 
 export function getNeynarClient() {
   if (!neynarClient) {
     const apiKey = process.env.NEYNAR_API_KEY;
@@ -37,12 +33,12 @@ export async function getNeynarUser(fid: number): Promise<User | null> {
 
 type SendMiniAppNotificationResult =
   | {
-      state: 'error';
+      state: "error";
       error: unknown;
     }
-  | { state: 'no_token' }
-  | { state: 'rate_limit' }
-  | { state: 'success' };
+  | { state: "no_token" }
+  | { state: "rate_limit" }
+  | { state: "success" };
 
 export async function sendNeynarMiniAppNotification({
   fid,
@@ -62,19 +58,19 @@ export async function sendNeynarMiniAppNotification({
       target_url: APP_URL,
     };
 
-    const result = await client.publishFrameNotifications({
-      targetFids,
-      notification,
+    const result = await client.publishFrameNotifications({ 
+      targetFids, 
+      notification 
     });
 
     if (result.notification_deliveries.length > 0) {
-      return { state: 'success' };
+      return { state: "success" };
     } else if (result.notification_deliveries.length === 0) {
-      return { state: 'no_token' };
+      return { state: "no_token" };
     } else {
-      return { state: 'error', error: result || 'Unknown error' };
+      return { state: "error", error: result || "Unknown error" };
     }
   } catch (error) {
-    return { state: 'error', error };
+    return { state: "error", error };
   }
-}
+} 

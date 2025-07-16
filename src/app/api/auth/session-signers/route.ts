@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     if (!message || !signature) {
       return NextResponse.json(
         { error: 'Message and signature are required' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     console.error('Error in session-signers API:', error);
     return NextResponse.json(
       { error: 'Failed to fetch signers' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

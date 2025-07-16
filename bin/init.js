@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process';
-import crypto from 'crypto';
-import fs from 'fs';
-import { dirname } from 'path';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const REPO_URL = 'https://github.com/neynarxyz/create-farcaster-mini-app.git';
 const SCRIPT_VERSION = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'),
+  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
 ).version;
 
 // ANSI color codes
@@ -47,12 +47,12 @@ async function queryNeynarApp(apiKey) {
   }
   try {
     const response = await fetch(
-      'https://api.neynar.com/portal/app_by_api_key?starter_kit=true',
+      `https://api.neynar.com/portal/app_by_api_key?starter_kit=true`,
       {
         headers: {
           'x-api-key': apiKey,
         },
-      },
+      }
     );
     const data = await response.json();
     return data;
@@ -63,11 +63,7 @@ async function queryNeynarApp(apiKey) {
 }
 
 // Export the main CLI function for programmatic use
-export async function init(
-  projectName = null,
-  autoAcceptDefaults = false,
-  apiKey = null,
-) {
+export async function init(projectName = null, autoAcceptDefaults = false, apiKey = null) {
   printWelcomeMessage();
 
   // Ask about Neynar usage
@@ -111,7 +107,7 @@ export async function init(
     } else {
       if (!autoAcceptDefaults) {
         console.log(
-          '\n🪐 Find your Neynar API key at: https://dev.neynar.com/app\n',
+          '\n🪐 Find your Neynar API key at: https://dev.neynar.com/app\n'
         );
       }
 
@@ -148,13 +144,13 @@ export async function init(
 
         if (useDemoKey.useDemo) {
           console.warn(
-            '\n⚠️ Note: the demo key is for development purposes only and is aggressively rate limited.',
+            '\n⚠️ Note: the demo key is for development purposes only and is aggressively rate limited.'
           );
           console.log(
-            'For production, please sign up for a Neynar account at https://neynar.com/ and configure the API key in your .env or .env.local file with NEYNAR_API_KEY.',
+            'For production, please sign up for a Neynar account at https://neynar.com/ and configure the API key in your .env or .env.local file with NEYNAR_API_KEY.'
           );
           console.log(
-            `\n${purple}${bright}${italic}Neynar now has a free tier! See https://neynar.com/#pricing for details.\n${reset}`,
+            `\n${purple}${bright}${italic}Neynar now has a free tier! See https://neynar.com/#pricing for details.\n${reset}`
           );
           neynarApiKey = 'FARCASTER_V2_FRAMES_DEMO';
         }
@@ -167,7 +163,7 @@ export async function init(
         break;
       }
       console.log(
-        '\n⚠️  No valid API key provided. Would you like to try again?',
+        '\n⚠️  No valid API key provided. Would you like to try again?'
       );
       const { retry } = await inquirer.prompt([
         {
@@ -243,7 +239,7 @@ export async function init(
         name: 'projectName',
         message: 'What is the name of your mini app?',
         default: projectName || defaultMiniAppName,
-        validate: input => {
+        validate: (input) => {
           if (input.trim() === '') {
             return 'Project name cannot be empty';
           }
@@ -290,13 +286,13 @@ export async function init(
         message:
           'Enter tags for your mini app (separate with spaces or commas, optional):',
         default: '',
-        filter: input => {
+        filter: (input) => {
           if (!input.trim()) return [];
           // Split by both spaces and commas, trim whitespace, and filter out empty strings
           return input
             .split(/[,\s]+/)
-            .map(tag => tag.trim())
-            .filter(tag => tag.length > 0);
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0);
         },
       },
       {
@@ -304,7 +300,7 @@ export async function init(
         name: 'buttonText',
         message: 'Enter the button text for your mini app:',
         default: 'Launch Mini App',
-        validate: input => {
+        validate: (input) => {
           if (input.trim() === '') {
             return 'Button text cannot be empty';
           }
@@ -374,9 +370,8 @@ export async function init(
         {
           type: 'password',
           name: 'seedPhrase',
-          message:
-            'Enter your Farcaster custody account seed phrase (required for Neynar Sponsored Signers/SIWN):',
-          validate: input => {
+          message: 'Enter your Farcaster custody account seed phrase (required for Neynar Sponsored Signers/SIWN):',
+          validate: (input) => {
             if (!input || input.trim().split(' ').length < 12) {
               return 'Seed phrase must be at least 12 words';
             }
@@ -444,7 +439,7 @@ export async function init(
   // Update package.json
   console.log('\nUpdating package.json...');
   const packageJsonPath = path.join(projectPath, 'package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  let packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
   packageJson.name = finalProjectName;
   packageJson.version = '0.1.0';
@@ -494,20 +489,20 @@ export async function init(
   }
 
   packageJson.devDependencies = {
-    '@types/inquirer': '^9.0.8',
-    '@types/node': '^20',
-    '@types/react': '^19',
-    '@types/react-dom': '^19',
-    '@vercel/sdk': '^1.9.0',
-    crypto: '^1.0.1',
-    eslint: '^8',
-    'eslint-config-next': '15.0.3',
-    localtunnel: '^2.0.2',
-    'pino-pretty': '^13.0.0',
-    postcss: '^8',
-    tailwindcss: '^3.4.1',
-    'ts-node': '^10.9.2',
-    typescript: '^5',
+    "@types/inquirer": "^9.0.8",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vercel/sdk": "^1.9.0",
+    "crypto": "^1.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "15.0.3",
+    "localtunnel": "^2.0.2",
+    "pino-pretty": "^13.0.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
   };
 
   // Add Neynar SDK if selected
@@ -535,21 +530,21 @@ export async function init(
       let constantsContent = fs.readFileSync(constantsPath, 'utf8');
 
       // Helper function to escape single quotes in strings
-      const escapeString = str => str.replace(/'/g, "\\'");
+      const escapeString = (str) => str.replace(/'/g, "\\'");
 
       // Helper function to safely replace constants with validation
       const safeReplace = (content, pattern, replacement, constantName) => {
         const match = content.match(pattern);
         if (!match) {
           console.log(
-            `⚠️  Warning: Could not update ${constantName} in constants.ts. Pattern not found.`,
+            `⚠️  Warning: Could not update ${constantName} in constants.ts. Pattern not found.`
           );
           console.log(`Pattern: ${pattern}`);
           console.log(
             `Expected to match in: ${
-              content.split('\n').find(line => line.includes(constantName)) ||
+              content.split('\n').find((line) => line.includes(constantName)) ||
               'Not found'
-            }`,
+            }`
           );
         } else {
           const newContent = content.replace(pattern, replacement);
@@ -560,8 +555,7 @@ export async function init(
 
       // Regex patterns that match whole lines with export const (with TypeScript types)
       const patterns = {
-        APP_NAME:
-          /^export const APP_NAME\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
+        APP_NAME: /^export const APP_NAME\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
         APP_DESCRIPTION:
           /^export const APP_DESCRIPTION\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
         APP_PRIMARY_CATEGORY:
@@ -569,8 +563,7 @@ export async function init(
         APP_TAGS: /^export const APP_TAGS\s*:\s*string\[\]\s*=\s*\[[^\]]*\];$/m,
         APP_BUTTON_TEXT:
           /^export const APP_BUTTON_TEXT\s*:\s*string\s*=\s*['"`][^'"`]*['"`];$/m,
-        USE_WALLET:
-          /^export const USE_WALLET\s*:\s*boolean\s*=\s*(true|false);$/m,
+        USE_WALLET: /^export const USE_WALLET\s*:\s*boolean\s*=\s*(true|false);$/m,
         ANALYTICS_ENABLED:
           /^export const ANALYTICS_ENABLED\s*:\s*boolean\s*=\s*(true|false);$/m,
       };
@@ -580,7 +573,7 @@ export async function init(
         constantsContent,
         patterns.APP_NAME,
         `export const APP_NAME = '${escapeString(answers.projectName)}';`,
-        'APP_NAME',
+        'APP_NAME'
       );
 
       // Update APP_DESCRIPTION
@@ -588,9 +581,9 @@ export async function init(
         constantsContent,
         patterns.APP_DESCRIPTION,
         `export const APP_DESCRIPTION = '${escapeString(
-          answers.description,
+          answers.description
         )}';`,
-        'APP_DESCRIPTION',
+        'APP_DESCRIPTION'
       );
 
       // Update APP_PRIMARY_CATEGORY (always update, null becomes empty string)
@@ -598,21 +591,21 @@ export async function init(
         constantsContent,
         patterns.APP_PRIMARY_CATEGORY,
         `export const APP_PRIMARY_CATEGORY = '${escapeString(
-          answers.primaryCategory || '',
+          answers.primaryCategory || ''
         )}';`,
-        'APP_PRIMARY_CATEGORY',
+        'APP_PRIMARY_CATEGORY'
       );
 
       // Update APP_TAGS
       const tagsString =
         answers.tags.length > 0
-          ? `['${answers.tags.map(tag => escapeString(tag)).join("', '")}']`
+          ? `['${answers.tags.map((tag) => escapeString(tag)).join("', '")}']`
           : "['neynar', 'starter-kit', 'demo']";
       constantsContent = safeReplace(
         constantsContent,
         patterns.APP_TAGS,
         `export const APP_TAGS = ${tagsString};`,
-        'APP_TAGS',
+        'APP_TAGS'
       );
 
       // Update APP_BUTTON_TEXT (always update, use answers value)
@@ -620,9 +613,9 @@ export async function init(
         constantsContent,
         patterns.APP_BUTTON_TEXT,
         `export const APP_BUTTON_TEXT = '${escapeString(
-          answers.buttonText || '',
+          answers.buttonText || ''
         )}';`,
-        'APP_BUTTON_TEXT',
+        'APP_BUTTON_TEXT'
       );
 
       // Update USE_WALLET
@@ -630,7 +623,7 @@ export async function init(
         constantsContent,
         patterns.USE_WALLET,
         `export const USE_WALLET = ${answers.useWallet};`,
-        'USE_WALLET',
+        'USE_WALLET'
       );
 
       // Update ANALYTICS_ENABLED
@@ -638,7 +631,7 @@ export async function init(
         constantsContent,
         patterns.ANALYTICS_ENABLED,
         `export const ANALYTICS_ENABLED = ${answers.enableAnalytics};`,
-        'ANALYTICS_ENABLED',
+        'ANALYTICS_ENABLED'
       );
 
       fs.writeFileSync(constantsPath, constantsContent);
@@ -648,14 +641,14 @@ export async function init(
 
     fs.appendFileSync(
       envPath,
-      `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`,
+      `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`
     );
     if (useNeynar && neynarApiKey && neynarClientId) {
       fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${neynarApiKey}"`);
       fs.appendFileSync(envPath, `\nNEYNAR_CLIENT_ID="${neynarClientId}"`);
     } else if (useNeynar) {
       console.log(
-        '\n⚠️  Could not find a Neynar client ID and/or API key. Please configure Neynar manually in .env.local with NEYNAR_API_KEY and NEYNAR_CLIENT_ID',
+        '\n⚠️  Could not find a Neynar client ID and/or API key. Please configure Neynar manually in .env.local with NEYNAR_API_KEY and NEYNAR_CLIENT_ID'
       );
     }
     if (answers.seedPhrase) {
@@ -669,7 +662,7 @@ export async function init(
     fs.unlinkSync(envExamplePath);
   } else {
     console.log(
-      '\n.env.example does not exist, skipping copy and remove operations',
+      '\n.env.example does not exist, skipping copy and remove operations'
     );
   }
 
@@ -714,7 +707,7 @@ export async function init(
   execSync('git add .', { cwd: projectPath });
   execSync(
     'git commit -m "initial commit from @neynar/create-farcaster-mini-app"',
-    { cwd: projectPath },
+    { cwd: projectPath }
   );
 
   // Calculate border length based on message length
