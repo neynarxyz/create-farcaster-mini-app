@@ -25,8 +25,8 @@ export function Providers({
   const solanaEndpoint =
     process.env.SOLANA_RPC_ENDPOINT || 'https://solana-rpc.publicnode.com';
   
-  // Only wrap with SessionProvider if session is provided
-  if (session) {
+  // Only wrap with SessionProvider if next auth is used
+  if (process.env.SPONSOR_SIGNER === 'true' || process.env.SEED_PHRASE) {
     return (
       <SessionProvider session={session}>
         <WagmiProvider>
