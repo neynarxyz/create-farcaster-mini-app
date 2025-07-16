@@ -1,6 +1,6 @@
-import { type Manifest } from '@farcaster/miniapp-node';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { type Manifest } from '@farcaster/miniapp-node';
 import {
   APP_BUTTON_TEXT,
   APP_DESCRIPTION,
@@ -10,8 +10,7 @@ import {
   APP_PRIMARY_CATEGORY,
   APP_SPLASH_BACKGROUND_COLOR,
   APP_SPLASH_URL,
-  APP_TAGS,
-  APP_URL,
+  APP_TAGS, APP_URL,
   APP_WEBHOOK_URL,
   APP_ACCOUNT_ASSOCIATION,
 } from './constants';
@@ -22,12 +21,12 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getMiniAppEmbedMetadata(ogImageUrl?: string) {
   return {
-    version: 'next',
+    version: "next",
     imageUrl: ogImageUrl ?? APP_OG_IMAGE_URL,
     button: {
       title: APP_BUTTON_TEXT,
       action: {
-        type: 'launch_frame',
+        type: "launch_frame",
         name: APP_NAME,
         url: APP_URL,
         splashImageUrl: APP_SPLASH_URL,
@@ -45,12 +44,12 @@ export async function getFarcasterDomainManifest(): Promise<Manifest> {
   return {
     accountAssociation: APP_ACCOUNT_ASSOCIATION,
     miniapp: {
-      version: '1',
-      name: APP_NAME ?? 'Neynar Starter Kit',
+      version: "1",
+      name: APP_NAME ?? "Neynar Starter Kit",
       iconUrl: APP_ICON_URL,
       homeUrl: APP_URL,
       imageUrl: APP_OG_IMAGE_URL,
-      buttonTitle: APP_BUTTON_TEXT ?? 'Launch Mini App',
+      buttonTitle: APP_BUTTON_TEXT ?? "Launch Mini App",
       splashImageUrl: APP_SPLASH_URL,
       splashBackgroundColor: APP_SPLASH_BACKGROUND_COLOR,
       webhookUrl: APP_WEBHOOK_URL,

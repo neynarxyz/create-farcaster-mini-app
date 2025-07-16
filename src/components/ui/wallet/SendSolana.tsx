@@ -1,32 +1,29 @@
-'use client';
+"use client";
 
-import { useCallback, useState } from 'react';
-import {
-  useConnection as useSolanaConnection,
-  useWallet as useSolanaWallet,
-} from '@solana/wallet-adapter-react';
+import { useCallback, useState } from "react";
+import { useConnection as useSolanaConnection, useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import { renderError } from '../../../lib/errorUtils';
-import { truncateAddress } from '../../../lib/truncateAddress';
-import { Button } from '../Button';
+import { Button } from "../Button";
+import { truncateAddress } from "../../../lib/truncateAddress";
+import { renderError } from "../../../lib/errorUtils";
 
 /**
  * SendSolana component handles sending SOL transactions on Solana.
- *
+ * 
  * This component provides a simple interface for users to send SOL transactions
  * using their connected Solana wallet. It includes transaction status tracking
  * and error handling.
- *
+ * 
  * Features:
  * - SOL transaction sending
  * - Transaction status tracking
  * - Error handling and display
  * - Loading state management
- *
+ * 
  * Note: This component is a placeholder implementation. In a real application,
  * you would integrate with a Solana wallet adapter and transaction library
  * like @solana/web3.js to handle actual transactions.
- *
+ * 
  * @example
  * ```tsx
  * <SendSolana />
@@ -45,8 +42,7 @@ export function SendSolana() {
 
   // This should be replaced but including it from the original demo
   // https://github.com/farcasterxyz/frames-v2-demo/blob/main/src/components/Demo.tsx#L718
-  const ashoatsPhantomSolanaWallet =
-    'Ao3gLNZAsbrmnusWVqQCPMrcqNi6jdYgu8T6NCoXXQu1';
+  const ashoatsPhantomSolanaWallet = 'Ao3gLNZAsbrmnusWVqQCPMrcqNi6jdYgu8T6NCoXXQu1';
 
   /**
    * Handles sending the Solana transaction
@@ -76,8 +72,7 @@ export function SendSolana() {
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = new PublicKey(fromPubkeyStr);
 
-      const simulation =
-        await solanaConnection.simulateTransaction(transaction);
+      const simulation = await solanaConnection.simulateTransaction(transaction);
       if (simulation.value.err) {
         // Gather logs and error details for debugging
         const logs = simulation.value.logs?.join('\n') ?? 'No logs';
@@ -105,8 +100,7 @@ export function SendSolana() {
       >
         Send Transaction (sol)
       </Button>
-      {solanaTransactionState.status === 'error' &&
-        renderError(solanaTransactionState.error)}
+      {solanaTransactionState.status === 'error' && renderError(solanaTransactionState.error)}
       {solanaTransactionState.status === 'success' && (
         <div className="mt-2 text-xs">
           <div>Hash: {truncateAddress(solanaTransactionState.signature)}</div>
@@ -114,4 +108,4 @@ export function SendSolana() {
       )}
     </>
   );
-}
+} 

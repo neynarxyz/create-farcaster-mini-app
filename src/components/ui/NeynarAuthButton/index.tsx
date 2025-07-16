@@ -1,12 +1,12 @@
 'use client';
 
 import '@farcaster/auth-kit/styles.css';
-import { useSignIn } from '@farcaster/auth-kit';
-import { useCallback, useEffect, useState } from 'react';
+import { useSignIn, UseSignInData } from '@farcaster/auth-kit';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { cn } from '~/lib/utils';
 import { Button } from '~/components/ui/Button';
-import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
 import { ProfileButton } from '~/components/ui/NeynarAuthButton/ProfileButton';
+import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
 import { getItem, removeItem, setItem } from '~/lib/localStorage';
 import { useMiniApp } from '@neynar/react';
 import {
@@ -14,7 +14,7 @@ import {
   signOut as backendSignOut,
   useSession,
 } from 'next-auth/react';
-import sdk, { SignIn as SignInCore } from '@farcaster/miniapp-sdk';
+import sdk, { SignIn as SignInCore } from '@farcaster/frame-sdk';
 
 type User = {
   fid: number;
@@ -102,16 +102,18 @@ export function NeynarAuthButton() {
   // New state for unified dialog flow
   const [showDialog, setShowDialog] = useState(false);
   const [dialogStep, setDialogStep] = useState<'signin' | 'access' | 'loading'>(
-    'loading',
+    'loading'
   );
   const [signerApprovalUrl, setSignerApprovalUrl] = useState<string | null>(
-    null,
+    null
   );
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
-    null,
+    null
   );
   const [message, setMessage] = useState<string | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
+  const [isSignerFlowRunning, setIsSignerFlowRunning] = useState(false);
+  const signerFlowStartedRef = useRef(false);
 
   // Determine which flow to use based on context
   const useBackendFlow = context !== undefined;
@@ -139,7 +141,7 @@ export function NeynarAuthButton() {
   const updateSessionWithSigners = useCallback(
     async (
       signers: StoredAuthState['signers'],
-      _user: StoredAuthState['user'],
+      user: StoredAuthState['user']
     ) => {
       if (!useBackendFlow) return;
 
@@ -180,7 +182,7 @@ export function NeynarAuthButton() {
         return null;
       }
     },
-    [],
+    []
   );
 
   // Helper function to generate signed key request
@@ -208,7 +210,7 @@ export function NeynarAuthButton() {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            `Failed to generate signed key request: ${errorData.error}`,
+            `Failed to generate signed key request: ${errorData.error}`
           );
         }
 
@@ -220,7 +222,7 @@ export function NeynarAuthButton() {
         // throw error;
       }
     },
-    [],
+    []
   );
 
   // Helper function to fetch all signers
@@ -231,10 +233,10 @@ export function NeynarAuthButton() {
 
         const endpoint = useBackendFlow
           ? `/api/auth/session-signers?message=${encodeURIComponent(
-              message,
+              message
             )}&signature=${signature}`
           : `/api/auth/signers?message=${encodeURIComponent(
-              message,
+              message
             )}&signature=${signature}`;
 
         const response = await fetch(endpoint);
@@ -256,7 +258,7 @@ export function NeynarAuthButton() {
 
             if (signerData.signers && signerData.signers.length > 0) {
               const fetchedUser = (await fetchUserData(
-                signerData.signers[0].fid,
+                signerData.signers[0].fid
               )) as StoredAuthState['user'];
               user = fetchedUser;
             }
@@ -283,20 +285,52 @@ export function NeynarAuthButton() {
         setSignersLoading(false);
       }
     },
-    [useBackendFlow, fetchUserData, updateSessionWithSigners],
+    [useBackendFlow, fetchUserData, updateSessionWithSigners]
   );
 
   // Helper function to poll signer status
   const startPolling = useCallback(
     (signerUuid: string, message: string, signature: string) => {
+      // Clear any existing polling interval before starting a new one
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+
+      let retryCount = 0;
+      const maxRetries = 10; // Maximum 10 retries (20 seconds total)
+      const maxPollingTime = 60000; // Maximum 60 seconds of polling
+      const startTime = Date.now();
+
       const interval = setInterval(async () => {
+        // Check if we've been polling too long
+        if (Date.now() - startTime > maxPollingTime) {
+          clearInterval(interval);
+          setPollingInterval(null);
+          return;
+        }
+
         try {
           const response = await fetch(
-            `/api/auth/signer?signerUuid=${signerUuid}`,
+            `/api/auth/signer?signerUuid=${signerUuid}`
           );
 
           if (!response.ok) {
-            throw new Error('Failed to poll signer status');
+            // Check if it's a rate limit error
+            if (response.status === 429) {
+              clearInterval(interval);
+              setPollingInterval(null);
+              return;
+            }
+
+            // Increment retry count for other errors
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              clearInterval(interval);
+              setPollingInterval(null);
+              return;
+            }
+
+            throw new Error(`Failed to poll signer status: ${response.status}`);
           }
 
           const signerData = await response.json();
@@ -318,7 +352,7 @@ export function NeynarAuthButton() {
 
       setPollingInterval(interval);
     },
-    [fetchAllSigners]
+    [fetchAllSigners, pollingInterval]
   );
 
   // Cleanup polling on unmount
@@ -327,6 +361,7 @@ export function NeynarAuthButton() {
       if (pollingInterval) {
         clearInterval(pollingInterval);
       }
+      signerFlowStartedRef.current = false;
     };
   }, [pollingInterval]);
 
@@ -361,11 +396,11 @@ export function NeynarAuthButton() {
 
   // Success callback - this is critical!
   const onSuccessCallback = useCallback(
-    async (res: unknown) => {
+    async (res: UseSignInData) => {
       if (!useBackendFlow) {
         // Only handle localStorage for frontend flow
         const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
-        const user = await fetchUserData(res.fid);
+        const user = res.fid ? await fetchUserData(res.fid) : null;
         const authState: StoredAuthState = {
           ...existingAuth,
           isAuthenticated: true,
@@ -408,6 +443,11 @@ export function NeynarAuthButton() {
   useEffect(() => {
     setMessage(data?.message || null);
     setSignature(data?.signature || null);
+
+    // Reset the signer flow flag when message/signature change
+    if (data?.message && data?.signature) {
+      signerFlowStartedRef.current = false;
+    }
   }, [data?.message, data?.signature]);
 
   // Connect for frontend flow when nonce is available
@@ -419,8 +459,16 @@ export function NeynarAuthButton() {
 
   // Handle fetching signers after successful authentication
   useEffect(() => {
-    if (message && signature) {
+    if (
+      message &&
+      signature &&
+      !isSignerFlowRunning &&
+      !signerFlowStartedRef.current
+    ) {
+      signerFlowStartedRef.current = true;
+
       const handleSignerFlow = async () => {
+        setIsSignerFlowRunning(true);
         try {
           const clientContext = context?.client as Record<string, unknown>;
           const isMobileContext =
@@ -436,6 +484,7 @@ export function NeynarAuthButton() {
 
           // First, fetch existing signers
           const signers = await fetchAllSigners(message, signature);
+
           if (useBackendFlow && isMobileContext) setSignersLoading(true);
 
           // Check if no signers exist or if we have empty signers
@@ -446,7 +495,7 @@ export function NeynarAuthButton() {
             // Step 2: Generate signed key request
             const signedKeyData = await generateSignedKeyRequest(
               newSigner.signer_uuid,
-              newSigner.public_key,
+              newSigner.public_key
             );
 
             // Step 3: Show QR code in access dialog for signer approval
@@ -456,8 +505,8 @@ export function NeynarAuthButton() {
               setShowDialog(false);
               await sdk.actions.openUrl(
                 signedKeyData.signer_approval_url.replace(
-                  'https://client.farcaster.xyz/deeplinks/',
-                  'farcaster://'
+                  'https://client.farcaster.xyz/deeplinks/signed-key-request',
+                  'https://farcaster.xyz/~/connect'
                 )
               );
             } else {
@@ -480,21 +529,14 @@ export function NeynarAuthButton() {
           setSignersLoading(false);
           setShowDialog(false);
           setSignerApprovalUrl(null);
+        } finally {
+          setIsSignerFlowRunning(false);
         }
       };
 
       handleSignerFlow();
     }
-  }, [
-    message,
-    signature,
-    fetchAllSigners,
-    createSigner,
-    generateSignedKeyRequest,
-    startPolling,
-    context,
-    useBackendFlow,
-  ]);
+  }, [message, signature]); // Simplified dependencies
 
   // Backend flow using NextAuth
   const handleBackendSignIn = useCallback(async () => {
@@ -567,6 +609,9 @@ export function NeynarAuthButton() {
         clearInterval(pollingInterval);
         setPollingInterval(null);
       }
+
+      // Reset signer flow flag
+      signerFlowStartedRef.current = false;
     } catch (error) {
       console.error('❌ Error during sign out:', error);
       // Optionally handle error state

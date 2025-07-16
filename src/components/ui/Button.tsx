@@ -5,40 +5,43 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export function Button({
-  children,
-  className = '',
-  isLoading = false,
+export function Button({ 
+  children, 
+  className = "", 
+  isLoading = false, 
   variant = 'primary',
   size = 'md',
-  ...props
+  ...props 
 }: ButtonProps) {
-  const baseClasses = 'btn';
-
+  const baseClasses = "btn";
+  
   const variantClasses = {
-    primary: 'btn-primary',
-    secondary: 'btn-secondary',
-    outline: 'btn-outline',
+    primary: "btn-primary",
+    secondary: "btn-secondary", 
+    outline: "btn-outline"
   };
-
+  
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-4 py-2 text-sm",
+    lg: "px-6 py-3 text-base"
   };
 
-  const fullWidthClasses = 'w-full max-w-xs mx-auto block';
-
+  const fullWidthClasses = "w-full max-w-xs mx-auto block";
+  
   const combinedClasses = [
     baseClasses,
     variantClasses[variant],
     sizeClasses[size],
     fullWidthClasses,
-    className,
+    className
   ].join(' ');
 
   return (
-    <button className={combinedClasses} {...props}>
+    <button
+      className={combinedClasses}
+      {...props}
+    >
       {isLoading ? (
         <div className="flex items-center justify-center">
           <div className="spinner-primary h-5 w-5" />

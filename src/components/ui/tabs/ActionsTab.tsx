@@ -1,22 +1,13 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { type Haptics } from '@farcaster/miniapp-sdk';
 import { useMiniApp } from '@neynar/react';
-import { APP_URL } from '~/lib/constants';
-import { Button } from '../Button';
 import { ShareButton } from '../Share';
+import { Button } from '../Button';
 import { SignIn } from '../wallet/SignIn';
-
-// Optional import for NeynarAuthButton - may not exist in all templates
-let NeynarAuthButton: React.ComponentType | null = null;
-try {
-  const module = require('../NeynarAuthButton/index');
-  NeynarAuthButton = module.NeynarAuthButton;
-} catch (error) {
-  // Component doesn't exist, that's okay
-  console.log('NeynarAuthButton not available in this template');
-}
+import { type Haptics } from '@farcaster/miniapp-sdk';
+import { APP_URL } from '~/lib/constants';
+import { NeynarAuthButton } from '../NeynarAuthButton/index';
 
 /**
  * ActionsTab component handles mini app actions like sharing, notifications, and haptic feedback.
@@ -61,7 +52,7 @@ export function ActionsTab() {
    * @returns Promise that resolves when the notification is sent or fails
    */
   const sendFarcasterNotification = useCallback(async () => {
-    setNotificationState(prev => ({ ...prev, sendStatus: '' }));
+    setNotificationState((prev) => ({ ...prev, sendStatus: '' }));
     if (!notificationDetails || !context) {
       return;
     }
@@ -76,22 +67,22 @@ export function ActionsTab() {
         }),
       });
       if (response.status === 200) {
-        setNotificationState(prev => ({ ...prev, sendStatus: 'Success' }));
+        setNotificationState((prev) => ({ ...prev, sendStatus: 'Success' }));
         return;
       } else if (response.status === 429) {
-        setNotificationState(prev => ({
+        setNotificationState((prev) => ({
           ...prev,
           sendStatus: 'Rate limited',
         }));
         return;
       }
       const responseText = await response.text();
-      setNotificationState(prev => ({
+      setNotificationState((prev) => ({
         ...prev,
         sendStatus: `Error: ${responseText}`,
       }));
     } catch (error) {
-      setNotificationState(prev => ({
+      setNotificationState((prev) => ({
         ...prev,
         sendStatus: `Error: ${error}`,
       }));
@@ -108,11 +99,11 @@ export function ActionsTab() {
     if (context?.user?.fid) {
       const userShareUrl = `${APP_URL}/share/${context.user.fid}`;
       await navigator.clipboard.writeText(userShareUrl);
-      setNotificationState(prev => ({ ...prev, shareUrlCopied: true }));
+      setNotificationState((prev) => ({ ...prev, shareUrlCopied: true }));
       setTimeout(
         () =>
-          setNotificationState(prev => ({ ...prev, shareUrlCopied: false })),
-        2000,
+          setNotificationState((prev) => ({ ...prev, shareUrlCopied: false })),
+        2000
       );
     }
   }, [context?.user?.fid]);
@@ -149,7 +140,7 @@ export function ActionsTab() {
       <SignIn />
 
       {/* Neynar Authentication */}
-      {NeynarAuthButton && <NeynarAuthButton />}
+      <NeynarAuthButton />
 
       {/* Mini app actions */}
       <Button
@@ -195,9 +186,9 @@ export function ActionsTab() {
         </label>
         <select
           value={selectedHapticIntensity}
-          onChange={e =>
+          onChange={(e) =>
             setSelectedHapticIntensity(
-              e.target.value as Haptics.ImpactOccurredType,
+              e.target.value as Haptics.ImpactOccurredType
             )
           }
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
