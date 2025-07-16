@@ -497,11 +497,11 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     packageJson.dependencies['@neynar/nodejs-sdk'] = '^2.19.0';
   }
 
-    // Add auth-kit and next-auth dependencies if useSponsoredSigner is true
-    if (answers.useSponsoredSigner) {
-      packageJson.dependencies['@farcaster/auth-kit'] = '>=0.6.0 <1.0.0';
-      packageJson.dependencies['next-auth'] = '^4.24.11';
-    }
+  // Add auth-kit and next-auth dependencies if useSponsoredSigner is true
+  if (answers.useSponsoredSigner) {
+    packageJson.dependencies['@farcaster/auth-kit'] = '>=0.6.0 <1.0.0';
+    packageJson.dependencies['next-auth'] = '^4.24.11';
+  }
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
@@ -646,7 +646,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     }
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
     if (answers.useSponsoredSigner) {
-      fs.appendFileSync(envPath, `\nSPONSOR_SIGNER="${answers.useSponsoredSigner}"`);
+      fs.appendFileSync(envPath, `\nSPONSOR_SIGNER="true"`);
       fs.appendFileSync(
         envPath,
         `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`
