@@ -24,18 +24,36 @@ export function Providers({
 }) {
   const solanaEndpoint =
     process.env.SOLANA_RPC_ENDPOINT || 'https://solana-rpc.publicnode.com';
+  
+  // Only wrap with SessionProvider if session is provided
+  if (session) {
+    return (
+      <SessionProvider session={session}>
+        <WagmiProvider>
+          <MiniAppProvider
+            analyticsEnabled={ANALYTICS_ENABLED}
+            backButtonEnabled={true}
+          >
+            <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
+              <AuthKitProvider config={{}}>{children}</AuthKitProvider>
+            </SafeFarcasterSolanaProvider>
+          </MiniAppProvider>
+        </WagmiProvider>
+      </SessionProvider>
+    );
+  }
+  
+  // Return without SessionProvider if no session
   return (
-    <SessionProvider session={session}>
-      <WagmiProvider>
-        <MiniAppProvider
-          analyticsEnabled={ANALYTICS_ENABLED}
-          backButtonEnabled={true}
-        >
-          <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
-            <AuthKitProvider config={{}}>{children}</AuthKitProvider>
-          </SafeFarcasterSolanaProvider>
-        </MiniAppProvider>
-      </WagmiProvider>
-    </SessionProvider>
+    <WagmiProvider>
+      <MiniAppProvider
+        analyticsEnabled={ANALYTICS_ENABLED}
+        backButtonEnabled={true}
+      >
+        <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
+          <AuthKitProvider config={{}}>{children}</AuthKitProvider>
+        </SafeFarcasterSolanaProvider>
+      </MiniAppProvider>
+    </WagmiProvider>
   );
 }

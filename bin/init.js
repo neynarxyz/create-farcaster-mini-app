@@ -351,14 +351,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
         type: 'confirm',
         name: 'useSponsoredSigner',
         message:
-          'Would you like to use Neynar Sponsored Signers and/or Sign In With Neynar (SIWN)?\n' +
-          'This enables the simplest, most secure, and most user-friendly Farcaster authentication for your app.\n\n' +
-          'Benefits of using Neynar Sponsored Signers/SIWN:\n' +
-          '- No auth buildout or signer management required for developers\n' +
-          '- Cost-effective for users (no gas for signers)\n' +
-          '- Users can revoke signers at any time\n' +
-          '- Plug-and-play for web and React Native\n' +
-          '- Recommended for most developers\n' +
+          'Would you like to write data to Farcaster on behalf of your miniapp users? This involves using Neynar Sponsored Signers and SIWN.\n' +
           '\n⚠️ A seed phrase is required for this option.\n',
         default: false,
       },
@@ -453,13 +446,14 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
   delete packageJson.devDependencies;
 
   // Add dependencies
+  // question: remove auth-client?
   packageJson.dependencies = {
     '@farcaster/auth-client': '>=0.3.0 <1.0.0',
-    '@farcaster/auth-kit': '>=0.6.0 <1.0.0',
     '@farcaster/miniapp-node': '>=0.1.5 <1.0.0',
     '@farcaster/miniapp-sdk': '>=0.1.6 <1.0.0',
     '@farcaster/miniapp-wagmi-connector': '^1.0.0',
     '@farcaster/mini-app-solana': '>=0.0.17 <1.0.0',
+    '@farcaster/quick-auth': '>=0.0.7 <1.0.0',
     '@neynar/react': '^1.2.5',
     '@radix-ui/react-label': '^2.1.1',
     '@solana/wallet-adapter-react': '^0.15.38',
@@ -471,7 +465,6 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     'lucide-react': '^0.469.0',
     mipd: '^0.0.7',
     next: '^15',
-    'next-auth': '^4.24.11',
     react: '^19',
     'react-dom': '^19',
     'tailwind-merge': '^2.6.0',
@@ -483,6 +476,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
   };
 
   packageJson.devDependencies = {
+    "@types/inquirer": "^9.0.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -494,14 +488,20 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     "pino-pretty": "^13.0.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
   };
 
   // Add Neynar SDK if selected
   if (useNeynar) {
     packageJson.dependencies['@neynar/nodejs-sdk'] = '^2.19.0';
   }
+
+    // Add auth-kit and next-auth dependencies if useSponsoredSigner is true
+    if (answers.useSponsoredSigner) {
+      packageJson.dependencies['@farcaster/auth-kit'] = '>=0.6.0 <1.0.0';
+      packageJson.dependencies['next-auth'] = '^4.24.11';
+    }
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
@@ -632,10 +632,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       console.log('⚠️  constants.ts not found, skipping constants update');
     }
 
-    fs.appendFileSync(
-      envPath,
-      `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`
-    );
+    
     if (useNeynar && neynarApiKey && neynarClientId) {
       fs.appendFileSync(envPath, `\nNEYNAR_API_KEY="${neynarApiKey}"`);
       fs.appendFileSync(envPath, `\nNEYNAR_CLIENT_ID="${neynarClientId}"`);
@@ -648,6 +645,13 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
     }
     fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
+    if (answers.useSponsoredSigner) {
+      fs.appendFileSync(envPath, `\nSPONSOR_SIGNER="${answers.useSponsoredSigner}"`);
+      fs.appendFileSync(
+        envPath,
+        `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`
+      );
+    }
 
     fs.unlinkSync(envExamplePath);
   } else {
@@ -689,6 +693,42 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
   const binPath = path.join(projectPath, 'bin');
   if (fs.existsSync(binPath)) {
     fs.rmSync(binPath, { recursive: true, force: true });
+  }
+
+  // Remove NeynarAuthButton directory, NextAuth API routes, and auth directory if useSponsoredSigner is false
+  if (!answers.useSponsoredSigner) {
+    console.log('\nRemoving NeynarAuthButton directory, NextAuth API routes, and auth directory (useSponsoredSigner is false)...');
+    const neynarAuthButtonPath = path.join(projectPath, 'src', 'components', 'ui', 'NeynarAuthButton');
+    if (fs.existsSync(neynarAuthButtonPath)) {
+      fs.rmSync(neynarAuthButtonPath, { recursive: true, force: true });
+    }
+    
+    // Remove NextAuth API routes
+    const nextAuthRoutePath = path.join(projectPath, 'src', 'app', 'api', 'auth', '[...nextauth]', 'route.ts');
+    if (fs.existsSync(nextAuthRoutePath)) {
+      fs.rmSync(nextAuthRoutePath, { force: true });
+      // Remove the directory if it's empty
+      const nextAuthDir = path.dirname(nextAuthRoutePath);
+      if (fs.readdirSync(nextAuthDir).length === 0) {
+        fs.rmSync(nextAuthDir, { recursive: true, force: true });
+      }
+    }
+    
+    const updateSessionRoutePath = path.join(projectPath, 'src', 'app', 'api', 'auth', 'update-session', 'route.ts');
+    if (fs.existsSync(updateSessionRoutePath)) {
+      fs.rmSync(updateSessionRoutePath, { force: true });
+      // Remove the directory if it's empty
+      const updateSessionDir = path.dirname(updateSessionRoutePath);
+      if (fs.readdirSync(updateSessionDir).length === 0) {
+        fs.rmSync(updateSessionDir, { recursive: true, force: true });
+      }
+    }
+    
+    // Remove src/auth.ts file
+    const authFilePath = path.join(projectPath, 'src', 'auth.ts');
+    if (fs.existsSync(authFilePath)) {
+      fs.rmSync(authFilePath, { force: true });
+    }
   }
 
   // Initialize git repository
