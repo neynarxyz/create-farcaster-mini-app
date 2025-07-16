@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { getSession } from "~/auth"
 import "~/app/globals.css";
 import { Providers } from "~/app/providers";
 import { APP_NAME, APP_DESCRIPTION } from "~/lib/constants";
@@ -15,7 +14,19 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {  
-  const session = await getSession()
+  // Only get session if sponsored signer is enabled or seed phrase is provided
+  const sponsorSigner = process.env.SPONSOR_SIGNER === 'true';
+  const hasSeedPhrase = !!process.env.SEED_PHRASE;
+  
+  let session = null;
+  if (sponsorSigner || hasSeedPhrase) {
+    try {
+      const { getSession } = await import("~/auth");
+      session = await getSession();
+    } catch (error) {
+      console.warn('Failed to get session:', error);
+    }
+  }
 
   return (
     <html lang="en">
