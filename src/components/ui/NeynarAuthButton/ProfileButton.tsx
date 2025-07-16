@@ -16,8 +16,8 @@ export function ProfileButton({
 
   useDetectClickOutside(ref, () => setShowDropdown(false));
 
-  const name = userData?.username && userData.username.trim() !== '' ? userData.username : `!${userData?.fid}`;
-  const pfpUrl = userData?.pfpUrl && userData.pfpUrl.trim() !== '' ? userData.pfpUrl : 'https://farcaster.xyz/avatar.png';
+  const name = userData?.username ?? `!${userData?.fid}`;
+  const pfpUrl = userData?.pfpUrl ?? 'https://farcaster.xyz/avatar.png';
 
   return (
     <div className="relative" ref={ref}>
