@@ -24,6 +24,9 @@ export function getMiniAppEmbedMetadata(ogImageUrl?: string) {
   return {
     version: "next",
     imageUrl: ogImageUrl ?? APP_OG_IMAGE_URL,
+    ogTitle: APP_NAME,
+    ogDescription: APP_DESCRIPTION,
+    ogImageUrl: ogImageUrl ?? APP_OG_IMAGE_URL,
     button: {
       title: APP_BUTTON_TEXT,
       action: {
@@ -58,6 +61,9 @@ export async function getFarcasterDomainManifest(): Promise<Manifest> {
       primaryCategory: APP_PRIMARY_CATEGORY,
       tags: APP_TAGS,
       requiredChains: APP_REQUIRED_CHAINS.length > 0 ? APP_REQUIRED_CHAINS : undefined,
+      ogTitle: APP_NAME,
+      ogDescription: APP_DESCRIPTION,
+      ogImageUrl: APP_OG_IMAGE_URL,
     },
   };
 }
