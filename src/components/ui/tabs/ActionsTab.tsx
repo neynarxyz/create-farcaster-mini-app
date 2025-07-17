@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useCallback, useState, type ComponentType } from 'react';
 import { useMiniApp } from '@neynar/react';
 import { ShareButton } from '../Share';
@@ -9,14 +10,21 @@ import { type Haptics } from '@farcaster/miniapp-sdk';
 import { APP_URL } from '~/lib/constants';
 
 // Optional import for NeynarAuthButton - may not exist in all templates
-let NeynarAuthButton: ComponentType | null = null;
-try {
-  const module = require('../NeynarAuthButton/index');
-  NeynarAuthButton = module.NeynarAuthButton;
-} catch (error) {
-  // Component doesn't exist, that's okay
-  console.log('NeynarAuthButton not available in this template');
-}
+const NeynarAuthButton = dynamic(
+  () => {
+    return Promise.resolve().then(() => {
+      try {
+        // @ts-ignore - NeynarAuthButton may not exist in all template variants
+        const module = eval('require("../NeynarAuthButton/index")');
+        return module.default || module.NeynarAuthButton;
+      } catch (error) {
+        // Return null component when module doesn't exist
+        return () => null;
+      }
+    });
+  },
+  { ssr: false }
+);
 
 
 /**
