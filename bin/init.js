@@ -63,7 +63,7 @@ async function queryNeynarApp(apiKey) {
 }
 
 // Export the main CLI function for programmatic use
-export async function init(projectName = null, autoAcceptDefaults = false, apiKey = null) {
+export async function init(projectName = null, autoAcceptDefaults = false, apiKey = null, noWallet = false, noTunnel = false, sponsoredSigner = false, seedPhrase = null) {
   printWelcomeMessage();
 
   // Ask about Neynar usage
@@ -225,7 +225,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       primaryCategory: null,
       tags: [],
       buttonText: 'Launch Mini App',
-      useWallet: true,
+      useWallet: !noWallet,
       useTunnel: true,
       enableAnalytics: true,
       seedPhrase: null,
@@ -312,67 +312,90 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     // Merge project name from the first prompt
     answers.projectName = projectNamePrompt.projectName;
 
-    // Ask about wallet and transaction tooling
-    const walletAnswer = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'useWallet',
-        message:
-          'Would you like to include wallet and transaction tooling in your mini app?\n' +
-          'This includes:\n' +
-          '- EVM wallet connection\n' +
-          '- Transaction signing\n' +
-          '- Message signing\n' +
-          '- Chain switching\n' +
-          '- Solana support\n\n' +
-          'Include wallet and transaction features?',
-        default: true,
-      },
-    ]);
-    answers.useWallet = walletAnswer.useWallet;
-
-    // Ask about localhost vs tunnel
-    const hostingAnswer = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'useTunnel',
-        message:
-          'Would you like to test on mobile and/or test the app with Warpcast developer tools?\n' +
-          `⚠️ ${yellow}${italic}Both mobile testing and the Warpcast debugger require setting up a tunnel to serve your app from localhost to the broader internet.\n${reset}` +
-          'Configure a tunnel for mobile testing and/or Warpcast developer tools?',
-        default: true,
-      },
-    ]);
-    answers.useTunnel = hostingAnswer.useTunnel;
-
-    // Ask about Neynar Sponsored Signers / SIWN
-    const sponsoredSignerAnswer = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'useSponsoredSigner',
-        message:
-          'Would you like to write data to Farcaster on behalf of your miniapp users? This involves using Neynar Sponsored Signers and SIWN.\n' +
-          '\n⚠️ A seed phrase is required for this option.\n',
-        default: false,
-      },
-    ]);
-    answers.useSponsoredSigner = sponsoredSignerAnswer.useSponsoredSigner;
-
-    if (answers.useSponsoredSigner) {
-      const { seedPhrase } = await inquirer.prompt([
+    // Ask about wallet and transaction tooling (skip if --no-wallet flag is used)
+    if (noWallet) {
+      answers.useWallet = false;
+    } else {
+      const walletAnswer = await inquirer.prompt([
         {
-          type: 'password',
-          name: 'seedPhrase',
-          message: 'Enter your Farcaster custody account seed phrase (required for Neynar Sponsored Signers/SIWN):',
-          validate: (input) => {
-            if (!input || input.trim().split(' ').length < 12) {
-              return 'Seed phrase must be at least 12 words';
-            }
-            return true;
-          },
+          type: 'confirm',
+          name: 'useWallet',
+          message:
+            'Would you like to include wallet and transaction tooling in your mini app?\n' +
+            'This includes:\n' +
+            '- EVM wallet connection\n' +
+            '- Transaction signing\n' +
+            '- Message signing\n' +
+            '- Chain switching\n' +
+            '- Solana support\n\n' +
+            'Include wallet and transaction features?',
+          default: true,
         },
       ]);
-      answers.seedPhrase = seedPhrase;
+      answers.useWallet = walletAnswer.useWallet;
+    }
+
+    // Ask about localhost vs tunnel
+    if (noTunnel) {
+      answers.useTunnel = false;
+    } else {
+      const hostingAnswer = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'useTunnel',
+          message:
+            'Would you like to test on mobile and/or test the app with Warpcast developer tools?\n' +
+            `⚠️ ${yellow}${italic}Both mobile testing and the Warpcast debugger require setting up a tunnel to serve your app from localhost to the broader internet.\n${reset}` +
+            'Configure a tunnel for mobile testing and/or Warpcast developer tools?',
+          default: true,
+        },
+      ]);
+      answers.useTunnel = hostingAnswer.useTunnel;
+    }
+
+    // Ask about Neynar Sponsored Signers / SIWN
+    if (sponsoredSigner) {
+      answers.useSponsoredSigner = true;
+      if (seedPhrase) {
+        // Validate the provided seed phrase
+        if (!seedPhrase || seedPhrase.trim().split(' ').length < 12) {
+          console.error('Error: Seed phrase must be at least 12 words');
+          process.exit(1);
+        }
+        answers.seedPhrase = seedPhrase;
+      } else {
+        console.error('Error: --sponsored-signer requires --seed-phrase to be provided');
+        process.exit(1);
+      }
+    } else {
+      const sponsoredSignerAnswer = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'useSponsoredSigner',
+          message:
+            'Would you like to write data to Farcaster on behalf of your miniapp users? This involves using Neynar Sponsored Signers and SIWN.\n' +
+            '\n⚠️ A seed phrase is required for this option.\n',
+          default: false,
+        },
+      ]);
+      answers.useSponsoredSigner = sponsoredSignerAnswer.useSponsoredSigner;
+
+      if (answers.useSponsoredSigner) {
+        const { seedPhrase } = await inquirer.prompt([
+          {
+            type: 'password',
+            name: 'seedPhrase',
+            message: 'Enter your Farcaster custody account seed phrase (required for Neynar Sponsored Signers/SIWN):',
+            validate: (input) => {
+              if (!input || input.trim().split(' ').length < 12) {
+                return 'Seed phrase must be at least 12 words';
+              }
+              return true;
+            },
+          },
+        ]);
+        answers.seedPhrase = seedPhrase;
+      }
     }
 
     // Ask about analytics opt-out
