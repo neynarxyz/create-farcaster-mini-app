@@ -149,7 +149,7 @@ export function ActionsTab() {
       <SignIn />
 
       {/* Neynar Authentication */}
-      <NeynarAuthButton />
+      {NeynarAuthButton && <NeynarAuthButton />}
 
       {/* Mini app actions */}
       <Button
