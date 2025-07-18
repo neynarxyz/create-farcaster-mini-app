@@ -22,8 +22,8 @@ export default async function RootLayout({
   let session = null;
   if (shouldUseSession) {
     try {
-      const authModule = eval('require("~/auth")');
-      session = await authModule.getSession();
+      const { getSession } = await import('~/auth');
+      session = await getSession();
     } catch (error) {
       console.warn('Failed to get session:', error);
     }

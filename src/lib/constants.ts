@@ -22,25 +22,25 @@ export const APP_URL: string = process.env.NEXT_PUBLIC_URL!;
  * The name of the mini app as displayed to users.
  * Used in titles, headers, and app store listings.
  */
-export const APP_NAME = 'idk2';
+export const APP_NAME: string = 'Starter Kit';
 
 /**
  * A brief description of the mini app's functionality.
  * Used in app store listings and metadata.
  */
-export const APP_DESCRIPTION = 'A Farcaster mini app created with Neynar';
+export const APP_DESCRIPTION: string = 'A demo of the Neynar Starter Kit';
 
 /**
  * The primary category for the mini app.
  * Used for app store categorization and discovery.
  */
-export const APP_PRIMARY_CATEGORY = '';
+export const APP_PRIMARY_CATEGORY: string = 'developer-tools';
 
 /**
  * Tags associated with the mini app.
  * Used for search and discovery in app stores.
  */
-export const APP_TAGS = ['neynar', 'starter-kit', 'demo'];
+export const APP_TAGS: string[] = ['neynar', 'starter-kit', 'demo'];
 
 // --- Asset URLs ---
 /**

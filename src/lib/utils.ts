@@ -14,7 +14,6 @@ import {
   APP_URL,
   APP_WEBHOOK_URL,
   APP_ACCOUNT_ASSOCIATION,
-  APP_REQUIRED_CHAINS,
 } from './constants';
 
 export function cn(...inputs: ClassValue[]) {

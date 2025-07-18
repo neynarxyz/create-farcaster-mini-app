@@ -9,19 +9,12 @@ import { SignIn } from '../wallet/SignIn';
 import { type Haptics } from '@farcaster/miniapp-sdk';
 import { APP_URL } from '~/lib/constants';
 
-// Optional import for NeynarAuthButton - may not exist in all templates
+// Import NeynarAuthButton
 const NeynarAuthButton = dynamic(
-  () => {
-    return Promise.resolve().then(() => {
-      try {
-        const authModule = eval('require("../NeynarAuthButton/index")');
-        return authModule.default || authModule.NeynarAuthButton;
-      } catch (_error) {
-        // Return null component when module doesn't exist
-        return () => null;
-      }
-    });
-  },
+  () =>
+    import('../NeynarAuthButton').then((module) => ({
+      default: module.NeynarAuthButton,
+    })),
   { ssr: false }
 );
 
@@ -156,7 +149,7 @@ export function ActionsTab() {
       <SignIn />
 
       {/* Neynar Authentication */}
-      {NeynarAuthButton && <NeynarAuthButton />}
+      <NeynarAuthButton />
 
       {/* Mini app actions */}
       <Button
