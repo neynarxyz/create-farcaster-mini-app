@@ -22,7 +22,6 @@ export default async function RootLayout({
   let session = null;
   if (shouldUseSession) {
     try {
-      // @ts-ignore - auth module may not exist in all template variants
       const authModule = eval('require("~/auth")');
       session = await authModule.getSession();
     } catch (error) {

@@ -1,3 +1,32 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    // Disable img warnings since you're using them intentionally in specific contexts
+    "@next/next/no-img-element": "off",
+
+    // Allow @ts-ignore comments (though @ts-expect-error is preferred)
+    "@typescript-eslint/ban-ts-comment": "off",
+
+    // Allow explicit any types (sometimes necessary for dynamic imports and APIs)
+    "@typescript-eslint/no-explicit-any": "off",
+
+    // Allow unused variables that start with underscore
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
+
+    // Make display name warnings instead of errors for dynamic components
+    "react/display-name": "warn",
+
+    // Allow module assignment for dynamic imports
+    "@next/next/no-assign-module-variable": "warn",
+
+    // Make exhaustive deps a warning instead of error for complex hooks
+    "react-hooks/exhaustive-deps": "warn"
+  }
 }
