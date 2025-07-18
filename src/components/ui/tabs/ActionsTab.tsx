@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useState, type ComponentType } from 'react';
+import { useCallback, useState } from 'react';
 import { useMiniApp } from '@neynar/react';
 import { ShareButton } from '../Share';
 import { Button } from '../Button';
@@ -9,23 +9,14 @@ import { SignIn } from '../wallet/SignIn';
 import { type Haptics } from '@farcaster/miniapp-sdk';
 import { APP_URL } from '~/lib/constants';
 
-// Optional import for NeynarAuthButton - may not exist in all templates
+// Import NeynarAuthButton
 const NeynarAuthButton = dynamic(
-  () => {
-    return Promise.resolve().then(() => {
-      try {
-        // @ts-ignore - NeynarAuthButton may not exist in all template variants
-        const module = eval('require("../NeynarAuthButton/index")');
-        return module.default || module.NeynarAuthButton;
-      } catch (error) {
-        // Return null component when module doesn't exist
-        return () => null;
-      }
-    });
-  },
+  () =>
+    import('../NeynarAuthButton').then((module) => ({
+      default: module.NeynarAuthButton,
+    })),
   { ssr: false }
 );
-
 
 /**
  * ActionsTab component handles mini app actions like sharing, notifications, and haptic feedback.
