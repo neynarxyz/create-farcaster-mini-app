@@ -82,7 +82,7 @@ function AuthProviders({
   }, [shouldUseSession]);
 
   if (!authComponents.loaded) {
-    return <div>Loading...</div>;
+    return <></>;
   }
 
   if (!shouldUseSession || !authComponents.SessionProvider) {
