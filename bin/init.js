@@ -771,6 +771,21 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     if (fs.existsSync(authFilePath)) {
       fs.rmSync(authFilePath, { force: true });
     }
+    
+    // Replace NeynarAuthButton import in ActionsTab.tsx with null component
+    const actionsTabPath = path.join(projectPath, 'src', 'components', 'ui', 'tabs', 'ActionsTab.tsx');
+    if (fs.existsSync(actionsTabPath)) {
+      let actionsTabContent = fs.readFileSync(actionsTabPath, 'utf8');
+      
+      // Replace the dynamic import of NeynarAuthButton with a null component
+      actionsTabContent = actionsTabContent.replace(
+        /const NeynarAuthButton = dynamic\([\s\S]*?\);/,
+        '// NeynarAuthButton disabled - SIWN not enabled\nconst NeynarAuthButton = () => {\n  return null;\n};'
+      );
+      
+      fs.writeFileSync(actionsTabPath, actionsTabContent);
+      console.log('✅ Replaced NeynarAuthButton import in ActionsTab.tsx with null component');
+    }
   }
 
   // Initialize git repository
