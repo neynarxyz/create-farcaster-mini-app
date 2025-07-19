@@ -219,6 +219,22 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
 
   let answers;
   if (autoAcceptDefaults) {
+    // Handle SIWN logic for autoAcceptDefaults
+    let seedPhraseValue = null;
+    let useSponsoredSignerValue = false;
+    
+    // Only set seed phrase and sponsored signer if explicitly provided via flags
+    if (seedPhrase) {
+      // Validate the provided seed phrase
+      if (!seedPhrase || seedPhrase.trim().split(' ').length < 12) {
+        console.error('Error: Seed phrase must be at least 12 words');
+        process.exit(1);
+      }
+      seedPhraseValue = seedPhrase;
+      // If sponsoredSigner flag is provided, enable it; otherwise default to false
+      useSponsoredSignerValue = sponsoredSigner;
+    }
+    
     answers = {
       projectName: projectName || defaultMiniAppName || 'my-farcaster-mini-app',
       description: 'A Farcaster mini app created with Neynar',
@@ -228,8 +244,8 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       useWallet: !noWallet,
       useTunnel: true,
       enableAnalytics: true,
-      seedPhrase: null,
-      useSponsoredSigner: false,
+      seedPhrase: seedPhraseValue,
+      useSponsoredSigner: useSponsoredSignerValue,
     };
   } else {
     // If autoAcceptDefaults is false but we have a projectName, we still need to ask for other options
@@ -353,39 +369,34 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       answers.useTunnel = hostingAnswer.useTunnel;
     }
 
-    // Ask about Neynar Sponsored Signers / SIWN
-    if (sponsoredSigner) {
-      answers.useSponsoredSigner = true;
-      if (seedPhrase) {
-        // Validate the provided seed phrase
-        if (!seedPhrase || seedPhrase.trim().split(' ').length < 12) {
-          console.error('Error: Seed phrase must be at least 12 words');
-          process.exit(1);
-        }
-        answers.seedPhrase = seedPhrase;
-      } else {
-        console.error('Error: --sponsored-signer requires --seed-phrase to be provided');
+    // Ask about Sign In With Neynar (SIWN) - requires seed phrase
+    if (seedPhrase) {
+      // If --seed-phrase flag is used, validate it
+      if (!seedPhrase || seedPhrase.trim().split(' ').length < 12) {
+        console.error('Error: Seed phrase must be at least 12 words');
         process.exit(1);
       }
+      answers.seedPhrase = seedPhrase;
+      // If --sponsored-signer flag is also provided, enable it
+      answers.useSponsoredSigner = sponsoredSigner;
     } else {
-      const sponsoredSignerAnswer = await inquirer.prompt([
+      const siwnAnswer = await inquirer.prompt([
         {
           type: 'confirm',
-          name: 'useSponsoredSigner',
+          name: 'useSIWN',
           message:
-            'Would you like to write data to Farcaster on behalf of your miniapp users? This involves using Neynar Sponsored Signers and SIWN.\n' +
+            'Would you like to enable Sign In With Neynar (SIWN)? This allows your mini app to write data to Farcaster on behalf of users.\n' +
             '\n⚠️ A seed phrase is required for this option.\n',
           default: false,
         },
       ]);
-      answers.useSponsoredSigner = sponsoredSignerAnswer.useSponsoredSigner;
-
-      if (answers.useSponsoredSigner) {
+      
+      if (siwnAnswer.useSIWN) {
         const { seedPhrase } = await inquirer.prompt([
           {
             type: 'password',
             name: 'seedPhrase',
-            message: 'Enter your Farcaster custody account seed phrase (required for Neynar Sponsored Signers/SIWN):',
+            message: 'Enter your Farcaster custody account seed phrase (required for SIWN):',
             validate: (input) => {
               if (!input || input.trim().split(' ').length < 12) {
                 return 'Seed phrase must be at least 12 words';
@@ -395,6 +406,23 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
           },
         ]);
         answers.seedPhrase = seedPhrase;
+        
+        // Ask about sponsor signer if seed phrase is provided
+        const { sponsorSigner } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'sponsorSigner',
+            message:
+              'You have provided a seed phrase, which enables Sign In With Neynar (SIWN).\n' +
+              'Do you want to sponsor the signer? (This will be used in Sign In With Neynar)\n' +
+              'Note: If you choose to sponsor the signer, Neynar will sponsor it for you and you will be charged in CUs.\n' +
+              'For more information, see https://docs.neynar.com/docs/two-ways-to-sponsor-a-farcaster-signer-via-neynar#sponsor-signers',
+            default: false,
+          },
+        ]);
+        answers.useSponsoredSigner = sponsorSigner;
+      } else {
+        answers.useSponsoredSigner = false;
       }
     }
 
@@ -520,8 +548,8 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     packageJson.dependencies['@neynar/nodejs-sdk'] = '^2.19.0';
   }
 
-  // Add auth-kit and next-auth dependencies if useSponsoredSigner is true
-  if (answers.useSponsoredSigner) {
+  // Add auth-kit and next-auth dependencies if SIWN is enabled (seed phrase is present)
+  if (answers.seedPhrase) {
     packageJson.dependencies['@farcaster/auth-kit'] = '>=0.6.0 <1.0.0';
     packageJson.dependencies['next-auth'] = '^4.24.11';
   }
@@ -666,14 +694,15 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     }
     if (answers.seedPhrase) {
       fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
-    }
-    fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
-    if (answers.useSponsoredSigner) {
-      fs.appendFileSync(envPath, `\nSPONSOR_SIGNER="true"`);
+      // Add NextAuth secret for SIWN
       fs.appendFileSync(
         envPath,
         `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`
       );
+    }
+    fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
+    if (answers.useSponsoredSigner) {
+      fs.appendFileSync(envPath, `\nSPONSOR_SIGNER="true"`);
     }
 
     fs.unlinkSync(envExamplePath);
@@ -718,9 +747,9 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     fs.rmSync(binPath, { recursive: true, force: true });
   }
 
-  // Remove NeynarAuthButton directory, NextAuth API routes, and auth directory if useSponsoredSigner is false
-  if (!answers.useSponsoredSigner) {
-    console.log('\nRemoving NeynarAuthButton directory, NextAuth API routes, and auth directory (useSponsoredSigner is false)...');
+  // Remove NeynarAuthButton directory, NextAuth API routes, and auth directory if SIWN is not enabled (no seed phrase)
+  if (!answers.seedPhrase) {
+    console.log('\nRemoving NeynarAuthButton directory, NextAuth API routes, and auth directory (SIWN not enabled)...');
     const neynarAuthButtonPath = path.join(projectPath, 'src', 'components', 'ui', 'NeynarAuthButton');
     if (fs.existsSync(neynarAuthButtonPath)) {
       fs.rmSync(neynarAuthButtonPath, { recursive: true, force: true });

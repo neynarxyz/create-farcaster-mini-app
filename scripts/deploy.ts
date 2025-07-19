@@ -116,13 +116,14 @@ async function checkRequiredEnvVars(): Promise<void> {
         );
       }
 
-      // Ask about sponsor signer if SEED_PHRASE is provided
-      if (!process.env.SPONSOR_SIGNER) {
+      // Ask about SIWN if SEED_PHRASE is provided
+      if (process.env.SEED_PHRASE && !process.env.SPONSOR_SIGNER) {
         const { sponsorSigner } = await inquirer.prompt([
           {
             type: 'confirm',
             name: 'sponsorSigner',
             message:
+              'You have provided a seed phrase, which enables Sign In With Neynar (SIWN).\n' +
               'Do you want to sponsor the signer? (This will be used in Sign In With Neynar)\n' +
               'Note: If you choose to sponsor the signer, Neynar will sponsor it for you and you will be charged in CUs.\n' +
               'For more information, see https://docs.neynar.com/docs/two-ways-to-sponsor-a-farcaster-signer-via-neynar#sponsor-signers',
@@ -132,13 +133,11 @@ async function checkRequiredEnvVars(): Promise<void> {
 
         process.env.SPONSOR_SIGNER = sponsorSigner.toString();
 
-        if (process.env.SEED_PHRASE) {
-          fs.appendFileSync(
-            '.env.local',
-            `\nSPONSOR_SIGNER="${sponsorSigner}"`,
-          );
-          console.log('✅ Sponsor signer preference stored in .env.local');
-        }
+        fs.appendFileSync(
+          '.env.local',
+          `\nSPONSOR_SIGNER="${sponsorSigner}"`,
+        );
+        console.log('✅ Sponsor signer preference stored in .env.local');
       }
 
       // Ask about required chains
@@ -193,7 +192,7 @@ async function checkRequiredEnvVars(): Promise<void> {
     }
   }
 
-  // Load SPONSOR_SIGNER from .env.local if SEED_PHRASE exists but SPONSOR_SIGNER doesn't
+  // Load SPONSOR_SIGNER from .env.local if SEED_PHRASE exists (SIWN enabled) but SPONSOR_SIGNER doesn't
   if (
     process.env.SEED_PHRASE &&
     !process.env.SPONSOR_SIGNER &&
@@ -732,8 +731,9 @@ async function deployToVercel(useGitHub = false): Promise<void> {
         SPONSOR_SIGNER: process.env.SPONSOR_SIGNER,
       }),
 
-      // Include NextAuth environment variables if SEED_PHRASE is present or SPONSOR_SIGNER is true
-      ...((process.env.SEED_PHRASE || process.env.SPONSOR_SIGNER === 'true') && {
+      // Include NextAuth environment variables if SEED_PHRASE is present (SIWN enabled)
+      ...(process.env.SEED_PHRASE && {
+        SEED_PHRASE: process.env.SEED_PHRASE,
         NEXTAUTH_SECRET: nextAuthSecret,
         AUTH_SECRET: nextAuthSecret,
         NEXTAUTH_URL: `https://${domain}`,
@@ -834,8 +834,8 @@ async function deployToVercel(useGitHub = false): Promise<void> {
         NEXT_PUBLIC_URL: `https://${actualDomain}`,
       };
 
-      // Include NextAuth URL if SEED_PHRASE is present or SPONSOR_SIGNER is true
-      if (process.env.SEED_PHRASE || process.env.SPONSOR_SIGNER === 'true') {
+      // Include NextAuth URL if SEED_PHRASE is present (SIWN enabled)
+      if (process.env.SEED_PHRASE) {
         updatedEnv.NEXTAUTH_URL = `https://${actualDomain}`;
       }
 
