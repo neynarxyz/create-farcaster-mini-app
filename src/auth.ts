@@ -218,74 +218,6 @@ export const authOptions: AuthOptions = {
   // Configure one or more authentication providers
   providers: [
     CredentialsProvider({
-      id: 'farcaster',
-      name: 'Sign in with Farcaster',
-      credentials: {
-        message: {
-          label: 'Message',
-          type: 'text',
-          placeholder: '0x0',
-        },
-        signature: {
-          label: 'Signature',
-          type: 'text',
-          placeholder: '0x0',
-        },
-        nonce: {
-          label: 'Nonce',
-          type: 'text',
-          placeholder: 'Custom nonce (optional)',
-        },
-        // In a production app with a server, these should be fetched from
-        // your Farcaster data indexer rather than have them accepted as part
-        // of credentials.
-        // question: should these natively use the Neynar API?
-        name: {
-          label: 'Name',
-          type: 'text',
-          placeholder: '0x0',
-        },
-        pfp: {
-          label: 'Pfp',
-          type: 'text',
-          placeholder: '0x0',
-        },
-      },
-      async authorize(credentials, req) {
-        const nonce = req?.body?.csrfToken;
-
-        if (!nonce) {
-          console.error('No nonce or CSRF token provided');
-          return null;
-        }
-        const appClient = createAppClient({
-          ethereum: viemConnector(),
-        });
-
-        const domain = getDomainFromUrl(process.env.NEXTAUTH_URL);
-
-        const verifyResponse = await appClient.verifySignInMessage({
-          message: credentials?.message as string,
-          signature: credentials?.signature as `0x${string}`,
-          domain,
-          nonce,
-        });
-
-        const { success, fid } = verifyResponse;
-
-        if (!success) {
-          return null;
-        }
-
-        return {
-          id: fid.toString(),
-          name: credentials?.name || `User ${fid}`,
-          image: credentials?.pfp || null,
-          provider: 'farcaster',
-        };
-      },
-    }),
-    CredentialsProvider({
       id: 'neynar',
       name: 'Sign in with Neynar',
       credentials: {
@@ -333,10 +265,18 @@ export const authOptions: AuthOptions = {
         try {
           // Validate the signature using Farcaster's auth client (same as Farcaster provider)
           const appClient = createAppClient({
+            // USE your own RPC URL or else you might get 401 error
             ethereum: viemConnector(),
           });
 
-          const domain = getDomainFromUrl(process.env.NEXTAUTH_URL);
+          const baseUrl =
+            process.env.VERCEL_ENV === 'production'
+              ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+              : process.env.VERCEL_URL
+                ? `https://${process.env.VERCEL_URL}`
+                : `http://localhost:${process.env.PORT ?? 3000}`;
+
+          const domain = getDomainFromUrl(baseUrl);
 
           const verifyResponse = await appClient.verifySignInMessage({
             message: credentials?.message as string,
@@ -377,12 +317,7 @@ export const authOptions: AuthOptions = {
       // Set provider at the root level
       session.provider = token.provider as string;
 
-      if (token.provider === 'farcaster') {
-        // For Farcaster, simple structure
-        session.user = {
-          fid: parseInt(token.sub ?? ''),
-        };
-      } else if (token.provider === 'neynar') {
+      if (token.provider === 'neynar') {
         // For Neynar, use full user data structure from user
         session.user = token.user as typeof session.user;
         session.signers = token.signers as typeof session.signers;
