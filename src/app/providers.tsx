@@ -26,9 +26,7 @@ export function Providers({
         backButtonEnabled={true}
       >
         <SafeFarcasterSolanaProvider endpoint={solanaEndpoint}>
-          <AuthKitProvider config={{}}>
-            {children}
-          </AuthKitProvider>
+          {children}
         </SafeFarcasterSolanaProvider>
       </MiniAppProvider>
     </WagmiProvider>
