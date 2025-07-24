@@ -747,9 +747,12 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
     fs.rmSync(binPath, { recursive: true, force: true });
   }
 
-  // Remove NeynarAuthButton directory, NextAuth API routes, and auth directory if SIWN is not enabled (no seed phrase)
+  // Handle SIWN-related files based on whether seed phrase is provided
   if (!answers.seedPhrase) {
-    console.log('\nRemoving NeynarAuthButton directory, NextAuth API routes, and auth directory (SIWN not enabled)...');
+    // Remove SIWN-related files when SIWN is not enabled (no seed phrase)
+    console.log('\nRemoving SIWN-related files (SIWN not enabled)...');
+    
+    // Remove NeynarAuthButton directory
     const neynarAuthButtonPath = path.join(projectPath, 'src', 'components', 'ui', 'NeynarAuthButton');
     if (fs.existsSync(neynarAuthButtonPath)) {
       fs.rmSync(neynarAuthButtonPath, { recursive: true, force: true });
@@ -772,19 +775,56 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       fs.rmSync(authFilePath, { force: true });
     }
     
-    // Replace NeynarAuthButton import in ActionsTab.tsx with null component
+    // Remove SIWN-specific files
+    const actionsTabNeynarAuthPath = path.join(projectPath, 'src', 'components', 'ui', 'tabs', 'ActionsTab.NeynarAuth.tsx');
+    if (fs.existsSync(actionsTabNeynarAuthPath)) {
+      fs.rmSync(actionsTabNeynarAuthPath, { force: true });
+    }
+    
+    const layoutNeynarAuthPath = path.join(projectPath, 'src', 'app', 'layout.NeynarAuth.tsx');
+    if (fs.existsSync(layoutNeynarAuthPath)) {
+      fs.rmSync(layoutNeynarAuthPath, { force: true });
+    }
+    
+    const providersNeynarAuthPath = path.join(projectPath, 'src', 'app', 'providers.NeynarAuth.tsx');
+    if (fs.existsSync(providersNeynarAuthPath)) {
+      fs.rmSync(providersNeynarAuthPath, { force: true });
+    }
+  } else {
+    // Move SIWN-specific files to replace the regular versions when SIWN is enabled
+    console.log('\nMoving SIWN-specific files to replace regular versions (SIWN enabled)...');
+    
+    // Move ActionsTab.NeynarAuth.tsx to ActionsTab.tsx
+    const actionsTabNeynarAuthPath = path.join(projectPath, 'src', 'components', 'ui', 'tabs', 'ActionsTab.NeynarAuth.tsx');
     const actionsTabPath = path.join(projectPath, 'src', 'components', 'ui', 'tabs', 'ActionsTab.tsx');
-    if (fs.existsSync(actionsTabPath)) {
-      let actionsTabContent = fs.readFileSync(actionsTabPath, 'utf8');
-      
-      // Replace the dynamic import of NeynarAuthButton with a null component
-      actionsTabContent = actionsTabContent.replace(
-        /const NeynarAuthButton = dynamic\([\s\S]*?\);/,
-        '// NeynarAuthButton disabled - SIWN not enabled\nconst NeynarAuthButton = () => {\n  return null;\n};'
-      );
-      
-      fs.writeFileSync(actionsTabPath, actionsTabContent);
-      console.log('✅ Replaced NeynarAuthButton import in ActionsTab.tsx with null component');
+    if (fs.existsSync(actionsTabNeynarAuthPath)) {
+      if (fs.existsSync(actionsTabPath)) {
+        fs.rmSync(actionsTabPath, { force: true }); // Delete original
+      }
+      fs.renameSync(actionsTabNeynarAuthPath, actionsTabPath);
+      console.log('✅ Moved ActionsTab.NeynarAuth.tsx to ActionsTab.tsx');
+    }
+    
+    // Move layout.NeynarAuth.tsx to layout.tsx
+    const layoutNeynarAuthPath = path.join(projectPath, 'src', 'app', 'layout.NeynarAuth.tsx');
+    const layoutPath = path.join(projectPath, 'src', 'app', 'layout.tsx');
+    if (fs.existsSync(layoutNeynarAuthPath)) {
+      if (fs.existsSync(layoutPath)) {
+        fs.rmSync(layoutPath, { force: true }); // Delete original
+      }
+      fs.renameSync(layoutNeynarAuthPath, layoutPath);
+      console.log('✅ Moved layout.NeynarAuth.tsx to layout.tsx');
+    }
+    
+    // Move providers.NeynarAuth.tsx to providers.tsx
+    const providersNeynarAuthPath = path.join(projectPath, 'src', 'app', 'providers.NeynarAuth.tsx');
+    const providersPath = path.join(projectPath, 'src', 'app', 'providers.tsx');
+    if (fs.existsSync(providersNeynarAuthPath)) {
+      if (fs.existsSync(providersPath)) {
+        fs.rmSync(providersPath, { force: true }); // Delete original
+      }
+      fs.renameSync(providersNeynarAuthPath, providersPath);
+      console.log('✅ Moved providers.NeynarAuth.tsx to providers.tsx');
     }
   }
 
