@@ -274,7 +274,7 @@ export const authOptions: AuthOptions = {
               ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
               : process.env.VERCEL_URL
                 ? `https://${process.env.VERCEL_URL}`
-                : `http://localhost:${process.env.PORT ?? 3000}`;
+                : process.env.NEXTAUTH_URL || `http://localhost:${process.env.PORT ?? 3000}`;
 
           const domain = getDomainFromUrl(baseUrl);
 
@@ -339,26 +339,26 @@ export const authOptions: AuthOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
       },
     },
     callbackUrl: {
       name: `next-auth.callback-url`,
       options: {
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
       },
     },
     csrfToken: {
       name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
       },
     },
   },

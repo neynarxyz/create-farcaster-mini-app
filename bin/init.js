@@ -693,6 +693,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       );
     }
     if (answers.seedPhrase) {
+      console.log('✅ Writing SEED_PHRASE and NEXTAUTH_SECRET to .env.local');
       fs.appendFileSync(envPath, `\nSEED_PHRASE="${answers.seedPhrase}"`);
       // Add NextAuth secret for SIWN
       fs.appendFileSync(

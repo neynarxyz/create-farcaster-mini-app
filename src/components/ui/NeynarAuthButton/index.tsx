@@ -569,6 +569,8 @@ export function NeynarAuthButton() {
       } else {
         console.error('❌ Backend sign-in error:', e);
       }
+    } finally {
+      setSignersLoading(false);
     }
   }, [nonce]);
 
