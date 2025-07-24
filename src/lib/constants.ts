@@ -80,7 +80,7 @@ export const APP_ACCOUNT_ASSOCIATION: AccountAssociation | undefined =
  * Text displayed on the main action button.
  * Used for the primary call-to-action in the mini app.
  */
-export const APP_BUTTON_TEXT = 'Launch Mini App';
+export const APP_BUTTON_TEXT: string = 'Launch Mini App';
 
 // --- Integration Configuration ---
 /**
@@ -102,7 +102,7 @@ export const APP_WEBHOOK_URL: string =
  * When false, wallet functionality is completely hidden from the UI.
  * Useful for mini apps that don't require wallet integration.
  */
-export const USE_WALLET = false;
+export const USE_WALLET: boolean = false;
 
 /**
  * Flag to enable/disable analytics tracking.
@@ -111,7 +111,7 @@ export const USE_WALLET = false;
  * When false, analytics collection is disabled.
  * Useful for privacy-conscious users or development environments.
  */
-export const ANALYTICS_ENABLED = true;
+export const ANALYTICS_ENABLED: boolean = true;
 
 /**
  * Required chains for the mini app.
