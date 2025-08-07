@@ -125,6 +125,14 @@ export const ANALYTICS_ENABLED: boolean = true;
  */
 export const APP_REQUIRED_CHAINS: string[] = [];
 
+/**
+ * Return URL for the mini app.
+ *
+ * If provided, the mini app will be rendered with a return URL to be rendered if the
+ * back button is pressed from the home page.
+ */
+export const RETURN_URL: string | null = null;
+
 // PLEASE DO NOT UPDATE THIS
 export const SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN = {
   name: 'Farcaster SignedKeyRequestValidator',
