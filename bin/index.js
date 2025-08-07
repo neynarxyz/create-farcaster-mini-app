@@ -11,6 +11,7 @@ let noWallet = false;
 let noTunnel = false;
 let sponsoredSigner = false;
 let seedPhrase = null;
+let returnUrl = null;
 
 // Check for -y flag
 const yIndex = args.indexOf('-y');
@@ -74,6 +75,19 @@ if (yIndex !== -1) {
         console.error('Error: --seed-phrase requires a seed phrase');
         process.exit(1);
       }
+    } else if (arg === '-r' || arg === '--return-url') {
+      if (i + 1 < args.length) {
+        returnUrl = args[i + 1];
+        if (returnUrl.startsWith('-')) {
+          console.error('Error: Return URL cannot start with a dash (-)');
+          process.exit(1);
+        }
+        args.splice(i, 2); // Remove both the flag and its value
+        i--; // Adjust index since we removed 2 elements
+      } else {
+        console.error('Error: -r/--return-url requires a return URL');
+        process.exit(1);
+      }
     }
   }
 
@@ -85,7 +99,7 @@ if (autoAcceptDefaults && !projectName) {
   process.exit(1);
 }
 
-init(projectName, autoAcceptDefaults, apiKey, noWallet, noTunnel, sponsoredSigner, seedPhrase).catch((err) => {
+init(projectName, autoAcceptDefaults, apiKey, noWallet, noTunnel, sponsoredSigner, seedPhrase, returnUrl).catch((err) => {
   console.error('Error:', err);
   process.exit(1);
 });

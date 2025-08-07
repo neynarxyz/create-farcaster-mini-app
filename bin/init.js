@@ -63,7 +63,16 @@ async function queryNeynarApp(apiKey) {
 }
 
 // Export the main CLI function for programmatic use
-export async function init(projectName = null, autoAcceptDefaults = false, apiKey = null, noWallet = false, noTunnel = false, sponsoredSigner = false, seedPhrase = null) {
+export async function init(
+  projectName = null,
+  autoAcceptDefaults = false,
+  apiKey = null,
+  noWallet = false,
+  noTunnel = false,
+  sponsoredSigner = false,
+  seedPhrase = null,
+  returnUrl = null
+) {
   printWelcomeMessage();
 
   // Ask about Neynar usage
@@ -246,6 +255,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       enableAnalytics: true,
       seedPhrase: seedPhraseValue,
       useSponsoredSigner: useSponsoredSignerValue,
+      returnUrl: returnUrl,
     };
   } else {
     // If autoAcceptDefaults is false but we have a projectName, we still need to ask for other options
@@ -610,13 +620,14 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
         USE_WALLET: /^export const USE_WALLET\s*:\s*boolean\s*=\s*(true|false);$/m,
         ANALYTICS_ENABLED:
           /^export const ANALYTICS_ENABLED\s*:\s*boolean\s*=\s*(true|false);$/m,
+        RETURN_URL: /^export const RETURN_URL\s*:\s*string\s*\|\s*undefined\s*=\s*(undefined|['"`][^'"`]*['"`]);$/m,
       };
 
       // Update APP_NAME
       constantsContent = safeReplace(
         constantsContent,
         patterns.APP_NAME,
-        `export const APP_NAME = '${escapeString(answers.projectName)}';`,
+        `export const APP_NAME: string = '${escapeString(answers.projectName)}';`,
         'APP_NAME'
       );
 
@@ -624,7 +635,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       constantsContent = safeReplace(
         constantsContent,
         patterns.APP_DESCRIPTION,
-        `export const APP_DESCRIPTION = '${escapeString(
+        `export const APP_DESCRIPTION: string = '${escapeString(
           answers.description
         )}';`,
         'APP_DESCRIPTION'
@@ -634,7 +645,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       constantsContent = safeReplace(
         constantsContent,
         patterns.APP_PRIMARY_CATEGORY,
-        `export const APP_PRIMARY_CATEGORY = '${escapeString(
+        `export const APP_PRIMARY_CATEGORY: string = '${escapeString(
           answers.primaryCategory || ''
         )}';`,
         'APP_PRIMARY_CATEGORY'
@@ -648,7 +659,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       constantsContent = safeReplace(
         constantsContent,
         patterns.APP_TAGS,
-        `export const APP_TAGS = ${tagsString};`,
+        `export const APP_TAGS: string[] = ${tagsString};`,
         'APP_TAGS'
       );
 
@@ -656,7 +667,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       constantsContent = safeReplace(
         constantsContent,
         patterns.APP_BUTTON_TEXT,
-        `export const APP_BUTTON_TEXT = '${escapeString(
+        `export const APP_BUTTON_TEXT: string = '${escapeString(
           answers.buttonText || ''
         )}';`,
         'APP_BUTTON_TEXT'
@@ -666,7 +677,7 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       constantsContent = safeReplace(
         constantsContent,
         patterns.USE_WALLET,
-        `export const USE_WALLET = ${answers.useWallet};`,
+        `export const USE_WALLET: boolean = ${answers.useWallet};`,
         'USE_WALLET'
       );
 
@@ -674,8 +685,17 @@ export async function init(projectName = null, autoAcceptDefaults = false, apiKe
       constantsContent = safeReplace(
         constantsContent,
         patterns.ANALYTICS_ENABLED,
-        `export const ANALYTICS_ENABLED = ${answers.enableAnalytics};`,
+        `export const ANALYTICS_ENABLED: boolean = ${answers.enableAnalytics};`,
         'ANALYTICS_ENABLED'
+      );
+
+      // Update RETURN_URL
+      const returnUrlValue = answers.returnUrl ? `'${escapeString(answers.returnUrl)}'` : 'undefined';
+      constantsContent = safeReplace(
+        constantsContent,
+        patterns.RETURN_URL,
+        `export const RETURN_URL: string | undefined = ${returnUrlValue};`,
+        'RETURN_URL'
       );
 
       fs.writeFileSync(constantsPath, constantsContent);

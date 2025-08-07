@@ -131,7 +131,7 @@ export const APP_REQUIRED_CHAINS: string[] = [];
  * If provided, the mini app will be rendered with a return URL to be rendered if the
  * back button is pressed from the home page.
  */
-export const RETURN_URL: string | null = null;
+export const RETURN_URL: string | undefined = undefined;
 
 // PLEASE DO NOT UPDATE THIS
 export const SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN = {
