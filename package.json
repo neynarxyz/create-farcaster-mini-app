@@ -1,6 +1,6 @@
 {
   "name": "@neynar/create-farcaster-mini-app",
-  "version": "1.8.7",
+  "version": "1.8.8",
   "type": "module",
   "private": false,
   "access": "public",
@@ -51,5 +51,17 @@
     "@neynar/nodejs-sdk": "^2.19.0",
     "@types/node": "^22.13.10",
     "typescript": "^5.6.3"
+  },
+  "overrides": {
+    "chalk": "5.3.0",
+    "strip-ansi": "6.0.1",
+    "wrap-ansi": "8.1.0",
+    "ansi-styles": "6.2.3",
+    "color-convert": "2.0.1",
+    "color-name": "1.1.4",
+    "is-core-module": "2.13.1",
+    "error-ex": "1.3.2",
+    "simple-swizzle": "0.2.2",
+    "has-ansi": "5.0.1"
   }
 }

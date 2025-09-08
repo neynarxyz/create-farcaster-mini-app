@@ -515,7 +515,7 @@ export async function init(
     '@farcaster/miniapp-wagmi-connector': '^1.0.0',
     '@farcaster/mini-app-solana': '>=0.0.17 <1.0.0',
     '@farcaster/quick-auth': '>=0.0.7 <1.0.0',
-    '@neynar/react': '^1.2.9',
+    '@neynar/react': '^1.2.11',
     '@radix-ui/react-label': '^2.1.1',
     '@solana/wallet-adapter-react': '^0.15.38',
     '@tanstack/react-query': '^5.61.0',
@@ -563,6 +563,27 @@ export async function init(
     packageJson.dependencies['@farcaster/auth-kit'] = '>=0.6.0 <1.0.0';
     packageJson.dependencies['next-auth'] = '^4.24.11';
   }
+
+  // Add security overrides for vulnerable packages
+  packageJson.overrides = {
+    "backslash": "0.2.0",
+    "chalk-template": "1.1.0", 
+    "supports-hyperlinks": "4.1.0",
+    "has-ansi": "6.0.0",
+    "simple-swizzle": "0.2.2",
+    "color-string": "2.1.0",
+    "error-ex": "1.3.2",
+    "color-name": "2.0.0",
+    "is-arrayish": "0.3.2",
+    "slice-ansi": "7.1.0",
+    "color-convert": "3.1.0",
+    "wrap-ansi": "9.0.0",
+    "ansi-regex": "6.2.0",
+    "supports-color": "10.2.0",
+    "strip-ansi": "7.1.0",
+    "chalk": "5.6.0",
+    "ansi-styles": "6.2.1"
+  };
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 
