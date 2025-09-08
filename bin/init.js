@@ -564,8 +564,8 @@ export async function init(
     packageJson.dependencies['next-auth'] = '^4.24.11';
   }
 
-  // Add security overrides for vulnerable packages
-  packageJson.overrides = {
+  // Add security overrides for vulnerable packages (compatible with npm, Yarn, and pnpm)
+  const securityOverrides = {
     "backslash": "0.2.0",
     "chalk-template": "1.1.0", 
     "supports-hyperlinks": "4.1.0",
@@ -583,6 +583,17 @@ export async function init(
     "strip-ansi": "7.1.0",
     "chalk": "5.6.0",
     "ansi-styles": "6.2.1"
+  };
+
+  // npm v8.3+ overrides
+  packageJson.overrides = securityOverrides;
+  
+  // Yarn (v1 and Berry) resolutions
+  packageJson.resolutions = securityOverrides;
+  
+  // pnpm overrides (namespaced)
+  packageJson.pnpm = {
+    overrides: securityOverrides
   };
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
