@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   // Only handle notifications if Neynar is not enabled
   // When Neynar is enabled, notifications are handled through their webhook
   switch (event.event) {
-    case "frame_added":
+    case "miniapp_added":
       if (event.notificationDetails) {
         await setUserNotificationDetails(fid, event.notificationDetails);
         await sendMiniAppNotification({
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       }
       break;
 
-    case "frame_removed":
+    case "miniapp_removed":
       await deleteUserNotificationDetails(fid);
       break;
 
