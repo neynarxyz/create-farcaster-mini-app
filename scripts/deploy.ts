@@ -115,80 +115,143 @@ async function checkRequiredEnvVars(): Promise<void> {
           `${newLine}${varConfig.name}="${value.trim()}"`,
         );
       }
+    }
 
-      // Ask about SIWN if SEED_PHRASE is provided
-      if (process.env.SEED_PHRASE && !process.env.SPONSOR_SIGNER) {
-        const { sponsorSigner } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'sponsorSigner',
-            message:
-              'You have provided a seed phrase, which enables Sign In With Neynar (SIWN).\n' +
-              'Do you want to sponsor the signer? (This will be used in Sign In With Neynar)\n' +
-              'Note: If you choose to sponsor the signer, Neynar will sponsor it for you and you will be charged in CUs.\n' +
-              'For more information, see https://docs.neynar.com/docs/two-ways-to-sponsor-a-farcaster-signer-via-neynar#sponsor-signers',
-            default: false,
-          },
-        ]);
-
-        process.env.SPONSOR_SIGNER = sponsorSigner.toString();
-
-        fs.appendFileSync(
-          '.env.local',
-          `\nSPONSOR_SIGNER="${sponsorSigner}"`,
-        );
-        console.log('✅ Sponsor signer preference stored in .env.local');
-      }
-
-      // Ask about required chains
-      const { useRequiredChains } = await inquirer.prompt([
+    // Ask about SIWN if SEED_PHRASE is provided (moved outside the loop)
+    if (process.env.SEED_PHRASE && !process.env.SPONSOR_SIGNER) {
+      const { sponsorSigner } = await inquirer.prompt([
         {
           type: 'confirm',
-          name: 'useRequiredChains',
+          name: 'sponsorSigner',
           message:
-            'Does your mini app require support for specific blockchains?\n' +
-            'If yes, the host will only render your mini app if it supports all the chains you specify.\n' +
-            'If no, the mini app will be rendered regardless of chain support.',
+            'You have provided a seed phrase, which enables Sign In With Neynar (SIWN).\n' +
+            'Do you want to sponsor the signer? (This will be used in Sign In With Neynar)\n' +
+            'Note: If you choose to sponsor the signer, Neynar will sponsor it for you and you will be charged in CUs.\n' +
+            'For more information, see https://docs.neynar.com/docs/two-ways-to-sponsor-a-farcaster-signer-via-neynar#sponsor-signers',
           default: false,
         },
       ]);
 
-      let requiredChains: string[] = [];
-      if (useRequiredChains) {
-        const { selectedChains } = await inquirer.prompt([
-          {
-            type: 'checkbox',
-            name: 'selectedChains',
-            message: 'Select the required chains (CAIP-2 identifiers):',
-            choices: [
-              { name: 'Ethereum Mainnet (eip155:1)', value: 'eip155:1' },
-              { name: 'Polygon (eip155:137)', value: 'eip155:137' },
-              { name: 'Arbitrum One (eip155:42161)', value: 'eip155:42161' },
-              { name: 'Optimism (eip155:10)', value: 'eip155:10' },
-              { name: 'Base (eip155:8453)', value: 'eip155:8453' },
-              { name: 'Solana (solana:mainnet)', value: 'solana:mainnet' },
-              { name: 'Solana Devnet (solana:devnet)', value: 'solana:devnet' },
-            ],
-          },
-        ]);
-        requiredChains = selectedChains;
-      }
+      process.env.SPONSOR_SIGNER = sponsorSigner.toString();
 
-      // Update constants.ts with required chains
-      const constantsPath = path.join(projectRoot, 'src', 'lib', 'constants.ts');
+      fs.appendFileSync(
+        '.env.local',
+        `\nSPONSOR_SIGNER="${sponsorSigner}"`,
+      );
+      console.log('✅ Sponsor signer preference stored in .env.local');
+    }
+
+    // Ask about required chains (moved outside the loop)
+    const { useRequiredChains } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'useRequiredChains',
+        message:
+          'Does your mini app require support for specific blockchains?\n' +
+          'If yes, the host will only render your mini app if it supports all the chains you specify.\n' +
+          'If no, the mini app will be rendered regardless of chain support.',
+        default: false,
+      },
+    ]);
+
+    let requiredChains: string[] = [];
+    if (useRequiredChains) {
+      const { selectedChains } = await inquirer.prompt([
+        {
+          type: 'checkbox',
+          name: 'selectedChains',
+          message: 'Select the required chains (CAIP-2 identifiers):',
+          choices: [
+            { name: 'Ethereum Mainnet (eip155:1)', value: 'eip155:1' },
+            { name: 'Polygon (eip155:137)', value: 'eip155:137' },
+            { name: 'Arbitrum One (eip155:42161)', value: 'eip155:42161' },
+            { name: 'Optimism (eip155:10)', value: 'eip155:10' },
+            { name: 'Base (eip155:8453)', value: 'eip155:8453' },
+            { name: 'Solana (solana:mainnet)', value: 'solana:mainnet' },
+            { name: 'Solana Devnet (solana:devnet)', value: 'solana:devnet' },
+          ],
+        },
+      ]);
+      requiredChains = selectedChains;
+    }
+
+    // Update constants.ts with required chains
+    const constantsPath = path.join(projectRoot, 'src', 'lib', 'constants.ts');
+    if (fs.existsSync(constantsPath)) {
+      let constantsContent = fs.readFileSync(constantsPath, 'utf8');
+      
+      // Replace the APP_REQUIRED_CHAINS line
+      const requiredChainsString = JSON.stringify(requiredChains);
+      constantsContent = constantsContent.replace(
+        /^export const APP_REQUIRED_CHAINS\s*:\s*string\[\]\s*=\s*\[[^\]]*\];$/m,
+        `export const APP_REQUIRED_CHAINS: string[] = ${requiredChainsString};`,
+      );
+      
+      fs.writeFileSync(constantsPath, constantsContent);
+      console.log('✅ Required chains updated in constants.ts');
+    }
+
+    // Ask for account association
+    console.log(
+      `\n⚠️  To complete your mini app manifest, you need to sign it using the Farcaster developer portal.`,
+    );
+    console.log(
+      '1. Go to: https://farcaster.xyz/~/developers/mini-apps/manifest',
+    );
+    console.log(
+      '2. Enter your app domain (you\'ll get this after deployment)',
+    );
+    console.log(
+      '3. Click "Transfer Ownership" and follow the instructions to sign the manifest.',
+    );
+    console.log(
+      '4. Copy the resulting accountAssociation JSON.',
+    );
+    console.log('5. Paste it below when prompted.');
+    console.log(
+      '\nNote: If you don\'t have the accountAssociation yet, you can press Ctrl+C to skip and add it later.',
+    );
+
+    try {
+      const { userAccountAssociation } = await inquirer.prompt([
+        {
+          type: 'editor',
+          name: 'userAccountAssociation',
+          message: 'Paste the accountAssociation JSON here (or press Ctrl+C to skip):',
+          validate: (input: string) => {
+            if (!input.trim()) {
+              return 'You can press Ctrl+C to skip this step';
+            }
+            try {
+              const parsed = JSON.parse(input);
+              if (parsed.header && parsed.payload && parsed.signature) {
+                return true;
+              }
+              return 'Invalid accountAssociation: must have header, payload, and signature';
+            } catch (e) {
+              return 'Invalid JSON';
+            }
+          },
+        },
+      ]);
+      
+      const parsedAccountAssociation = JSON.parse(userAccountAssociation);
+
+      // Write APP_ACCOUNT_ASSOCIATION to constants.ts
       if (fs.existsSync(constantsPath)) {
         let constantsContent = fs.readFileSync(constantsPath, 'utf8');
         
-        // Replace the APP_REQUIRED_CHAINS line
-        const requiredChainsString = JSON.stringify(requiredChains);
+        // Replace the APP_ACCOUNT_ASSOCIATION line
+        const newAccountAssociation = `export const APP_ACCOUNT_ASSOCIATION: AccountAssociation | undefined = ${JSON.stringify(parsedAccountAssociation, null, 2)};`;
         constantsContent = constantsContent.replace(
-          /^export const APP_REQUIRED_CHAINS\s*:\s*string\[\]\s*=\s*\[[^\]]*\];$/m,
-          `export const APP_REQUIRED_CHAINS: string[] = ${requiredChainsString};`,
+          /^export const APP_ACCOUNT_ASSOCIATION\s*:\s*AccountAssociation \| undefined\s*=\s*[^;]*;/m,
+          newAccountAssociation,
         );
-        
         fs.writeFileSync(constantsPath, constantsContent);
-        console.log('✅ Required chains updated in constants.ts');
+        console.log('✅ APP_ACCOUNT_ASSOCIATION updated in constants.ts');
       }
+    } catch (error) {
+      console.log('\nℹ️  Skipping account association for now. You can add it later by updating APP_ACCOUNT_ASSOCIATION in src/lib/constants.ts');
     }
   }
 
@@ -878,55 +941,17 @@ async function deployToVercel(useGitHub = false): Promise<void> {
     console.log(
       '\n📝 You can manage your project at https://vercel.com/dashboard',
     );
-
-    // Prompt user to sign manifest in browser and paste accountAssociation
+    
+    // Remind user about account association if not already set
     console.log(
-      `\n⚠️  To complete your mini app manifest, you must sign it using the Farcaster developer portal.`,
-    );
-    console.log(
-      '1. Go to: https://farcaster.xyz/~/developers/mini-apps/manifest?domain=' +
-        domain,
+      `\n💡 Remember: If you haven't already signed your manifest, go to:`,
     );
     console.log(
-      '2. Click "Transfer Ownership" and follow the instructions to sign the manifest.',
+      `   https://farcaster.xyz/~/developers/mini-apps/manifest?domain=${domain}`,
     );
     console.log(
-      '3. Copy the resulting accountAssociation JSON from the browser.',
+      '   to complete the ownership transfer and update APP_ACCOUNT_ASSOCIATION in src/lib/constants.ts',
     );
-    console.log('4. Paste it below when prompted.');
-
-    const { userAccountAssociation } = await inquirer.prompt([
-      {
-        type: 'editor',
-        name: 'userAccountAssociation',
-        message: 'Paste the accountAssociation JSON here:',
-        validate: (input: string) => {
-          try {
-            const parsed = JSON.parse(input);
-            if (parsed.header && parsed.payload && parsed.signature) {
-              return true;
-            }
-            return 'Invalid accountAssociation: must have header, payload, and signature';
-          } catch (e) {
-            return 'Invalid JSON';
-          }
-        },
-      },
-    ]);
-    const parsedAccountAssociation = JSON.parse(userAccountAssociation);
-
-    // Write APP_ACCOUNT_ASSOCIATION to src/lib/constants.ts
-    const constantsPath = path.join(projectRoot, 'src', 'lib', 'constants.ts');
-    let constantsContent = fs.readFileSync(constantsPath, 'utf8');
-
-    // Replace the APP_ACCOUNT_ASSOCIATION line using a robust, anchored, multiline regex
-    const newAccountAssociation = `export const APP_ACCOUNT_ASSOCIATION: AccountAssociation | undefined = ${JSON.stringify(parsedAccountAssociation, null, 2)};`;
-    constantsContent = constantsContent.replace(
-      /^export const APP_ACCOUNT_ASSOCIATION\s*:\s*AccountAssociation \| undefined\s*=\s*[^;]*;/m,
-      newAccountAssociation,
-    );
-    fs.writeFileSync(constantsPath, constantsContent);
-    console.log('\n✅ APP_ACCOUNT_ASSOCIATION updated in src/lib/constants.ts');
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('\n❌ Deployment failed:', error.message);
