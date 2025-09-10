@@ -14,7 +14,7 @@ import {
   signOut as backendSignOut,
   useSession,
 } from 'next-auth/react';
-import sdk, { SignIn as SignInCore } from '@farcaster/frame-sdk';
+import sdk, { SignIn as SignInCore } from '@farcaster/miniapp-sdk';
 
 type User = {
   fid: number;

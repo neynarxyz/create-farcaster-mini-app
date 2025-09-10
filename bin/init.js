@@ -545,11 +545,13 @@ export async function init(
     "crypto": "^1.0.1",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
+    "inquirer": "^10.2.2",
     "localtunnel": "^2.0.2",
     "pino-pretty": "^13.0.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.5",
     "typescript": "^5"
   };
 

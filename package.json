@@ -1,6 +1,6 @@
 {
   "name": "@neynar/create-farcaster-mini-app",
-  "version": "1.8.10",
+  "version": "1.8.11",
   "type": "module",
   "private": false,
   "access": "public",
@@ -35,7 +35,7 @@
     "build:raw": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy:vercel": "node --loader ts-node/esm scripts/deploy.ts",
+    "deploy:vercel": "tsx scripts/deploy.ts",
     "deploy:raw": "vercel --prod",
     "cleanup": "node scripts/cleanup.js"
   },
