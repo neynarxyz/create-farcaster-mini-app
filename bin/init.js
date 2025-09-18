@@ -584,7 +584,9 @@ export async function init(
     "supports-color": "10.2.0",
     "strip-ansi": "7.1.0",
     "chalk": "5.6.0",
-    "ansi-styles": "6.2.1"
+    "ansi-styles": "6.2.1",
+    'axios@^1': '>=1 <2',
+    'axios@^0': '>=0 <1',
   };
 
   // npm v8.3+ overrides
