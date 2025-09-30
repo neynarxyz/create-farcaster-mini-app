@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * This authentication system is designed to work both in a regular web browser and inside a miniapp.
+ * In other words, it supports authentication when the miniapp context is not present (web browser) as well as when the app is running inside the miniapp.
+ * If you only need authentication for a web application, follow the Webapp flow;
+ * if you only need authentication inside a miniapp, follow the Miniapp flow.
+ */
+
 import '@farcaster/auth-kit/styles.css';
 import { useSignIn, UseSignInData } from '@farcaster/auth-kit';
 import { useCallback, useEffect, useState, useRef } from 'react';
@@ -10,8 +17,8 @@ import { AuthDialog } from '~/components/ui/NeynarAuthButton/AuthDialog';
 import { getItem, removeItem, setItem } from '~/lib/localStorage';
 import { useMiniApp } from '@neynar/react';
 import {
-  signIn as backendSignIn,
-  signOut as backendSignOut,
+  signIn as miniappSignIn,
+  signOut as miniappSignOut,
   useSession,
 } from 'next-auth/react';
 import sdk, { SignIn as SignInCore } from '@farcaster/miniapp-sdk';
@@ -116,7 +123,7 @@ export function NeynarAuthButton() {
   const signerFlowStartedRef = useRef(false);
 
   // Determine which flow to use based on context
-  const useBackendFlow = context !== undefined;
+  const useMiniappFlow = context !== undefined;
 
   // Helper function to create a signer
   const createSigner = useCallback(async () => {
@@ -137,16 +144,16 @@ export function NeynarAuthButton() {
     }
   }, []);
 
-  // Helper function to update session with signers (backend flow only)
+  // Helper function to update session with signers (miniapp flow only)
   const updateSessionWithSigners = useCallback(
     async (
       signers: StoredAuthState['signers'],
       user: StoredAuthState['user']
     ) => {
-      if (!useBackendFlow) return;
+      if (!useMiniappFlow) return;
 
       try {
-        // For backend flow, we need to sign in again with the additional data
+        // For miniapp flow, we need to sign in again with the additional data
         if (message && signature) {
           const signInData = {
             message,
@@ -158,13 +165,13 @@ export function NeynarAuthButton() {
             user: JSON.stringify(user),
           };
 
-          await backendSignIn('neynar', signInData);
+          await miniappSignIn('neynar', signInData);
         }
       } catch (error) {
         console.error('❌ Error updating session with signers:', error);
       }
     },
-    [useBackendFlow, message, signature, nonce]
+    [useMiniappFlow, message, signature, nonce]
   );
 
   // Helper function to fetch user data from Neynar API
@@ -231,7 +238,7 @@ export function NeynarAuthButton() {
       try {
         setSignersLoading(true);
 
-        const endpoint = useBackendFlow
+        const endpoint = useMiniappFlow
           ? `/api/auth/session-signers?message=${encodeURIComponent(
               message
             )}&signature=${signature}`
@@ -243,8 +250,8 @@ export function NeynarAuthButton() {
         const signerData = await response.json();
 
         if (response.ok) {
-          if (useBackendFlow) {
-            // For backend flow, update session with signers
+          if (useMiniappFlow) {
+            // For miniapp flow, update session with signers
             if (signerData.signers && signerData.signers.length > 0) {
               const user =
                 signerData.user ||
@@ -253,7 +260,7 @@ export function NeynarAuthButton() {
             }
             return signerData.signers;
           } else {
-            // For frontend flow, store in localStorage
+            // For webapp flow, store in localStorage
             let user: StoredAuthState['user'] | null = null;
 
             if (signerData.signers && signerData.signers.length > 0) {
@@ -285,7 +292,7 @@ export function NeynarAuthButton() {
         setSignersLoading(false);
       }
     },
-    [useBackendFlow, fetchUserData, updateSessionWithSigners]
+    [useMiniappFlow, fetchUserData, updateSessionWithSigners]
   );
 
   // Helper function to poll signer status
@@ -384,21 +391,21 @@ export function NeynarAuthButton() {
     generateNonce();
   }, []);
 
-  // Load stored auth state on mount (only for frontend flow)
+  // Load stored auth state on mount (only for webapp flow)
   useEffect(() => {
-    if (!useBackendFlow) {
+    if (!useMiniappFlow) {
       const stored = getItem<StoredAuthState>(STORAGE_KEY);
       if (stored && stored.isAuthenticated) {
         setStoredAuth(stored);
       }
     }
-  }, [useBackendFlow]);
+  }, [useMiniappFlow]);
 
   // Success callback - this is critical!
   const onSuccessCallback = useCallback(
     async (res: UseSignInData) => {
-      if (!useBackendFlow) {
-        // Only handle localStorage for frontend flow
+      if (!useMiniappFlow) {
+        // Only handle localStorage for webapp flow
         const existingAuth = getItem<StoredAuthState>(STORAGE_KEY);
         const user = res.fid ? await fetchUserData(res.fid) : null;
         const authState: StoredAuthState = {
@@ -410,9 +417,9 @@ export function NeynarAuthButton() {
         setItem<StoredAuthState>(STORAGE_KEY, authState);
         setStoredAuth(authState);
       }
-      // For backend flow, the session will be handled by NextAuth
+      // For miniapp flow, the session will be handled by NextAuth
     },
-    [useBackendFlow, fetchUserData]
+    [useMiniappFlow, fetchUserData]
   );
 
   // Error callback
@@ -427,8 +434,8 @@ export function NeynarAuthButton() {
   });
 
   const {
-    signIn: frontendSignIn,
-    signOut: frontendSignOut,
+    signIn: webappSignIn,
+    signOut: webappSignOut,
     connect,
     reconnect,
     isSuccess,
@@ -450,12 +457,12 @@ export function NeynarAuthButton() {
     }
   }, [data?.message, data?.signature]);
 
-  // Connect for frontend flow when nonce is available
+  // Connect for webapp flow when nonce is available
   useEffect(() => {
-    if (!useBackendFlow && nonce && !channelToken) {
+    if (!useMiniappFlow && nonce && !channelToken) {
       connect();
     }
-  }, [useBackendFlow, nonce, channelToken, connect]);
+  }, [useMiniappFlow, nonce, channelToken, connect]);
 
   // Handle fetching signers after successful authentication
   useEffect(() => {
@@ -478,14 +485,14 @@ export function NeynarAuthButton() {
           // Step 1: Change to loading state
           setDialogStep('loading');
 
-          // Show dialog if not using backend flow or in browser farcaster
-          if ((useBackendFlow && !isMobileContext) || !useBackendFlow)
+          // Show dialog if not using miniapp flow or in browser farcaster
+          if ((useMiniappFlow && !isMobileContext) || !useMiniappFlow)
             setShowDialog(true);
 
           // First, fetch existing signers
           const signers = await fetchAllSigners(message, signature);
 
-          if (useBackendFlow && isMobileContext) setSignersLoading(true);
+          if (useMiniappFlow && isMobileContext) setSignersLoading(true);
 
           // Check if no signers exist or if we have empty signers
           if (!signers || signers.length === 0) {
@@ -538,10 +545,10 @@ export function NeynarAuthButton() {
     }
   }, [message, signature]); // Simplified dependencies
 
-  // Backend flow using NextAuth
-  const handleBackendSignIn = useCallback(async () => {
+  // Miniapp flow using NextAuth
+  const handleMiniappSignIn = useCallback(async () => {
     if (!nonce) {
-      console.error('❌ No nonce available for backend sign-in');
+      console.error('❌ No nonce available for miniapp sign-in');
       return;
     }
 
@@ -556,7 +563,7 @@ export function NeynarAuthButton() {
         nonce: nonce,
       };
 
-      const nextAuthResult = await backendSignIn('neynar', signInData);
+      const nextAuthResult = await miniappSignIn('neynar', signInData);
       if (nextAuthResult?.ok) {
         setMessage(result.message);
         setSignature(result.signature);
@@ -567,34 +574,34 @@ export function NeynarAuthButton() {
       if (e instanceof SignInCore.RejectedByUser) {
         console.log('ℹ️ Sign-in rejected by user');
       } else {
-        console.error('❌ Backend sign-in error:', e);
+        console.error('❌ Miniapp sign-in error:', e);
       }
     } finally {
       setSignersLoading(false);
     }
   }, [nonce]);
 
-  const handleFrontEndSignIn = useCallback(() => {
+  const handleWebappSignIn = useCallback(() => {
     if (isError) {
       reconnect();
     }
     setDialogStep('signin');
     setShowDialog(true);
-    frontendSignIn();
-  }, [isError, reconnect, frontendSignIn]);
+    webappSignIn();
+  }, [isError, reconnect, webappSignIn]);
 
   const handleSignOut = useCallback(async () => {
     try {
       setSignersLoading(true);
 
-      if (useBackendFlow) {
+      if (useMiniappFlow) {
         // Only sign out from NextAuth if the current session is from Neynar provider
         if (session?.provider === 'neynar') {
-          await backendSignOut({ redirect: false });
+          await miniappSignOut({ redirect: false });
         }
       } else {
-        // Frontend flow sign out
-        frontendSignOut();
+        // Webapp flow sign out
+        webappSignOut();
         removeItem(STORAGE_KEY);
         setStoredAuth(null);
       }
@@ -620,9 +627,9 @@ export function NeynarAuthButton() {
     } finally {
       setSignersLoading(false);
     }
-  }, [useBackendFlow, frontendSignOut, pollingInterval, session]);
+  }, [useMiniappFlow, webappSignOut, pollingInterval, session]);
 
-  const authenticated = useBackendFlow
+  const authenticated = useMiniappFlow
     ? !!(
         session?.provider === 'neynar' &&
         session?.user?.fid &&
@@ -632,7 +639,7 @@ export function NeynarAuthButton() {
     : ((isSuccess && validSignature) || storedAuth?.isAuthenticated) &&
       !!(storedAuth?.signers && storedAuth.signers.length > 0);
 
-  const userData = useBackendFlow
+  const userData = useMiniappFlow
     ? {
         fid: session?.user?.fid,
         username: session?.user?.username || '',
@@ -664,16 +671,16 @@ export function NeynarAuthButton() {
         <ProfileButton userData={userData} onSignOut={handleSignOut} />
       ) : (
         <Button
-          onClick={useBackendFlow ? handleBackendSignIn : handleFrontEndSignIn}
-          disabled={!useBackendFlow && !url}
+          onClick={useMiniappFlow ? handleMiniappSignIn : handleWebappSignIn}
+          disabled={!useMiniappFlow && !url}
           className={cn(
             'btn btn-primary flex items-center gap-3',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             'transform transition-all duration-200 active:scale-[0.98]',
-            !url && !useBackendFlow && 'cursor-not-allowed'
+            !url && !useMiniappFlow && 'cursor-not-allowed'
           )}
         >
-          {!useBackendFlow && !url ? (
+          {!useMiniappFlow && !url ? (
             <>
               <div className="spinner-primary w-5 h-5" />
               <span>Initializing...</span>
