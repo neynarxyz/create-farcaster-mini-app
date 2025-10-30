@@ -68,7 +68,6 @@ export async function init(
   autoAcceptDefaults = false,
   apiKey = null,
   noWallet = false,
-  noTunnel = false,
   sponsoredSigner = false,
   seedPhrase = null,
   returnUrl = null
@@ -251,7 +250,6 @@ export async function init(
       tags: [],
       buttonText: 'Launch Mini App',
       useWallet: !noWallet,
-      useTunnel: true,
       enableAnalytics: true,
       seedPhrase: seedPhraseValue,
       useSponsoredSigner: useSponsoredSignerValue,
@@ -359,24 +357,6 @@ export async function init(
         },
       ]);
       answers.useWallet = walletAnswer.useWallet;
-    }
-
-    // Ask about localhost vs tunnel
-    if (noTunnel) {
-      answers.useTunnel = false;
-    } else {
-      const hostingAnswer = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'useTunnel',
-          message:
-            'Would you like to test on mobile and/or test the app with Warpcast developer tools?\n' +
-            `⚠️ ${yellow}${italic}Both mobile testing and the Warpcast debugger require setting up a tunnel to serve your app from localhost to the broader internet.\n${reset}` +
-            'Configure a tunnel for mobile testing and/or Warpcast developer tools?',
-          default: true,
-        },
-      ]);
-      answers.useTunnel = hostingAnswer.useTunnel;
     }
 
     // Ask about Sign In With Neynar (SIWN) - requires seed phrase
@@ -546,7 +526,6 @@ export async function init(
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "inquirer": "^10.2.2",
-    "localtunnel": "^2.0.2",
     "pino-pretty": "^13.0.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
@@ -755,7 +734,6 @@ export async function init(
         `\nNEXTAUTH_SECRET="${crypto.randomBytes(32).toString('hex')}"`
       );
     }
-    fs.appendFileSync(envPath, `\nUSE_TUNNEL="${answers.useTunnel}"`);
     if (answers.useSponsoredSigner) {
       fs.appendFileSync(envPath, `\nSPONSOR_SIGNER="true"`);
     }

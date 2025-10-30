@@ -8,7 +8,6 @@ let projectName = null;
 let autoAcceptDefaults = false;
 let apiKey = null;
 let noWallet = false;
-let noTunnel = false;
 let sponsoredSigner = false;
 let seedPhrase = null;
 let returnUrl = null;
@@ -54,10 +53,6 @@ if (yIndex !== -1) {
       noWallet = true;
       args.splice(i, 1); // Remove the flag
       i--; // Adjust index since we removed 1 element
-    } else if (arg === '--no-tunnel') {
-      noTunnel = true;
-      args.splice(i, 1); // Remove the flag
-      i--; // Adjust index since we removed 1 element
     } else if (arg === '--sponsored-signer') {
       sponsoredSigner = true;
       args.splice(i, 1); // Remove the flag
@@ -99,7 +94,7 @@ if (autoAcceptDefaults && !projectName) {
   process.exit(1);
 }
 
-init(projectName, autoAcceptDefaults, apiKey, noWallet, noTunnel, sponsoredSigner, seedPhrase, returnUrl).catch((err) => {
+init(projectName, autoAcceptDefaults, apiKey, noWallet, sponsoredSigner, seedPhrase, returnUrl).catch((err) => {
   console.error('Error:', err);
   process.exit(1);
 });
