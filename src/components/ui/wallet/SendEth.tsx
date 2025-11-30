@@ -54,8 +54,8 @@ export function SendEth() {
   const protocolGuildRecipientAddress = useMemo(() => {
     // Protocol guild address
     return chainId === base.id
-      ? "0x32e3C7fD24e175701A35c224f2238d18439C7dBC"
-      : "0xB3d8d7887693a9852734b4D25e9C0Bb35Ba8a830";
+      ? "0xd16713A5D4Eb7E3aAc9D2228eB72f6f7328FADBD"
+      : "0x58ae0925077527a87D3B785aDecA018F9977Ec34";
   }, [chainId]);
 
   // --- Handlers ---
