@@ -496,6 +496,7 @@ export async function init(
     '@farcaster/mini-app-solana': '>=0.0.17 <1.0.0',
     '@farcaster/quick-auth': '>=0.0.7 <1.0.0',
     '@neynar/react': '^1.2.15',
+    '@pigment-css/react': '^0.0.30',
     '@radix-ui/react-label': '^2.1.1',
     '@solana/wallet-adapter-react': '^0.15.38',
     '@tanstack/react-query': '^5.61.0',
