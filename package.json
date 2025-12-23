@@ -45,7 +45,7 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "inquirer": "^12.4.3",
-    "viem": "^2.23.6"
+    "viem": "^2.43.3"
   },
   "devDependencies": {
     "@neynar/nodejs-sdk": "^2.19.0",
