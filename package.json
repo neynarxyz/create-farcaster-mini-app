@@ -50,7 +50,7 @@
   "devDependencies": {
     "@neynar/nodejs-sdk": "^2.19.0",
     "@types/node": "^22.13.10",
-    "typescript": "^5.6.3"
+    "typescript": "^5.9.3"
   },
   "overrides": {
     "chalk": "5.3.0",
