@@ -597,8 +597,11 @@ export async function init(
     if (fs.existsSync(constantsPath)) {
       let constantsContent = fs.readFileSync(constantsPath, 'utf8');
 
-      // Helper function to escape single quotes in strings
-      const escapeString = (str) => str.replace(/'/g, "\\'");
+      // Helper function to escape backslashes and single quotes in strings
+      const escapeString = (str) =>
+        String(str)
+          .replace(/\\/g, '\\\\') // escape all backslashes
+          .replace(/'/g, "\\'");  // then escape single quotes
 
       // Helper function to safely replace constants with validation
       const safeReplace = (content, pattern, replacement, constantName) => {
