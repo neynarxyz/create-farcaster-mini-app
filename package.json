@@ -48,7 +48,7 @@
     "viem": "^2.43.3"
   },
   "devDependencies": {
-    "@neynar/nodejs-sdk": "^2.19.0",
+    "@neynar/nodejs-sdk": "^3.112.0",
     "@types/node": "^22.13.10",
     "typescript": "^5.9.3"
   },
