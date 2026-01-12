@@ -169,11 +169,12 @@ export function WalletTab() {
    */
   useEffect(() => {
     // Check if we're in a Farcaster client environment
-    const isInFarcasterClient = typeof window !== 'undefined' && 
-      (window.location.href.includes('warpcast.com') || 
-       window.location.href.includes('farcaster') ||
-       window.ethereum?.isFarcaster ||
-       context?.client);
+    const isInFarcasterClient = typeof window !== 'undefined' && (() => {
+      const hostname = window.location.hostname.toLowerCase();
+      const isWarpcastHost = hostname === 'warpcast.com' || hostname.endsWith('.warpcast.com');
+      const isFarcasterHost = hostname === 'farcaster.com' || hostname.endsWith('.farcaster.com');
+      return isWarpcastHost || isFarcasterHost || window.ethereum?.isFarcaster || context?.client;
+    })();
     
     if (context?.user?.fid && !isConnected && connectors.length > 0 && isInFarcasterClient) {
       console.log("Attempting auto-connection with Farcaster context...");
