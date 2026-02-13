@@ -27,7 +27,7 @@ contract VerifiedContract {
      *      * 0: PUSH1 0x80
      * 1: PUSH1 0x40
      * 2: MSTORE
-     * 3: UNKNOWN(0x34)
+     * 3: CALLVALUE
      * 4: DUP1
      * 5: ISZERO
      * 6: PUSH2 0x0010
@@ -36,7 +36,7 @@ contract VerifiedContract {
      * 9: DUP1
      * 10: REVERT
      * 11: JUMPDEST
-     * 12: UNKNOWN(0x50)
+     * 12: POP
      * 13: PUSH1 0x04
      * 14: CALLDATASIZE
      * 15: LT

@@ -8,6 +8,13 @@ This is a [NextJS](https://nextjs.org/) + TypeScript + React app.
 
 Check out [this Neynar docs page](https://docs.neynar.com/docs/create-farcaster-miniapp-in-60s) for a simple guide on how to create a Farcaster Mini App in less than 60 seconds!
 
+## Contract Verification
+
+This repository includes a utility for verifying smart contract bytecode. See [CONTRACT_VERIFICATION.md](./CONTRACT_VERIFICATION.md) for details on how to:
+- Fetch bytecode from deployed contracts
+- Generate checksums for verification
+- Create Solidity source code from bytecode
+
 ## Getting Started
 
 To create a new mini app project, run:
