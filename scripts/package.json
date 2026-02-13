@@ -1,0 +1,17 @@
+{
+  "name": "contract-verification-scripts",
+  "version": "1.0.0",
+  "description": "Contract bytecode verification utilities",
+  "main": "verify-contract.js",
+  "scripts": {
+    "verify": "node verify-contract.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["blockchain", "ethereum", "bytecode", "verification", "smart-contract"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "viem": "^2.45.3"
+  }
+}
