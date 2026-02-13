@@ -8,6 +8,7 @@ import { Footer } from "~/components/ui/Footer";
 import { HomeTab, ActionsTab, ContextTab, WalletTab } from "~/components/ui/tabs";
 import { USE_WALLET } from "~/lib/constants";
 import { useNeynarUser } from "../hooks/useNeynarUser";
+import { useSDKMonitoring, logger } from "~/lib/monitoring";
 
 // --- Types ---
 export enum Tab {
@@ -62,6 +63,9 @@ export default function App(
     currentTab,
   } = useMiniApp();
 
+  // --- Monitoring ---
+  const sdkMonitoring = useSDKMonitoring();
+
   // --- Neynar user hook ---
   const { user: neynarUser } = useNeynarUser(context || undefined);
 
@@ -87,9 +91,16 @@ export default function App(
    */
   useEffect(() => {
     if (isSDKLoaded) {
-      sdk.actions.ready();
+      try {
+        sdk.actions.ready();
+        sdkMonitoring?.logReady();
+        logger.logPageView('/', title);
+      } catch (error) {
+        logger.logError(error, { context: 'sdk.actions.ready()' });
+        sdkMonitoring?.logError(error);
+      }
     }
-  }, [isSDKLoaded]);
+  }, [isSDKLoaded, title]);
 
   // --- Early Returns ---
   if (!isSDKLoaded) {
