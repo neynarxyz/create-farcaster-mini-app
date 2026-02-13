@@ -24,7 +24,7 @@ contract VerifiedContract {
      * Total Opcodes: 246
      * 
      * Opcode Summary (first 20):
-     *      * 0: PUSH1 0x80
+     * 0: PUSH1 0x80
      * 1: PUSH1 0x40
      * 2: MSTORE
      * 3: CALLVALUE
@@ -44,7 +44,7 @@ contract VerifiedContract {
      * 17: JUMPI
      * 18: PUSH1 0x00
      * 19: CALLDATALOAD
-          * ...
+     * ...
      * 
      * VERIFICATION
      * ============

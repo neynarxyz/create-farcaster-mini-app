@@ -259,8 +259,8 @@ contract VerifiedContract {
      * Total Opcodes: ${opcodes.length}
      * 
      * Opcode Summary (first 20):
-     * ${opcodes.slice(0, 20).map((op, i) => `     * ${i}: ${op}`).join('\n')}
-     ${opcodes.length > 20 ? '     * ...' : ''}
+     * ${opcodes.slice(0, 20).map((op, i) => `${i}: ${op}`).join('\n     * ')}
+     ${opcodes.length > 20 ? '* ...' : ''}
      * 
      * VERIFICATION
      * ============
