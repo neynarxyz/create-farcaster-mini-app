@@ -15,6 +15,14 @@ This repository includes a utility for verifying smart contract bytecode. See [C
 - Generate checksums for verification
 - Create Solidity source code from bytecode
 
+### Example: Contract Creator Analysis
+
+See [CONTRACT_0x5A527BfA_ANALYSIS.md](./CONTRACT_0x5A527BfA_ANALYSIS.md) for a detailed analysis of contract `0x5A527BfA1F3038A2f35E58Bd2389Df89f1B52f3C`, which demonstrates:
+- Payable fallback function patterns
+- Calldata size restrictions (`require calldata.size < 4`)
+- Contract creator and minimal proxy patterns
+- EVM bytecode decompilation analysis
+
 ## Getting Started
 
 To create a new mini app project, run:

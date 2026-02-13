@@ -9,11 +9,17 @@ The `verify-contract.js` script fetches bytecode from a deployed smart contract 
 2. A JSON file (`contract-verification.json`) with detailed verification data
 3. SHA256 and Keccak256 checksums for bytecode verification
 
-## Target Contract
+## Target Contracts
 
+### Default Contract
 **Address:** `0x93fb4459F48f379BA865eb55dDDc292C702ff569`
 
-This script attempts to locate the contract on multiple chains:
+### Contract Creator Example
+**Address:** `0x5A527BfA1F3038A2f35E58Bd2389Df89f1B52f3C`
+
+This is an example of a contract creator address that can be verified using the tool. According to Etherscan's decompiler, this contract contains a payable fallback function.
+
+The script attempts to locate contracts on multiple chains:
 - Ethereum Mainnet
 - Base
 - Optimism
@@ -51,6 +57,9 @@ node verify-contract.js
 
 # Verify a custom contract address
 node verify-contract.js 0x1234567890abcdef1234567890abcdef12345678
+
+# Verify the contract creator example
+node verify-contract.js 0x5A527BfA1F3038A2f35E58Bd2389Df89f1B52f3C
 
 # Use demo mode if contract not found
 node verify-contract.js --demo
@@ -141,6 +150,42 @@ First 10 opcodes:
 - If the contract is not found on any of the predefined chains, the script will generate a sample verification using demo bytecode
 - The script can be extended to support additional blockchain networks by adding them to the `CHAINS` array
 - For custom RPC endpoints, modify the `CHAINS` configuration in the script
+
+## Analyzing Decompiled Contracts
+
+### Understanding Fallback Functions
+
+When verifying contracts with fallback functions (like `0x5A527BfA1F3038A2f35E58Bd2389Df89f1B52f3C`), the decompiler may show:
+
+```
+() payable # default function
+defined as _fallback
+```
+
+**Common Patterns:**
+
+1. **Calldata Size Checks:**
+   ```solidity
+   require calldata.size < 4
+   ```
+   This prevents function calls (selectors are 4 bytes) while allowing ETH transfers.
+
+2. **Empty Calldata Requirements:**
+   ```solidity
+   require not calldata.size
+   ```
+   This only accepts plain ETH transfers with no data.
+
+### Bytecode Pattern Recognition
+
+The verification script recognizes common patterns:
+
+- **CALLDATASIZE checks**: Identifies fallback function restrictions
+- **Function selectors**: Detects standard function patterns
+- **Proxy patterns**: Recognizes DELEGATECALL usage
+- **Storage access**: Identifies SLOAD/SSTORE patterns
+
+For detailed analysis of specific patterns, see [CONTRACT_0x5A527BfA_ANALYSIS.md](./CONTRACT_0x5A527BfA_ANALYSIS.md).
 
 ## Opcodes
 
