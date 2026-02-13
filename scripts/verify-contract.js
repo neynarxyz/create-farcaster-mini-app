@@ -6,16 +6,21 @@
  * This script fetches bytecode from a deployed contract and generates
  * a Solidity source file that can be used for verification.
  * 
- * Usage: node verify-contract.js <contract-address> [chain]
+ * Usage: node verify-contract.js [contract-address] [--demo]
+ *   contract-address: The contract address to verify (default: 0x93fb4459F48f379BA865eb55dDDc292C702ff569)
+ *   --demo: Use demo bytecode if contract not found (otherwise fails)
  */
 
-const { createPublicClient, http } = require('viem');
+const { createPublicClient, http, keccak256 } = require('viem');
 const { mainnet, base, optimism, polygon, arbitrum, bsc, avalanche } = require('viem/chains');
 const fs = require('fs');
 const crypto = require('crypto');
 
-// Contract address from the issue
-const CONTRACT_ADDRESS = '0x93fb4459F48f379BA865eb55dDDc292C702ff569';
+// Parse command line arguments
+const args = process.argv.slice(2);
+const useDemo = args.includes('--demo');
+const contractArg = args.find(arg => arg.startsWith('0x'));
+const CONTRACT_ADDRESS = contractArg || '0x93fb4459F48f379BA865eb55dDDc292C702ff569';
 
 // Try multiple chains to find where the contract is deployed
 const CHAINS = [
@@ -43,10 +48,34 @@ async function fetchBytecode(client, address) {
 }
 
 /**
- * Generate checksum for bytecode
+ * Generate SHA256 checksum for bytecode (hashing the actual bytes, not the string)
  */
 function generateChecksum(bytecode) {
-  return crypto.createHash('sha256').update(bytecode).digest('hex');
+  if (typeof bytecode !== 'string') {
+    throw new TypeError('Bytecode must be a 0x-prefixed hex string');
+  }
+
+  if (!bytecode.startsWith('0x')) {
+    throw new Error('Bytecode must start with 0x');
+  }
+
+  const hex = bytecode.slice(2);
+
+  // Handle empty bytecode (e.g. "0x")
+  if (hex.length === 0) {
+    return crypto.createHash('sha256').update(Buffer.alloc(0)).digest('hex');
+  }
+
+  if (hex.length % 2 !== 0) {
+    throw new Error('Bytecode hex string must have even length');
+  }
+
+  if (!/^[0-9a-fA-F]+$/.test(hex)) {
+    throw new Error('Bytecode contains non-hex characters');
+  }
+
+  const bytecodeBuffer = Buffer.from(hex, 'hex');
+  return crypto.createHash('sha256').update(bytecodeBuffer).digest('hex');
 }
 
 /**
@@ -62,7 +91,7 @@ function disassembleBytecode(bytecode) {
   const opcodes = [];
   let i = 0;
 
-  // Basic opcode map (simplified - only common ones)
+  // Complete opcode map
   const OPCODES = {
     '00': 'STOP',
     '01': 'ADD',
@@ -217,8 +246,15 @@ function disassembleBytecode(bytecode) {
     if (byte >= '60' && byte <= '7f') {
       const pushSize = parseInt(byte, 16) - 0x5f;
       const data = code.slice(i + 2, i + 2 + pushSize * 2);
-      opcodes.push(`${opcode} 0x${data}`);
-      i += 2 + pushSize * 2;
+      // Check if we have enough data
+      if (data.length === pushSize * 2) {
+        opcodes.push(`${opcode} 0x${data}`);
+        i += 2 + pushSize * 2;
+      } else {
+        // Incomplete PUSH instruction
+        opcodes.push(`${opcode} 0x${data} (INCOMPLETE)`);
+        i = code.length; // Stop processing
+      }
     } else {
       opcodes.push(opcode);
       i += 2;
@@ -231,9 +267,15 @@ function disassembleBytecode(bytecode) {
 /**
  * Generate Solidity source code template
  */
-function generateSoliditySource(bytecode, checksum, chainName) {
+function generateSoliditySource(bytecode, sha256Checksum, keccak256Checksum, chainName, contractAddress) {
   const opcodes = disassembleBytecode(bytecode);
   const bytecodeLength = bytecode ? (bytecode.length - 2) / 2 : 0;
+  
+  // Check if bytecode is too large
+  const maxSafeSize = 20000; // Conservative limit below EIP-170's 24KB
+  const sizeWarning = bytecodeLength > maxSafeSize 
+    ? `\n * WARNING: Bytecode is ${bytecodeLength} bytes, which may exceed deployment limits.\n * Consider using hash-only verification instead of embedding full bytecode.`
+    : '';
 
   return `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
@@ -241,10 +283,11 @@ pragma solidity ^0.8.0;
 /**
  * Contract Bytecode Verification
  * 
- * Contract Address: ${CONTRACT_ADDRESS}
+ * Contract Address: ${contractAddress}
  * Chain: ${chainName}
  * Bytecode Length: ${bytecodeLength} bytes
- * SHA256 Checksum: ${checksum}
+ * SHA256 Checksum: ${sha256Checksum}
+ * Keccak256 Checksum: ${keccak256Checksum}${sizeWarning}
  * 
  * This contract was reverse-engineered from the deployed bytecode.
  * The bytecode has been verified and checksummed for accuracy.
@@ -268,36 +311,52 @@ contract VerifiedContract {
      * ============
      * To verify this contract:
      * 1. Deploy this contract and get its bytecode
-     * 2. Compare the SHA256 checksum: ${checksum}
-     * 3. The bytecode should match exactly
+     * 2. Compare the Keccak256 checksum: ${keccak256Checksum}
+     * 3. Or compare SHA256 checksum: ${sha256Checksum}
+     * 4. The bytecode should match exactly
      */
 
-    // Bytecode checksum for verification
-    bytes32 public constant BYTECODE_CHECKSUM = 0x${checksum.slice(0, 64)};
+    // Keccak256 checksum for on-chain verification
+    bytes32 public constant KECCAK256_CHECKSUM = ${keccak256Checksum};
     
-    // Original bytecode stored for reference
+    // SHA256 checksum for off-chain verification
+    bytes32 public constant SHA256_CHECKSUM = 0x${sha256Checksum.slice(0, 64)};
+    
+    ${bytecodeLength <= maxSafeSize ? `// Original bytecode stored for reference
     bytes public constant ORIGINAL_BYTECODE = hex"${bytecode ? bytecode.slice(2) : ''}";
+    ` : `// Bytecode too large to embed (${bytecodeLength} bytes)
+    // Use checksums for verification instead
+    `}
     
     /**
-     * Verify that the provided bytecode matches the original
+     * Verify that the provided bytecode matches the original (using Keccak256)
      */
     function verifyBytecode(bytes memory providedBytecode) public pure returns (bool) {
-        return keccak256(ORIGINAL_BYTECODE) == keccak256(providedBytecode);
+        ${bytecodeLength <= maxSafeSize 
+          ? 'return keccak256(ORIGINAL_BYTECODE) == keccak256(providedBytecode);'
+          : 'return keccak256(providedBytecode) == KECCAK256_CHECKSUM;'}
     }
     
     /**
-     * Get the bytecode checksum
+     * Get the Keccak256 checksum
      */
-    function getBytecodeChecksum() public pure returns (bytes32) {
-        return BYTECODE_CHECKSUM;
+    function getKeccak256Checksum() public pure returns (bytes32) {
+        return KECCAK256_CHECKSUM;
     }
     
     /**
+     * Get the SHA256 checksum
+     */
+    function getSHA256Checksum() public pure returns (bytes32) {
+        return SHA256_CHECKSUM;
+    }
+    
+    ${bytecodeLength <= maxSafeSize ? `/**
      * Get the original bytecode
      */
     function getOriginalBytecode() public pure returns (bytes memory) {
         return ORIGINAL_BYTECODE;
-    }
+    }` : ''}
 }
 `;
 }
@@ -335,20 +394,28 @@ async function main() {
   if (!bytecode || bytecode === '0x') {
     console.log('\n❌ Contract not found on any checked chain.');
     console.log('The contract may be on a different network or the address may be incorrect.');
-    console.log('\nGenerating example verification with sample bytecode...\n');
     
-    // Use a sample bytecode for demonstration
-    // This is a simple contract bytecode example
-    bytecode = '0x608060405234801561001057600080fd5b506004361061002b5760003560e01c80639846cd9e14610030575b600080fd5b61003861003a565b005b60405180606001604052806028815260200161007260289139600090805190602001906100669291906100a9565b50600080549050610076565b565b600080549050816000908051906020019061008f929190610143565b5050565b6000600054905090565b828054600181600116156101000203166002900490600052602060002090601f0160209004810192826100c1576000855561014f565b82601f106100dc57805160ff191683800117855561014f565b8280016001018555821561014f579182015b8281111561014e5782518255916020019190600101906100ef565b5b50905061015c9190610160565b5090565b5b80821115610179576000816000905550600101610161565b5090565b3373';
+    if (!useDemo) {
+      console.log('\nUse --demo flag to generate verification with sample bytecode.');
+      process.exit(1);
+    }
+    
+    console.log('\nGenerating verification with sample bytecode (--demo mode)...\n');
+    
+    // Use a valid, complete sample bytecode (fixed truncation issue)
+    bytecode = '0x608060405234801561001057600080fd5b506004361061002b5760003560e01c80639846cd9e14610030575b600080fd5b61003861003a565b005b60405180606001604052806028815260200161007260289139600090805190602001906100669291906100a9565b50600080549050610076565b565b600080549050816000908051906020019061008f929190610143565b5050565b6000600054905090565b828054600181600116156101000203166002900490600052602060002090601f0160209004810192826100c1576000855561014f565b82601f106100dc57805160ff191683800117855561014f565b8280016001018555821561014f579182015b8281111561014e5782518255916020019190600101906100ef565b5b50905061015c9190610160565b5090565b5b80821115610179576000816000905550600101610161565b5090565b33';
     foundChain = 'Sample/Demo';
     console.log('Using sample bytecode for demonstration purposes.');
   }
 
   console.log(`\nBytecode Length: ${(bytecode.length - 2) / 2} bytes`);
   
-  // Generate checksum
-  const checksum = generateChecksum(bytecode);
-  console.log(`SHA256 Checksum: ${checksum}\n`);
+  // Generate checksums
+  const sha256Checksum = generateChecksum(bytecode);
+  const keccak256Checksum = keccak256(bytecode);
+  
+  console.log(`SHA256 Checksum:    ${sha256Checksum}`);
+  console.log(`Keccak256 Checksum: ${keccak256Checksum}\n`);
 
   // Disassemble opcodes
   const opcodes = disassembleBytecode(bytecode);
@@ -359,7 +426,7 @@ async function main() {
   });
 
   // Generate Solidity source
-  const soliditySource = generateSoliditySource(bytecode, checksum, foundChain);
+  const soliditySource = generateSoliditySource(bytecode, sha256Checksum, keccak256Checksum, foundChain, CONTRACT_ADDRESS);
   
   // Write to file
   const outputPath = './VerifiedContract.sol';
@@ -373,8 +440,8 @@ async function main() {
     chain: foundChain,
     bytecode: bytecode,
     bytecodeLength: (bytecode.length - 2) / 2,
-    sha256Checksum: checksum,
-    keccak256Checksum: require('viem').keccak256(bytecode),
+    sha256Checksum: sha256Checksum,
+    keccak256Checksum: keccak256Checksum,
     opcodes: opcodes,
     timestamp: new Date().toISOString(),
   };

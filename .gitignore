@@ -12,6 +12,10 @@
 /scripts/node_modules
 /scripts/package-lock.json
 
+# Generated contract verification artifacts (kept only in scripts/)
+/VerifiedContract.sol
+/contract-verification.json
+
 # testing
 /coverage
 

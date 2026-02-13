@@ -9,7 +9,7 @@
   },
   "keywords": ["blockchain", "ethereum", "bytecode", "verification", "smart-contract"],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "viem": "^2.45.3"

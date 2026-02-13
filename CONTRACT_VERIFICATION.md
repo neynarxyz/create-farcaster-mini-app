@@ -37,7 +37,23 @@ Run the verification script:
 
 ```bash
 cd scripts
+node verify-contract.js [contract-address] [--demo]
+```
+
+**Arguments:**
+- `contract-address` (optional): The contract address to verify (default: 0x93fb4459F48f379BA865eb55dDDc292C702ff569)
+- `--demo` (optional): Generate verification with sample bytecode if contract not found (otherwise exits with error)
+
+**Examples:**
+```bash
+# Verify the default contract address
 node verify-contract.js
+
+# Verify a custom contract address
+node verify-contract.js 0x1234567890abcdef1234567890abcdef12345678
+
+# Use demo mode if contract not found
+node verify-contract.js --demo
 ```
 
 The script will:
@@ -48,14 +64,21 @@ The script will:
 5. Create a Solidity source file with embedded verification data
 6. Save detailed information to a JSON file
 
+**Note:** Without the `--demo` flag, the script will exit with an error if the contract is not found on any checked network.
+
 ## Output Files
+
+All generated files are created in the `scripts/` directory:
 
 ### VerifiedContract.sol
 A Solidity contract containing:
-- Contract metadata (address, chain, bytecode length, checksum)
-- The original bytecode stored as a constant
-- Verification functions to compare bytecode
+- Contract metadata (address, chain, bytecode length, checksums)
+- Both Keccak256 and SHA256 checksums
+- The original bytecode stored as a constant (if under 20KB)
+- Verification functions using Keccak256 for on-chain verification
 - Opcode summary in comments
+
+**Note:** For large contracts (>20KB), only checksums are embedded to avoid exceeding EIP-170 deployment limits.
 
 ### contract-verification.json
 A JSON file containing:
