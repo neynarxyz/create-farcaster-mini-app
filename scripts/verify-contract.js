@@ -16,6 +16,12 @@ const { mainnet, base, optimism, polygon, arbitrum, bsc, avalanche } = require('
 const fs = require('fs');
 const crypto = require('crypto');
 
+// Constants
+const MAX_SAFE_BYTECODE_SIZE = 20000; // Conservative limit below EIP-170's 24KB
+
+// Sample bytecode for demonstration (simple storage contract)
+const DEMO_BYTECODE = '0x608060405234801561001057600080fd5b506004361061002b5760003560e01c80639846cd9e14610030575b600080fd5b61003861003a565b005b60405180606001604052806028815260200161007260289139600090805190602001906100669291906100a9565b50600080549050610076565b565b600080549050816000908051906020019061008f929190610143565b5050565b6000600054905090565b828054600181600116156101000203166002900490600052602060002090601f0160209004810192826100c1576000855561014f565b82601f106100dc57805160ff191683800117855561014f565b8280016001018555821561014f579182015b8281111561014e5782518255916020019190600101906100ef565b5b50905061015c9190610160565b5090565b5b80821115610179576000816000905550600101610161565b5090565b33';
+
 // Parse command line arguments
 const args = process.argv.slice(2);
 const useDemo = args.includes('--demo');
@@ -245,11 +251,12 @@ function disassembleBytecode(bytecode) {
     // Handle PUSH opcodes
     if (byte >= '60' && byte <= '7f') {
       const pushSize = parseInt(byte, 16) - 0x5f;
-      const data = code.slice(i + 2, i + 2 + pushSize * 2);
+      const expectedDataLength = pushSize * 2;
+      const data = code.slice(i + 2, i + 2 + expectedDataLength);
       // Check if we have enough data
-      if (data.length === pushSize * 2) {
+      if (data.length === expectedDataLength) {
         opcodes.push(`${opcode} 0x${data}`);
-        i += 2 + pushSize * 2;
+        i += 2 + expectedDataLength;
       } else {
         // Incomplete PUSH instruction
         opcodes.push(`${opcode} 0x${data} (INCOMPLETE)`);
@@ -272,8 +279,7 @@ function generateSoliditySource(bytecode, sha256Checksum, keccak256Checksum, cha
   const bytecodeLength = bytecode ? (bytecode.length - 2) / 2 : 0;
   
   // Check if bytecode is too large
-  const maxSafeSize = 20000; // Conservative limit below EIP-170's 24KB
-  const sizeWarning = bytecodeLength > maxSafeSize 
+  const sizeWarning = bytecodeLength > MAX_SAFE_BYTECODE_SIZE 
     ? `\n * WARNING: Bytecode is ${bytecodeLength} bytes, which may exceed deployment limits.\n * Consider using hash-only verification instead of embedding full bytecode.`
     : '';
 
@@ -322,7 +328,7 @@ contract VerifiedContract {
     // SHA256 checksum for off-chain verification
     bytes32 public constant SHA256_CHECKSUM = 0x${sha256Checksum.slice(0, 64)};
     
-    ${bytecodeLength <= maxSafeSize ? `// Original bytecode stored for reference
+    ${bytecodeLength <= MAX_SAFE_BYTECODE_SIZE ? `// Original bytecode stored for reference
     bytes public constant ORIGINAL_BYTECODE = hex"${bytecode ? bytecode.slice(2) : ''}";
     ` : `// Bytecode too large to embed (${bytecodeLength} bytes)
     // Use checksums for verification instead
@@ -332,7 +338,7 @@ contract VerifiedContract {
      * Verify that the provided bytecode matches the original (using Keccak256)
      */
     function verifyBytecode(bytes memory providedBytecode) public pure returns (bool) {
-        ${bytecodeLength <= maxSafeSize 
+        ${bytecodeLength <= MAX_SAFE_BYTECODE_SIZE 
           ? 'return keccak256(ORIGINAL_BYTECODE) == keccak256(providedBytecode);'
           : 'return keccak256(providedBytecode) == KECCAK256_CHECKSUM;'}
     }
@@ -351,7 +357,7 @@ contract VerifiedContract {
         return SHA256_CHECKSUM;
     }
     
-    ${bytecodeLength <= maxSafeSize ? `/**
+    ${bytecodeLength <= MAX_SAFE_BYTECODE_SIZE ? `/**
      * Get the original bytecode
      */
     function getOriginalBytecode() public pure returns (bytes memory) {
@@ -402,8 +408,8 @@ async function main() {
     
     console.log('\nGenerating verification with sample bytecode (--demo mode)...\n');
     
-    // Use a valid, complete sample bytecode (fixed truncation issue)
-    bytecode = '0x608060405234801561001057600080fd5b506004361061002b5760003560e01c80639846cd9e14610030575b600080fd5b61003861003a565b005b60405180606001604052806028815260200161007260289139600090805190602001906100669291906100a9565b50600080549050610076565b565b600080549050816000908051906020019061008f929190610143565b5050565b6000600054905090565b828054600181600116156101000203166002900490600052602060002090601f0160209004810192826100c1576000855561014f565b82601f106100dc57805160ff191683800117855561014f565b8280016001018555821561014f579182015b8281111561014e5782518255916020019190600101906100ef565b5b50905061015c9190610160565b5090565b5b80821115610179576000816000905550600101610161565b5090565b33';
+    // Use the demo bytecode constant
+    bytecode = DEMO_BYTECODE;
     foundChain = 'Sample/Demo';
     console.log('Using sample bytecode for demonstration purposes.');
   }
