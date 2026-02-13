@@ -19,8 +19,10 @@ const CONTRACT_ADDRESS = '0x93fb4459F48f379BA865eb55dDDc292C702ff569';
 
 // Try multiple chains to find where the contract is deployed
 const CHAINS = [
+  { name: 'Base', chain: base, rpc: 'https://base.llamarpc.com' },
+  { name: 'Base (alt)', chain: base, rpc: 'https://mainnet.base.org' },
+  { name: 'Base (public)', chain: base, rpc: 'https://base-rpc.publicnode.com' },
   { name: 'Ethereum Mainnet', chain: mainnet, rpc: 'https://eth.llamarpc.com' },
-  { name: 'Base', chain: base, rpc: 'https://mainnet.base.org' },
   { name: 'Optimism', chain: optimism, rpc: 'https://mainnet.optimism.io' },
   { name: 'Polygon', chain: polygon, rpc: 'https://polygon-rpc.com' },
   { name: 'Arbitrum', chain: arbitrum, rpc: 'https://arb1.arbitrum.io/rpc' },
