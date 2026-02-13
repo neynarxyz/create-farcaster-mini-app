@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useMiniApp } from "@neynar/react";
+import { sdk } from "@farcaster/miniapp-sdk";
 import { Header } from "~/components/ui/Header";
 import { Footer } from "~/components/ui/Footer";
 import { HomeTab, ActionsTab, ContextTab, WalletTab } from "~/components/ui/tabs";
@@ -77,6 +78,18 @@ export default function App(
       setInitialTab(Tab.Home);
     }
   }, [isSDKLoaded, setInitialTab]);
+
+  /**
+   * Calls sdk.actions.ready() when the SDK is fully loaded.
+   * 
+   * This tells Farcaster that the app is ready to be displayed and
+   * hides the splash screen that was covering the mini app.
+   */
+  useEffect(() => {
+    if (isSDKLoaded) {
+      sdk.actions.ready();
+    }
+  }, [isSDKLoaded]);
 
   // --- Early Returns ---
   if (!isSDKLoaded) {
