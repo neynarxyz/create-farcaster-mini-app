@@ -1,4 +1,4 @@
-import { GET } from '@/app/api/users/route';
+import { GET } from '~/app/api/users/route';
 
 describe('GET /api/users', () => {
   let mockRequest: Request;

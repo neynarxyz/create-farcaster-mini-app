@@ -1,4 +1,4 @@
-import { renderError } from '@/lib/errorUtils';
+import { renderError } from '~/lib/errorUtils';
 import { UserRejectedRequestError } from 'viem';
 import React from 'react';
 
