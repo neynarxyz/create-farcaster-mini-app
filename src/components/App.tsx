@@ -2,11 +2,13 @@
 
 import { useEffect } from "react";
 import { useMiniApp } from "@neynar/react";
+import { sdk } from "@farcaster/miniapp-sdk";
 import { Header } from "~/components/ui/Header";
 import { Footer } from "~/components/ui/Footer";
 import { HomeTab, ActionsTab, ContextTab, WalletTab } from "~/components/ui/tabs";
 import { USE_WALLET } from "~/lib/constants";
 import { useNeynarUser } from "../hooks/useNeynarUser";
+import { useSDKMonitoring, logger } from "~/lib/monitoring";
 
 // --- Types ---
 export enum Tab {
@@ -61,6 +63,9 @@ export default function App(
     currentTab,
   } = useMiniApp();
 
+  // --- Monitoring ---
+  const sdkMonitoring = useSDKMonitoring();
+
   // --- Neynar user hook ---
   const { user: neynarUser } = useNeynarUser(context || undefined);
 
@@ -77,6 +82,25 @@ export default function App(
       setInitialTab(Tab.Home);
     }
   }, [isSDKLoaded, setInitialTab]);
+
+  /**
+   * Calls sdk.actions.ready() when the SDK is fully loaded.
+   * 
+   * This tells Farcaster that the app is ready to be displayed and
+   * hides the splash screen that was covering the mini app.
+   */
+  useEffect(() => {
+    if (isSDKLoaded) {
+      try {
+        sdk.actions.ready();
+        sdkMonitoring?.logReady();
+        logger.logPageView('/', title);
+      } catch (error) {
+        logger.logError(error, { context: 'sdk.actions.ready()' });
+        sdkMonitoring?.logError(error);
+      }
+    }
+  }, [isSDKLoaded, title]);
 
   // --- Early Returns ---
   if (!isSDKLoaded) {
