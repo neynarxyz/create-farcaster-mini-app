@@ -496,7 +496,7 @@ export async function init(
     '@farcaster/mini-app-solana': '>=0.0.17 <1.0.0',
     '@farcaster/quick-auth': '>=0.0.7 <1.0.0',
     '@neynar/react': '^1.2.15',
-    '@pigment-css/react': '^0.0.30',
+    '@pigment-css/react': '^0.0.31',
     '@radix-ui/react-label': '^2.1.1',
     '@solana/wallet-adapter-react': '^0.15.38',
     '@tanstack/react-query': '^5.61.0',
@@ -506,7 +506,7 @@ export async function init(
     dotenv: '^16.4.7',
     'lucide-react': '^0.469.0',
     mipd: '^0.0.7',
-    next: '^15.5.7',
+    next: '^15.5.28',
     react: '^19',
     'react-dom': '^19',
     'tailwind-merge': '^2.6.0',
@@ -525,10 +525,10 @@ export async function init(
     "@vercel/sdk": "^1.9.0",
     "crypto": "^1.0.1",
     "eslint": "^8",
-    "eslint-config-next": "15.5.7",
+    "eslint-config-next": "15.5.28",
     "inquirer": "^10.2.2",
     "pino-pretty": "^13.0.0",
-    "postcss": "^8",
+    "postcss": "^8.5.23",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.5",
@@ -564,18 +564,28 @@ export async function init(
     "supports-color": "10.2.0",
     "strip-ansi": "7.1.0",
     "chalk": "5.6.0",
-    "ansi-styles": "6.2.1"
+    "ansi-styles": "6.2.1",
+    "basic-ftp": "^6.2.3",
+    "postcss": "^8.5.23",
+    "tmp": "^0.2.6"
+  };
+
+  // Version-scoped overrides (npm and pnpm only; Yarn resolutions do not
+  // support version selectors). ws 7.x is also in the tree and must not be
+  // forced onto 8.x.
+  const scopedSecurityOverrides = {
+    "ws@8": "^8.21.0"
   };
 
   // npm v8.3+ overrides
-  packageJson.overrides = securityOverrides;
+  packageJson.overrides = { ...securityOverrides, ...scopedSecurityOverrides };
   
   // Yarn (v1 and Berry) resolutions
   packageJson.resolutions = securityOverrides;
   
   // pnpm overrides (namespaced)
   packageJson.pnpm = {
-    overrides: securityOverrides
+    overrides: { ...securityOverrides, ...scopedSecurityOverrides }
   };
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
