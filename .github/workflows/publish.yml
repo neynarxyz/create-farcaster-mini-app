@@ -13,6 +13,11 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Lets npm exchange a short-lived GitHub OIDC token for publish rights
+      # (npm trusted publishing), so no long-lived NPM_TOKEN is needed.
+      id-token: write
 
     steps:
       - name: Check out repository
@@ -23,13 +28,23 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: '20'
+          # Trusted publishing needs npm >= 11.5.1, which Node 20's npm 10 lacks.
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Check npm supports trusted publishing
+        run: |
+          node -e '
+            const v = process.argv[1];
+            const [major, minor, patch] = v.split(".").map(Number);
+            if (major < 11 || (major === 11 && (minor < 5 || (minor === 5 && patch < 1)))) {
+              console.error(`npm ${v} is too old for trusted publishing (needs >= 11.5.1)`);
+              process.exit(1);
+            }
+          ' "$(npm --version)"
 
+      # No `npm ci`: the published files are plain JS with no build step, and
+      # skipping it keeps dependency install scripts out of a job that can
+      # mint an npm publish credential.
       - name: Publish to npm
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
