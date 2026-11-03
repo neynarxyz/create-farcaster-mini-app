@@ -1,7 +1,11 @@
 {
   "name": "@neynar/create-farcaster-mini-app",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neynarxyz/create-farcaster-mini-app.git"
+  },
   "private": false,
   "access": "public",
   "exports": {
